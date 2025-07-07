@@ -13,7 +13,7 @@ use crate::{
 pub struct TidalSession {
     pub rq: RequestClient,
     pub config: TidalConfig,
-    credentials: TidalCredentials,
+    pub credentials: TidalCredentials,
 }
 
 impl TidalSession {
@@ -50,11 +50,11 @@ impl TidalSession {
     }
 
     pub async fn wait_for_oauth(
-        &self,
+        &mut self,
         device_code: &str,
         expires_in: u64,
         interval: u64,
-    ) -> Result<(), requests::RequestClientError> {
+    ) -> Result<AuthResponse, requests::RequestClientError> {
         if self.credentials.is_token_auth() {
             eprintln!("Client secret provided, cannot use this function.");
             return Err(requests::RequestClientError::InvalidCredentials);
@@ -86,7 +86,8 @@ impl TidalSession {
             match json {
                 Ok(json) => {
                     println!("oauth check response: {json:?}");
-                    return Ok(());
+                    self.credentials.access_token = Some(json.access_token.clone());
+                    return Ok(json);
                 }
                 Err(_) => {
                     let json_waiting: Result<AuthResponseWaiting, _> =
@@ -106,7 +107,7 @@ impl TidalSession {
             expiry -= interval;
         }
 
-        Ok(())
+        Err(requests::RequestClientError::Timeout)
     }
 
     pub async fn get_access_token(
@@ -134,5 +135,9 @@ impl TidalSession {
         let json: AccessTokenResponse = res.json().await?;
 
         Ok(json)
+    }
+
+    pub fn is_logged_in(&self) -> bool {
+        self.credentials.access_token.is_some()
     }
 }

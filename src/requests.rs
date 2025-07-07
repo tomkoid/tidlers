@@ -58,6 +58,8 @@ pub enum RequestClientError {
     InvalidMethod,
     #[error("invalid credentials")]
     InvalidCredentials,
+    #[error("timeout")]
+    Timeout,
 }
 
 impl RequestClient {
