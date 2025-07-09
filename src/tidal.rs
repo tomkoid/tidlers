@@ -1,13 +1,14 @@
-use crate::{credentials::TidalCredentials, requests, session::TidalSession};
+use crate::{credentials::TidalCredentials, page::TidalPage, requests, session::TidalSession};
 
 #[derive(Debug, Clone)]
 pub struct Tidal {
     pub session: TidalSession,
+    pub page: TidalPage,
 }
 
 #[derive(thiserror::Error, Debug)]
 pub enum TidalError {
-    #[error("not authenticated")]
+    #[error("not authenticated, either session and/or page doesn't have access token set")]
     NotAuthenticated,
 
     #[error("request error")]
@@ -16,13 +17,15 @@ pub enum TidalError {
 
 impl Tidal {
     pub fn new(credentials: &TidalCredentials) -> Tidal {
+        let session = TidalSession::new(credentials);
         Tidal {
-            session: TidalSession::new(credentials),
+            session,
+            page: TidalPage::new(),
         }
     }
 
     fn check_auth(&self) -> Result<bool, TidalError> {
-        if self.session.credentials.access_token.is_none() {
+        if self.session.credentials.access_token.is_none() || !self.page.is_access_token_set() {
             Err(TidalError::NotAuthenticated)
         } else {
             Ok(true)
@@ -33,6 +36,8 @@ impl Tidal {
         self.check_auth()?;
 
         println!("home");
+        self.page.r_get("pages/home");
         Ok(())
+        // Ok(self.page.get("pages/home").await?)
     }
 }

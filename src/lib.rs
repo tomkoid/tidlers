@@ -1,5 +1,6 @@
 pub mod config;
 pub mod credentials;
+pub mod page;
 pub mod requests;
 pub mod responses;
 pub mod session;
