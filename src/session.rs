@@ -4,7 +4,7 @@ use reqwest::Method;
 
 use crate::{
     config::TidalConfig,
-    credentials::TidalCredentials,
+    credentials::TidalAuth,
     requests::{self, RequestClient, TidalRequest},
     responses::{AccessTokenResponse, AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
@@ -13,21 +13,21 @@ use crate::{
 pub struct TidalSession {
     pub rq: RequestClient,
     pub config: TidalConfig,
-    pub credentials: TidalCredentials,
+    pub auth: TidalAuth,
 }
 
 impl TidalSession {
-    pub fn new(credentials: &TidalCredentials) -> TidalSession {
+    pub fn new(credentials: &TidalAuth) -> TidalSession {
         let api_v1_location = "https://api.tidal.com/v1/".to_string();
         TidalSession {
             rq: RequestClient::new(api_v1_location),
             config: TidalConfig::new(),
-            credentials: credentials.clone(),
+            auth: credentials.clone(),
         }
     }
 
     pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, requests::RequestClientError> {
-        if self.credentials.is_token_auth() {
+        if self.auth.is_token_auth() {
             eprintln!(
                 "Client secret provided, you should probably use get_access_token instead.\nIf you want to login with OAuth2, use TidalCredentials::new()"
             );
@@ -35,7 +35,7 @@ impl TidalSession {
         }
 
         let mut form = HashMap::new();
-        form.insert("client_id".to_string(), self.credentials.client_id.clone());
+        form.insert("client_id".to_string(), self.auth.client_id.clone());
         form.insert("scope".to_string(), "r_usr w_usr w_sub".to_string());
 
         let mut req = TidalRequest::new(Method::POST, "/device_authorization".to_string());
@@ -55,17 +55,14 @@ impl TidalSession {
         expires_in: u64,
         interval: u64,
     ) -> Result<AuthResponse, requests::RequestClientError> {
-        if self.credentials.is_token_auth() {
+        if self.auth.is_token_auth() {
             eprintln!("Client secret provided, cannot use this function.");
             return Err(requests::RequestClientError::InvalidCredentials);
         }
 
         let mut form = HashMap::new();
-        form.insert("client_id".to_string(), self.credentials.client_id.clone());
-        form.insert(
-            "client_secret".to_string(),
-            self.credentials.client_secret.clone(),
-        );
+        form.insert("client_id".to_string(), self.auth.client_id.clone());
+        form.insert("client_secret".to_string(), self.auth.client_secret.clone());
         form.insert("device_code".to_string(), device_code.to_string());
         form.insert(
             "grant_type".to_string(),
@@ -86,7 +83,8 @@ impl TidalSession {
             match json {
                 Ok(json) => {
                     println!("oauth check response: {json:?}");
-                    self.credentials.access_token = Some(json.access_token.clone());
+                    self.auth.access_token = Some(json.access_token.clone());
+                    self.auth.user_id = Some(json.user_id);
                     return Ok(json);
                 }
                 Err(_) => {
@@ -113,7 +111,7 @@ impl TidalSession {
     pub async fn get_access_token(
         &self,
     ) -> Result<AccessTokenResponse, requests::RequestClientError> {
-        if !self.credentials.is_token_auth() {
+        if !self.auth.is_token_auth() {
             eprintln!(
                 "No client secret provided, can't use get_access_token, use TidalCredentials::with_token to use this.\nIf you want to login with OAuth2, use TidalCredentials::new()"
             );
@@ -126,8 +124,8 @@ impl TidalSession {
         let mut req = TidalRequest::new(Method::POST, "/token".to_string());
         req.form = Some(vec![form]);
         req.basic_auth = Some(requests::BasicAuth::new(
-            self.credentials.client_id.clone(),
-            self.credentials.client_secret.clone(),
+            self.auth.client_id.clone(),
+            self.auth.client_secret.clone(),
         ));
         req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
 
@@ -137,7 +135,25 @@ impl TidalSession {
         Ok(json)
     }
 
+    /// Checks if the access token is still valid
+    pub async fn check_login(&self) -> Result<bool, requests::RequestClientError> {
+        if !self.is_logged_in() {
+            return Ok(false);
+        }
+
+        let req = TidalRequest::new(
+            Method::GET,
+            format!("/users/{}/subscription", self.auth.user_id.unwrap()),
+        );
+        let res = self.rq.request(req).await?;
+        if res.status().is_success() {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
     pub fn is_logged_in(&self) -> bool {
-        self.credentials.access_token.is_some()
+        self.auth.access_token.is_some()
     }
 }
