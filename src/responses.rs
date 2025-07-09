@@ -39,15 +39,15 @@ pub struct AuthResponse {
     #[serde(rename = "refresh_token")]
     pub refresh_token: String,
     #[serde(rename = "expires_in")]
-    pub expires_in: i64,
+    pub expires_in: u64,
     #[serde(rename = "user_id")]
-    pub user_id: i64,
+    pub user_id: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     #[serde(rename = "userId")]
-    pub user_id: i64,
+    pub user_id: u64,
     #[serde(rename = "email")]
     pub email: String,
     #[serde(rename = "countryCode")]
@@ -73,19 +73,19 @@ pub struct User {
     #[serde(rename = "phoneNumber")]
     pub phone_number: Option<String>,
     #[serde(rename = "birthday")]
-    pub birthday: i64,
+    pub birthday: u64,
     #[serde(rename = "channelId")]
-    pub channel_id: i64,
+    pub channel_id: u64,
     #[serde(rename = "parentId")]
-    pub parent_id: i64,
+    pub parent_id: u64,
     #[serde(rename = "acceptedEULA")]
     pub accepted_eula: bool,
     #[serde(rename = "created")]
-    pub created: i64,
+    pub created: u64,
     #[serde(rename = "updated")]
     pub updated: i64,
     #[serde(rename = "facebookUid")]
-    pub facebook_uid: i64,
+    pub facebook_uid: u64,
     #[serde(rename = "appleUid")]
     pub apple_uid: Option<String>,
     #[serde(rename = "googleUid")]
