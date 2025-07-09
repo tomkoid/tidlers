@@ -1,4 +1,4 @@
-use crate::{credentials::TidalAuth, page::TidalPage, requests, session::TidalSession};
+use crate::{auth::TidalAuth, page::TidalPage, requests, session::TidalSession};
 
 #[derive(Debug, Clone)]
 pub struct Tidal {

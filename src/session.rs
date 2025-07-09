@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use reqwest::Method;
 
 use crate::{
+    auth::TidalAuth,
     config::TidalConfig,
-    credentials::TidalAuth,
     requests::{self, RequestClient, TidalRequest},
     responses::{AccessTokenResponse, AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
