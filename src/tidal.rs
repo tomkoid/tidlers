@@ -1,7 +1,7 @@
-use crate::{auth::TidalAuth, page::TidalPage, requests, session::TidalSession};
+use crate::{auth::init::TidalAuth, page::TidalPage, requests, session::TidalSession};
 
 #[derive(Debug, Clone)]
-pub struct Tidal {
+pub struct TidalClient {
     pub session: TidalSession,
     pub page: TidalPage,
 }
@@ -15,10 +15,10 @@ pub enum TidalError {
     RequestError(#[from] requests::RequestClientError),
 }
 
-impl Tidal {
-    pub fn new(credentials: &TidalAuth) -> Tidal {
+impl TidalClient {
+    pub fn new(credentials: &TidalAuth) -> TidalClient {
         let session = TidalSession::new(credentials);
-        Tidal {
+        TidalClient {
             session,
             page: TidalPage::new(),
         }
