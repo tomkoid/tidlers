@@ -43,8 +43,12 @@ impl TidalSession {
         req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
 
         let res = self.rq.request(req).await?;
-        // println!("oauth response: {}", res.text().await?);
-        let json = res.json().await?;
+        let body = res.text().await?;
+
+        let json: OAuthLinkResponse = serde_json::from_str(&body).map_err(|e| {
+            eprintln!("Error parsing OAuth link response: {e}\nResponse body: {body}");
+            requests::RequestClientError::ParseError(e.to_string())
+        })?;
 
         Ok(json)
     }

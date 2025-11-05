@@ -60,6 +60,8 @@ pub enum RequestClientError {
     InvalidCredentials,
     #[error("timeout")]
     Timeout,
+    #[error("failed to parse response")]
+    ParseError(String),
 }
 
 impl RequestClient {
