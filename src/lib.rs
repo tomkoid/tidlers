@@ -1,10 +1,10 @@
 pub mod auth;
+pub mod client;
 pub mod config;
 pub mod page;
 pub mod requests;
 pub mod responses;
 pub mod session;
-pub mod tidal;
 
 // pub fn add(left: u64, right: u64) -> u64 {
 //     left + right

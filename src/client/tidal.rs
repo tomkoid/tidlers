@@ -1,4 +1,7 @@
-use crate::{auth::init::TidalAuth, page::TidalPage, requests, session::TidalSession};
+use crate::{
+    auth::init::TidalAuth, client::user_info::UserInfo, page::TidalPage, requests,
+    session::TidalSession,
+};
 
 #[derive(Debug, Clone)]
 pub struct TidalClient {
@@ -6,12 +9,6 @@ pub struct TidalClient {
 
     pub session: TidalSession,
     pub page: TidalPage,
-}
-
-#[derive(Debug, Clone)]
-pub struct UserInfo {
-    pub user_id: u64,
-    pub country_code: String,
 }
 
 #[derive(thiserror::Error, Debug)]
