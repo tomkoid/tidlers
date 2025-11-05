@@ -1,5 +1,8 @@
 use crate::{
-    auth::init::TidalAuth, client::user_info::UserInfo, page::TidalPage, requests,
+    auth::init::TidalAuth,
+    client::user_info::UserInfo,
+    page::TidalPage,
+    requests::{self, RequestClient},
     session::TidalSession,
 };
 
@@ -9,6 +12,8 @@ pub struct TidalClient {
 
     pub session: TidalSession,
     pub page: TidalPage,
+
+    pub rq: requests::RequestClient,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -23,10 +28,12 @@ pub enum TidalError {
 impl TidalClient {
     pub fn new(credentials: &TidalAuth) -> TidalClient {
         let session = TidalSession::new(credentials);
+        let rq = RequestClient::new("https://openapi.tidal.com/v2".to_string());
         TidalClient {
             user_info: None,
             session,
             page: TidalPage::new(),
+            rq,
         }
     }
 

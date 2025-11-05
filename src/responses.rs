@@ -105,3 +105,32 @@ pub struct AuthResponseWaiting {
     pub sub_status: u64,
     pub error_description: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfoResponse {
+    pub data: UserData,
+    pub links: Links,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserData {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub user_type: String,
+    pub attributes: UserAttributes,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserAttributes {
+    pub username: String,
+    pub country: String,
+    pub email: String,
+    #[serde(rename = "emailVerified")]
+    pub email_verified: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Links {
+    #[serde(rename = "self")]
+    pub self_link: String,
+}

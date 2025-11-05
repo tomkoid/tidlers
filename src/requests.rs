@@ -15,10 +15,11 @@ pub struct TidalRequest {
     pub path: String,
     pub form: Option<Vec<HashMap<String, String>>>,
     pub basic_auth: Option<BasicAuth>,
+    pub access_token: Option<String>,
     pub data: Option<String>,
     pub headers: Option<String>,
     pub base_url: Option<String>,
-    pub disable_default_params: bool,
+    pub enable_useful_params: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -40,10 +41,11 @@ impl TidalRequest {
             path,
             form: None,
             basic_auth: None,
+            access_token: None,
             data: None,
             headers: None,
             base_url: None,
-            disable_default_params: false,
+            enable_useful_params: false,
         }
     }
 }
@@ -80,7 +82,7 @@ impl RequestClient {
     ) -> Result<reqwest::Response, RequestClientError> {
         let mut req_form: HashMap<String, String> = HashMap::new();
 
-        if !request.disable_default_params {
+        if request.enable_useful_params {
             req_form.insert("session_id".to_string(), "d".to_string());
             req_form.insert("countryCode".to_string(), "cz".to_string());
             req_form.insert("limit".to_string(), "10".to_string());
@@ -101,6 +103,8 @@ impl RequestClient {
         let url = format!("{base_url}{}", request.path);
         let url_w_params = reqwest::Url::parse_with_params(&url, &req_form)?.to_string();
 
+        // println!("Request URL: {}", url_w_params.to_string());
+
         let method_req: Result<reqwest::RequestBuilder, RequestClientError> = match request.method {
             Method::GET => Ok(self.client.get(url_w_params)),
             Method::POST => Ok(self.client.post(url_w_params)),
@@ -113,6 +117,12 @@ impl RequestClient {
 
         let req = if let Some(data) = request.data {
             req.body(data)
+        } else {
+            req
+        };
+
+        let req = if let Some(access_token) = request.access_token {
+            req.bearer_auth(access_token)
         } else {
             req
         };
