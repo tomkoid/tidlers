@@ -1,12 +1,20 @@
 use std::collections::HashMap;
 
 use reqwest::Method;
+use tokio::sync::mpsc;
 
 use crate::{
     auth::init::TidalAuth,
     requests::{self, TidalRequest},
     responses::{AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum OAuthStatus {
+    Waiting,
+    Error(String),
+    Success,
+}
 
 impl TidalAuth {
     pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, requests::RequestClientError> {
@@ -41,6 +49,7 @@ impl TidalAuth {
         device_code: &str,
         expires_in: u64,
         interval: u64,
+        status_tx: Option<mpsc::UnboundedSender<OAuthStatus>>,
     ) -> Result<AuthResponse, requests::RequestClientError> {
         if self.is_token_auth() {
             eprintln!("Client secret provided, cannot use this function.");
@@ -69,7 +78,9 @@ impl TidalAuth {
             let json: Result<AuthResponse, _> = serde_json::from_slice(&body);
             match json {
                 Ok(json) => {
-                    println!("oauth check response: {json:?}");
+                    if let Some(tx) = &status_tx {
+                        let _ = tx.send(OAuthStatus::Success);
+                    }
                     self.access_token = Some(json.access_token.clone());
                     self.user_id = Some(json.user_id);
                     return Ok(json);
@@ -80,10 +91,14 @@ impl TidalAuth {
 
                     match json_waiting {
                         Ok(_) => {
-                            eprintln!("waiting for oauth..");
+                            if let Some(tx) = &status_tx {
+                                let _ = tx.send(OAuthStatus::Waiting);
+                            }
                         }
                         Err(e) => {
-                            eprintln!("waiting for oauth: error: {e}");
+                            if let Some(tx) = &status_tx {
+                                let _ = tx.send(OAuthStatus::Error(e.to_string()));
+                            }
                         }
                     }
                 }
