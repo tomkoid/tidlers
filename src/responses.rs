@@ -1,3 +1,19 @@
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[serde(bound(deserialize = "T: serde::de::DeserializeOwned"))]
+pub struct TidalGenericResponse<T>
+where
+    T: serde::de::DeserializeOwned + serde::Serialize,
+{
+    pub data: T,
+    pub links: TidalLinks,
+}
+
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub struct TidalLinks {
+    #[serde(rename = "self")]
+    pub self_link: String,
+}
+
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct AccessTokenResponse {
     pub scope: String,
@@ -104,33 +120,4 @@ pub struct AuthResponseWaiting {
     pub error: String,
     pub sub_status: u64,
     pub error_description: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UserInfoResponse {
-    pub data: UserData,
-    pub links: Links,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UserData {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub user_type: String,
-    pub attributes: UserAttributes,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UserAttributes {
-    pub username: String,
-    pub country: String,
-    pub email: String,
-    #[serde(rename = "emailVerified")]
-    pub email_verified: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Links {
-    #[serde(rename = "self")]
-    pub self_link: String,
 }

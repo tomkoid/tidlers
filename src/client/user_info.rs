@@ -1,10 +1,6 @@
-use crate::{client::tidal::TidalClient, requests::TidalRequest, responses::UserInfoResponse};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
-pub struct UserInfo {
-    pub user_id: String,
-    pub country_code: String,
-}
+use crate::{client::tidal::TidalClient, requests::TidalRequest, responses::TidalGenericResponse};
 
 impl TidalClient {
     pub async fn fetch_user_info(&mut self) -> Result<(), Box<dyn std::error::Error>> {
@@ -15,7 +11,7 @@ impl TidalClient {
         let resp = self.rq.request(req).await?;
         let body = resp.text().await?;
 
-        let json: UserInfoResponse = serde_json::from_str(&body)?;
+        let json: TidalGenericResponse<UserData> = serde_json::from_str(&body)?;
 
         let user_info = UserInfo {
             user_id: json.data.id,
@@ -26,4 +22,27 @@ impl TidalClient {
 
         Ok(())
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct UserInfo {
+    pub user_id: String,
+    pub country_code: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserData {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub user_type: String,
+    pub attributes: UserAttributes,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserAttributes {
+    pub username: String,
+    pub country: String,
+    pub email: String,
+    #[serde(rename = "emailVerified")]
+    pub email_verified: bool,
 }
