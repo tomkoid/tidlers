@@ -66,6 +66,9 @@ pub enum RequestClientError {
     Timeout,
     #[error("failed to parse response")]
     ParseError(String),
+
+    #[error("http status code error: {0}")]
+    StatusCode(reqwest::StatusCode),
 }
 
 impl RequestClient {
@@ -139,6 +142,12 @@ impl RequestClient {
 
         if req.status() == reqwest::StatusCode::UNAUTHORIZED {
             return Err(RequestClientError::Unauthorized);
+        }
+
+        if req.status() == reqwest::StatusCode::NOT_FOUND {
+            return Err(RequestClientError::StatusCode(
+                reqwest::StatusCode::NOT_FOUND,
+            ));
         }
 
         Ok(req)
