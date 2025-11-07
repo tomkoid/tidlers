@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use reqwest::Method;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     auth::client_credentials::get_client_credentials,
@@ -8,7 +9,7 @@ use crate::{
     responses::AccessTokenResponse,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TidalAuth {
     pub client_id: String,
     pub client_secret: String,
@@ -16,8 +17,14 @@ pub struct TidalAuth {
     pub access_token: Option<String>,
     pub user_id: Option<u64>,
 
+    #[serde(
+        skip_serializing,
+        skip_deserializing,
+        default = "auth_default_request_client"
+    )]
     pub rq: requests::RequestClient,
-    api_token_auth: bool,
+
+    pub api_token_auth: bool,
 }
 
 impl TidalAuth {
@@ -88,6 +95,7 @@ impl TidalAuth {
             Method::GET,
             format!("/users/{}/subscription", self.user_id.unwrap()),
         );
+
         let res = self.rq.request(req).await?;
         if res.status().is_success() {
             Ok(true)
@@ -104,7 +112,7 @@ impl TidalAuth {
 impl Default for TidalAuth {
     fn default() -> Self {
         let c_creds = get_client_credentials();
-        let rq = requests::RequestClient::new("https://api.tidal.com/v1/".to_string());
+        let rq = auth_default_request_client();
         Self {
             client_id: c_creds.0,
             client_secret: c_creds.1,
@@ -114,4 +122,8 @@ impl Default for TidalAuth {
             rq,
         }
     }
+}
+
+pub fn auth_default_request_client() -> requests::RequestClient {
+    requests::RequestClient::new("https://api.tidal.com/v1/".to_string())
 }
