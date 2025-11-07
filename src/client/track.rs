@@ -109,7 +109,7 @@ pub struct Artist {
     pub handle: Option<String>,
     #[serde(rename = "type")]
     pub artist_type: String,
-    pub picture: String,
+    pub picture: Option<String>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]

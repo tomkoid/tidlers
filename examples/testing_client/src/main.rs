@@ -13,7 +13,12 @@ async fn main() -> Result<()> {
     color_eyre::install()?;
 
     // handle authentication
-    let auth = handle_auth().await?;
+    let mut auth = handle_auth().await?;
+
+    // TODO: demonstrate token refresh if token is expired
+    println!("refreshing token..");
+    auth.refresh_access_token().await?;
+    println!("token refreshed.");
 
     // create tidal client
     let mut tidal = TidalClient::new(&auth);
@@ -24,6 +29,7 @@ async fn main() -> Result<()> {
         "status: {:?}",
         tidal.session.auth.check_login().await.is_ok()
     );
+
     println!("getting user info..");
     tidal.fetch_user_info().await?;
 
@@ -49,8 +55,11 @@ async fn main() -> Result<()> {
     let playlist_uuid = "28a73f00-5988-4621-aaa4-966c6eaea651";
     println!("getting playlist info for playlist uuid..");
     let playlist_info = tidal.get_playlist(playlist_uuid.to_string()).await?;
+    let playlist_items = tidal
+        .get_playlist_items(playlist_uuid.to_string(), Some(10), Some(0))
+        .await?;
     println!("playlist info: {:?}", playlist_info);
-    println!("playlist items: {:?}", "");
+    println!("playlist items: {:#?}", playlist_items);
 
     // println!("trying to logout..");
     // let logout = tidal.logout().await;
