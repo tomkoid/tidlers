@@ -34,7 +34,6 @@ impl TidalClient {
 
         let res = self.rq.request(req).await?;
         let body = res.text().await?;
-        println!("Refresh token response body: {}", body);
         let json: RefreshTokenResponse = serde_json::from_str(&body)?;
 
         // update the access token and refresh token
