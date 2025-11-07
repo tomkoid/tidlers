@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{client::tidal::TidalClient, requests::TidalRequest, responses::TidalGenericResponse};
+use crate::{
+    client::tidal::TidalClient, error::TidalError, requests::TidalRequest,
+    responses::TidalGenericResponse,
+};
 
 impl TidalClient {
-    pub async fn fetch_user_info(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn fetch_user_info(&mut self) -> Result<(), TidalError> {
         let url = "/users/me".to_string();
 
         let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());

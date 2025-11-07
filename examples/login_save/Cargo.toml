@@ -1,0 +1,11 @@
+[package]
+name = "login-save"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+tidlers.workspace = true
+color-eyre = "0.6.5"
+eyre = "0.6.12"
+tokio = { version = "1.46.1", features = ["full", "rt"] }

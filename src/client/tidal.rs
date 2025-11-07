@@ -1,6 +1,7 @@
 use crate::{
     auth::init::TidalAuth,
     client::user_info::UserInfo,
+    error::TidalError,
     page::TidalPage,
     requests::{self, RequestClient},
     session::TidalSession,
@@ -14,15 +15,6 @@ pub struct TidalClient {
     pub page: TidalPage,
 
     pub rq: requests::RequestClient,
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum TidalError {
-    #[error("not authenticated, either session and/or page doesn't have access token set")]
-    NotAuthenticated,
-
-    #[error("request error")]
-    RequestError(#[from] requests::RequestClientError),
 }
 
 impl TidalClient {
