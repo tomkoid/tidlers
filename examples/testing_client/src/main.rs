@@ -40,9 +40,11 @@ async fn main() -> Result<()> {
     }
 
     let track_id = "456686484";
-    println!("getting track info for track id..");
+    println!("getting track info and track mix for track id..");
     let track_info = tidal.get_track(track_id.to_string()).await?;
+    let track_mix = tidal.get_track_mix(track_id.to_string()).await?;
     println!("track info: {:#?}", track_info);
+    println!("track mix: {:?}", track_mix);
 
     // println!("trying to logout..");
     // let logout = tidal.logout().await;

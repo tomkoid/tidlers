@@ -20,6 +20,24 @@ impl TidalClient {
 
         Ok(serde_json::from_str(&body)?)
     }
+
+    pub async fn get_track_mix(&mut self, track_id: String) -> Result<TrackMixInfo, TidalError> {
+        let url = format!("/tracks/{}/mix", track_id);
+
+        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
+        let mut params = HashMap::new();
+        params.insert(
+            "countryCode".to_string(),
+            self.user_info.as_ref().unwrap().country_code.clone(),
+        );
+        req.params = Some(params);
+        req.access_token = self.session.auth.access_token.clone();
+
+        let resp = self.rq.request(req).await?;
+        let body = resp.text().await?;
+
+        Ok(serde_json::from_str(&body)?)
+    }
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -72,6 +90,11 @@ pub struct TrackInfo {
     pub artists: Vec<Artist>,
     pub album: Album,
     pub mixes: HashMap<String, String>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct TrackMixInfo {
+    pub id: String,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
