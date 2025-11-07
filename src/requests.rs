@@ -116,9 +116,7 @@ impl RequestClient {
             _ => Err(RequestClientError::InvalidMethod),
         };
 
-        let req = method_req?
-            .form(&req_form)
-            .header("User-Agent", self.user_agent.clone());
+        let req = method_req?.header("User-Agent", self.user_agent.clone());
 
         let req = if let Some(data) = request.data {
             req.body(data)
