@@ -1,11 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{client::tidal::TidalClient, requests::TidalRequest, responses::TidalGenericResponse};
+use crate::{
+    client::tidal::TidalClient, error::TidalError, requests::TidalRequest,
+    responses::TidalGenericResponse,
+};
 
 impl TidalClient {
     pub async fn get_arrival_mixes(
         &mut self,
-    ) -> Result<TidalGenericResponse<Vec<ArrivalMixData>>, Box<dyn std::error::Error>> {
+    ) -> Result<TidalGenericResponse<Vec<ArrivalMixData>>, TidalError> {
         let url = format!(
             "/userRecommendations/{}/relationships/newArrivalMixes",
             self.user_info.as_ref().unwrap().user_id
