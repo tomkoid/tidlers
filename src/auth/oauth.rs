@@ -31,6 +31,7 @@ impl TidalAuth {
 
         let mut req = TidalRequest::new(Method::POST, "/device_authorization".to_string());
         req.form = Some(vec![form]);
+        req.send_params_as_form = true;
         req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
 
         let res = self.rq.request(req).await?;
@@ -68,6 +69,7 @@ impl TidalAuth {
 
         let mut req = TidalRequest::new(Method::POST, "/token".to_string());
         req.form = Some(vec![form]);
+        req.send_params_as_form = true;
         req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
 
         let mut expiry = expires_in;

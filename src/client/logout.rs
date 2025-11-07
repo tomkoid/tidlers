@@ -6,7 +6,6 @@ impl TidalClient {
 
         let mut req = TidalRequest::new(reqwest::Method::POST, url.clone());
         req.access_token = self.session.auth.access_token.clone();
-        req.base_url = Some("https://api.tidal.com/v1".to_string());
 
         let resp = self.rq.request(req).await?;
         let status = resp.status();

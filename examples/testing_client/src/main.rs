@@ -33,22 +33,22 @@ async fn main() -> Result<()> {
     let subscription = tidal.subscription().await?;
     println!("subscription info: {:#?}", subscription);
 
-    // println!("getting new arrival mixes..");
-    // let am = tidal.get_arrival_mixes().await?;
-    // for mix in am.data {
-    //     println!("mix: {} - id: {}", mix.data_type, mix.id);
-    // }
+    println!("getting new arrival mixes..");
+    let am = tidal.get_arrival_mixes().await?;
+    for mix in am.data {
+        println!("mix: {} - id: {}", mix.data_type, mix.id);
+    }
 
-    // println!("trying to logout..");
-    // let logout = tidal.logout().await;
-    // if logout.is_ok() {
-    //     println!("successfully logged out!");
-    //
-    //     // invalidate saved session data
-    //     remove_session_data();
-    // } else {
-    //     println!("failed to logout: {:?}", logout.err());
-    // }
+    println!("trying to logout..");
+    let logout = tidal.logout().await;
+    if logout.is_ok() {
+        println!("successfully logged out!");
+
+        // invalidate saved session data
+        remove_session_data();
+    } else {
+        println!("failed to logout: {:?}", logout.err());
+    }
 
     Ok(())
 }

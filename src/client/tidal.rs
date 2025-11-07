@@ -18,9 +18,12 @@ pub struct TidalClient {
 }
 
 impl TidalClient {
+    pub const API_V1_LOCATION: &'static str = "https://api.tidal.com/v1";
+    pub const OPEN_API_V2_LOCATION: &'static str = "https://openapi.tidal.com/v2";
+
     pub fn new(credentials: &TidalAuth) -> TidalClient {
         let session = TidalSession::new(credentials);
-        let rq = RequestClient::new("https://openapi.tidal.com/v2".to_string());
+        let rq = RequestClient::new(Self::API_V1_LOCATION.to_string());
         TidalClient {
             user_info: None,
             session,

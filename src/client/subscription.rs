@@ -15,9 +15,8 @@ impl TidalClient {
             "countryCode".to_string(),
             self.user_info.as_ref().unwrap().country_code.clone(),
         );
-        req.form = Some(vec![params]);
+        req.params = Some(params);
         req.access_token = self.session.auth.access_token.clone();
-        req.base_url = Some("https://api.tidal.com/v1".to_string());
 
         let resp = self.rq.request(req).await?;
         let body = resp.text().await?;

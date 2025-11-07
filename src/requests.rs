@@ -14,11 +14,13 @@ pub struct TidalRequest {
     pub method: reqwest::Method,
     pub path: String,
     pub form: Option<Vec<HashMap<String, String>>>,
+    pub params: Option<HashMap<String, String>>,
     pub basic_auth: Option<BasicAuth>,
     pub access_token: Option<String>,
     pub data: Option<String>,
     pub headers: Option<String>,
     pub base_url: Option<String>,
+    pub send_params_as_form: bool,
     pub enable_useful_params: bool,
 }
 
@@ -39,6 +41,7 @@ impl TidalRequest {
         TidalRequest {
             method,
             path,
+            params: None,
             form: None,
             basic_auth: None,
             access_token: None,
@@ -46,6 +49,7 @@ impl TidalRequest {
             headers: None,
             base_url: None,
             enable_useful_params: false,
+            send_params_as_form: false,
         }
     }
 }
@@ -86,6 +90,7 @@ impl RequestClient {
         request: TidalRequest,
     ) -> Result<reqwest::Response, RequestClientError> {
         let mut req_form: HashMap<String, String> = HashMap::new();
+        let mut req_params: HashMap<String, String> = HashMap::new();
 
         if request.enable_useful_params {
             req_form.insert("session_id".to_string(), "d".to_string());
@@ -93,11 +98,17 @@ impl RequestClient {
             req_form.insert("limit".to_string(), "10".to_string());
         }
 
-        if let Some(params) = request.form {
-            for map in params {
-                for (key, value) in map {
+        if let Some(ref form) = request.form {
+            for map in form {
+                for (key, value) in map.clone() {
                     req_form.insert(key, value);
                 }
+            }
+        }
+
+        if let Some(params) = request.params {
+            for (key, value) in params {
+                req_params.insert(key, value);
             }
         }
 
@@ -106,7 +117,7 @@ impl RequestClient {
         let base_url = request.base_url.unwrap_or(self.base_url.clone());
 
         let url = format!("{base_url}{}", request.path);
-        let url_w_params = reqwest::Url::parse_with_params(&url, &req_form)?.to_string();
+        let url_w_params = reqwest::Url::parse_with_params(&url, &req_params)?.to_string();
 
         // println!("Request URL: {}", url_w_params.to_string());
 
@@ -120,6 +131,12 @@ impl RequestClient {
 
         let req = if let Some(data) = request.data {
             req.body(data)
+        } else {
+            req
+        };
+
+        let req = if request.form.is_some() {
+            req.form(&req_form)
         } else {
             req
         };
