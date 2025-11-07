@@ -39,16 +39,21 @@ async fn main() -> Result<()> {
         println!("mix: {} - id: {}", mix.data_type, mix.id);
     }
 
-    println!("trying to logout..");
-    let logout = tidal.logout().await;
-    if logout.is_ok() {
-        println!("successfully logged out!");
+    let track_id = "456686484";
+    println!("getting track info for track id..");
+    let track_info = tidal.get_track(track_id.to_string()).await?;
+    println!("track info: {:#?}", track_info);
 
-        // invalidate saved session data
-        remove_session_data();
-    } else {
-        println!("failed to logout: {:?}", logout.err());
-    }
+    // println!("trying to logout..");
+    // let logout = tidal.logout().await;
+    // if logout.is_ok() {
+    //     println!("successfully logged out!");
+    //
+    //     // invalidate saved session data
+    //     remove_session_data();
+    // } else {
+    //     println!("failed to logout: {:?}", logout.err());
+    // }
 
     Ok(())
 }
