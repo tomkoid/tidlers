@@ -89,7 +89,7 @@ pub struct TrackInfo {
     pub artist: Artist,
     pub artists: Vec<Artist>,
     pub album: Album,
-    pub mixes: HashMap<String, String>,
+    pub mixes: Option<HashMap<String, String>>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
