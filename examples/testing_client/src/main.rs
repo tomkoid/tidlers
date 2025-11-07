@@ -46,6 +46,12 @@ async fn main() -> Result<()> {
     println!("track info: {:#?}", track_info);
     println!("track mix: {:?}", track_mix);
 
+    let playlist_uuid = "28a73f00-5988-4621-aaa4-966c6eaea651";
+    println!("getting playlist info for playlist uuid..");
+    let playlist_info = tidal.get_playlist(playlist_uuid.to_string()).await?;
+    println!("playlist info: {:?}", playlist_info);
+    println!("playlist items: {:?}", "");
+
     // println!("trying to logout..");
     // let logout = tidal.logout().await;
     // if logout.is_ok() {
