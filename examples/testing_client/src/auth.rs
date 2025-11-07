@@ -6,7 +6,7 @@ use crate::{
     save::{get_session_data, save_session_data},
 };
 
-pub async fn handle_auth() -> Result<TidalAuth> {
+pub async fn handle_auth() -> Result<Option<TidalAuth>> {
     let mut auth: TidalAuth;
 
     // check for saved session data
@@ -14,8 +14,8 @@ pub async fn handle_auth() -> Result<TidalAuth> {
 
     // if we have saved session data, load it, otherwise do oauth flow
     if saved_session_data.is_some() {
-        println!("found saved session data, loading...");
-        auth = TidalAuth::from_serialized(&saved_session_data.unwrap())?;
+        println!("found saved session data");
+        return Ok(None);
     } else {
         auth = TidalAuth::new();
         let oauth = auth.get_oauth_link().await?;
@@ -39,11 +39,7 @@ pub async fn handle_auth() -> Result<TidalAuth> {
             .await?;
 
         println!("auth response: {auth_res:?}");
-
-        // serialize and save session data
-        let session_data = auth.get_auth_json();
-        save_session_data(&session_data);
     }
 
-    Ok(auth)
+    Ok(Some(auth))
 }

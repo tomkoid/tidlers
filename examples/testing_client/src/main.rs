@@ -12,16 +12,20 @@ async fn main() -> Result<()> {
     // better error reporting
     color_eyre::install()?;
 
-    // handle authentication
-    let mut auth = handle_auth().await?;
+    // handle authentication and create Tidal client
+    let mut tidal = if let Some(auth) = handle_auth().await? {
+        TidalClient::new(&auth)
+    } else {
+        let saved_session_data = save::get_session_data().unwrap();
+        let auth = TidalClient::from_serialized(&saved_session_data)?;
+        let mut cl = TidalClient::new(&auth);
 
-    // TODO: demonstrate token refresh if token is expired
-    println!("refreshing token..");
-    auth.refresh_access_token().await?;
-    println!("token refreshed.");
+        println!("refreshing token..");
+        cl.refresh_access_token().await?;
+        println!("token refreshed");
 
-    // create tidal client
-    let mut tidal = TidalClient::new(&auth);
+        cl
+    };
 
     println!("logged in");
     println!("checking login..");
