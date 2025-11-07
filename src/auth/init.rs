@@ -15,6 +15,7 @@ pub struct TidalAuth {
     pub client_secret: String,
 
     pub access_token: Option<String>,
+    pub refresh_token: Option<String>,
     pub user_id: Option<u64>,
 
     #[serde(
@@ -117,6 +118,7 @@ impl Default for TidalAuth {
             client_id: c_creds.0,
             client_secret: c_creds.1,
             access_token: None,
+            refresh_token: None,
             user_id: None,
             api_token_auth: false,
             rq,

@@ -84,6 +84,7 @@ impl TidalAuth {
                         let _ = tx.send(OAuthStatus::Success);
                     }
                     self.access_token = Some(json.access_token.clone());
+                    self.refresh_token = Some(json.refresh_token.clone());
                     self.user_id = Some(json.user_id);
                     return Ok(json);
                 }
