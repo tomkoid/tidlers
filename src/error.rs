@@ -19,4 +19,7 @@ pub enum TidalError {
 
     #[error("invalid response from API: {0}")]
     InvalidResponse(String),
+
+    #[error("logout failed: {0}")]
+    Logout(String),
 }

@@ -1,7 +1,7 @@
 use color_eyre::eyre::Result;
 use tidlers::client::tidal::TidalClient;
 
-use crate::auth::handle_auth;
+use crate::{auth::handle_auth, save::remove_session_data};
 
 mod auth;
 mod oauth_handler;
@@ -33,6 +33,17 @@ async fn main() -> Result<()> {
     let am = tidal.get_arrival_mixes().await?;
     for mix in am.data {
         println!("mix: {} - id: {}", mix.data_type, mix.id);
+    }
+
+    println!("trying to logout..");
+    let logout = tidal.logout().await;
+    if logout.is_ok() {
+        println!("successfully logged out!");
+
+        // invalidate saved session data
+        remove_session_data();
+    } else {
+        println!("failed to logout: {:?}", logout.err());
     }
 
     Ok(())

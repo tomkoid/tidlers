@@ -9,7 +9,7 @@ pub struct TidalSession {
 
 impl TidalSession {
     pub fn new(credentials: &TidalAuth) -> TidalSession {
-        let api_v1_location = "https://api.tidal.com/v1/".to_string();
+        let api_v1_location = "https://api.tidal.com/v1".to_string();
         TidalSession {
             rq: RequestClient::new(api_v1_location),
             config: TidalConfig::new(),
