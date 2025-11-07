@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     client::{
+        api::track::{Artist, MediaMetadata},
         tidal::TidalClient,
-        track::{Artist, MediaMetadata},
     },
     error::TidalError,
     requests::TidalRequest,

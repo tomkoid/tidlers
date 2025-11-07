@@ -1,6 +1,6 @@
 use crate::{
     auth::init::TidalAuth,
-    client::user_info::UserInfo,
+    client::api::user_info::UserInfo,
     error::TidalError,
     page::TidalPage,
     requests::{self, RequestClient},
