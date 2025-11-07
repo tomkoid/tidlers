@@ -8,6 +8,7 @@ impl TidalAuth {
             client_id: auth_json.client_id,
             client_secret: auth_json.client_secret,
             access_token: auth_json.access_token,
+            refresh_token: auth_json.refresh_token,
             user_id: auth_json.user_id,
             api_token_auth: auth_json.api_token_auth,
             rq: auth_json.rq,

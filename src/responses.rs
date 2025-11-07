@@ -22,6 +22,18 @@ pub struct AccessTokenResponse {
     pub expires_in: u64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RefreshTokenResponse {
+    pub scope: String,
+    pub user: User,
+    #[serde(rename = "clientName")]
+    pub client_name: String,
+    pub token_type: String,
+    pub access_token: String,
+    pub expires_in: i32,
+    pub user_id: i64,
+}
+
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct OAuthLinkResponse {
     #[serde(rename = "deviceCode")]
