@@ -60,6 +60,8 @@ pub enum RequestClientError {
     InvalidMethod,
     #[error("invalid credentials")]
     InvalidCredentials,
+    #[error("unauthorized - invalid credentials or can not access resource")]
+    Unauthorized,
     #[error("timeout")]
     Timeout,
     #[error("failed to parse response")]
@@ -134,6 +136,10 @@ impl RequestClient {
         };
 
         let req = req.send().await?;
+
+        if req.status() == reqwest::StatusCode::UNAUTHORIZED {
+            return Err(RequestClientError::Unauthorized);
+        }
 
         Ok(req)
         // Ok(())
