@@ -1,6 +1,7 @@
 use crate::{
-    auth::init::TidalAuth, client::models::track::AudioQuality, config::TidalConfig,
-    requests::RequestClient,
+    auth::init::TidalAuth,
+    client::models::playback::{AudioQuality, PlaybackMode},
+    config::TidalConfig,
 };
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -10,10 +11,17 @@ pub struct TidalSession {
 
     #[serde(default = "default_audio_quality")]
     pub audio_quality: AudioQuality,
+
+    #[serde(default = "default_playback_mode")]
+    pub playback_mode: PlaybackMode,
 }
 
 fn default_audio_quality() -> AudioQuality {
     AudioQuality::High
+}
+
+fn default_playback_mode() -> PlaybackMode {
+    PlaybackMode::Stream
 }
 
 impl TidalSession {
@@ -24,6 +32,7 @@ impl TidalSession {
             auth: credentials.clone(),
 
             audio_quality: AudioQuality::High,
+            playback_mode: PlaybackMode::Stream,
         }
     }
 }

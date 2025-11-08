@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    fmt::{self, Display, Formatter},
+};
 
 use crate::client::models::{album::Album, artist::Artist, media::MediaMetadata};
 
@@ -59,23 +62,30 @@ pub struct Track {
     pub item_uuid: Option<String>,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub enum AudioQuality {
-    Low,
-    High,
-    Lossless,
-    HiRes,
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackPlaybackInfoPostPaywallResponse {
+    pub track_id: u64,
+    pub asset_presentation: String,
+    pub audio_mode: String,
+    pub audio_quality: String,
+    pub manifest_mime_type: String,
+    pub manifest_hash: String,
+    #[serde(skip_deserializing, default)]
+    pub manifest: Option<TrackManifest>,
+    pub album_replay_gain: f64,
+    pub album_peak_amplitude: f64,
+    pub track_replay_gain: f64,
+    pub track_peak_amplitude: f64,
 }
 
-impl ToString for AudioQuality {
-    fn to_string(&self) -> String {
-        match self {
-            AudioQuality::Low => "LOW".to_string(),
-            AudioQuality::High => "HIGH".to_string(),
-            AudioQuality::Lossless => "LOSSLESS".to_string(),
-            AudioQuality::HiRes => "HI_RES".to_string(),
-        }
-    }
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackManifest {
+    pub mime_type: String,
+    pub codecs: String,
+    pub encryption_type: String,
+    pub urls: Vec<String>,
 }
 
 // #[derive(Debug, Serialize, Deserialize)]

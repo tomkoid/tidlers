@@ -1,5 +1,5 @@
 use color_eyre::eyre::Result;
-use tidlers::client::tidal::TidalClient;
+use tidlers::client::{models::playback::AudioQuality, tidal::TidalClient};
 
 use crate::{
     auth::handle_auth,
@@ -60,7 +60,7 @@ async fn main() -> Result<()> {
         println!("mix: {} - id: {}", mix.data_type, mix.id);
     }
 
-    let track_id = "456686484";
+    let track_id = "66035607";
     println!("getting track info and track mix for track id..");
     let track_info = tidal.get_track(track_id.to_string()).await?;
     let track_mix = tidal.get_track_mix(track_id.to_string()).await?;
@@ -84,6 +84,13 @@ async fn main() -> Result<()> {
         .await?;
     println!("album info: {:?}", album_info);
     println!("album items: {:#?}", album_items);
+
+    println!("getting playback info for track id..");
+    tidal.set_audio_quality(AudioQuality::HiRes);
+    let playback_info = tidal
+        .get_track_postpaywall_playback_info(track_id.to_string())
+        .await?;
+    println!("playback info: {:#?}", playback_info);
 
     // println!("trying to logout..");
     // let logout = tidal.logout().await;

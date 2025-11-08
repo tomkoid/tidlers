@@ -28,4 +28,10 @@ pub enum TidalError {
 
     #[error("failed to parse integer: {0}")]
     ParseIntError(#[from] std::num::ParseIntError),
+
+    #[error("base64 decode error: {0}")]
+    Base64DecodeError(#[from] base64::DecodeError),
+
+    #[error("string from utf8 error: {0}")]
+    StringFromUTF8Error(#[from] std::string::FromUtf8Error),
 }
