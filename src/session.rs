@@ -8,7 +8,12 @@ pub struct TidalSession {
     pub config: TidalConfig,
     pub auth: TidalAuth,
 
+    #[serde(default = "default_audio_quality")]
     pub audio_quality: AudioQuality,
+}
+
+fn default_audio_quality() -> AudioQuality {
+    AudioQuality::High
 }
 
 impl TidalSession {
