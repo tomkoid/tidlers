@@ -65,7 +65,6 @@ impl TidalClient {
 
         let resp = self.rq.request(req).await?;
         let body = resp.text().await?;
-        // println!("DEBUG: {}", body);
         let parsed = serde_json::from_str::<serde_json::Value>(&body)?;
 
         let manifest_decoded =

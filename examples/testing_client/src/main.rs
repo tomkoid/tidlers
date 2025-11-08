@@ -1,5 +1,8 @@
 use color_eyre::eyre::Result;
-use tidlers::client::{models::playback::AudioQuality, tidal::TidalClient};
+use tidlers::client::{
+    models::playback::{AudioQuality, PlaybackMode},
+    tidal::TidalClient,
+};
 
 use crate::{
     auth::handle_auth,
@@ -36,8 +39,6 @@ async fn main() -> Result<()> {
         println!("oauth flow complete");
     }
 
-    save_session_data(&tidal.get_json());
-
     println!("logged in");
     println!("checking login..");
     println!(
@@ -47,6 +48,7 @@ async fn main() -> Result<()> {
 
     println!("getting new user info..");
     tidal.refresh_user_info().await?;
+    save_session_data(&tidal.get_json());
 
     println!("user info: {:#?}", tidal.user_info);
 
@@ -60,7 +62,7 @@ async fn main() -> Result<()> {
         println!("mix: {} - id: {}", mix.data_type, mix.id);
     }
 
-    let track_id = "66035607";
+    let track_id = "118389958";
     println!("getting track info and track mix for track id..");
     let track_info = tidal.get_track(track_id.to_string()).await?;
     let track_mix = tidal.get_track_mix(track_id.to_string()).await?;

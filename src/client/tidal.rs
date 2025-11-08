@@ -1,6 +1,9 @@
 use crate::{
     auth::init::TidalAuth,
-    client::models::{playback::AudioQuality, user::User},
+    client::models::{
+        playback::{AudioQuality, PlaybackMode},
+        user::User,
+    },
     error::TidalError,
     page::TidalPage,
     requests::{self, RequestClient},
@@ -47,6 +50,10 @@ impl TidalClient {
 
     pub fn set_audio_quality(&mut self, quality: AudioQuality) {
         self.session.audio_quality = quality;
+    }
+
+    pub fn set_playback_mode(&mut self, playback_mode: PlaybackMode) {
+        self.session.playback_mode = playback_mode;
     }
 
     pub async fn home(&self) -> Result<(), TidalError> {
