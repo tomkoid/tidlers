@@ -5,9 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     auth::client_credentials::get_client_credentials,
-    error::TidalError,
     requests::{self, TidalRequest},
-    responses::{AccessTokenResponse, RefreshTokenResponse},
+    responses::AccessTokenResponse,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
