@@ -59,6 +59,25 @@ pub struct Track {
     pub item_uuid: Option<String>,
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum AudioQuality {
+    Low,
+    High,
+    Lossless,
+    HiRes,
+}
+
+impl ToString for AudioQuality {
+    fn to_string(&self) -> String {
+        match self {
+            AudioQuality::Low => "LOW".to_string(),
+            AudioQuality::High => "HIGH".to_string(),
+            AudioQuality::Lossless => "LOSSLESS".to_string(),
+            AudioQuality::HiRes => "HI_RES".to_string(),
+        }
+    }
+}
+
 // #[derive(Debug, Serialize, Deserialize)]
 // #[serde(rename_all = "camelCase")]
 // pub struct TrackOld {

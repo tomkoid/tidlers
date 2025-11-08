@@ -1,9 +1,14 @@
-use crate::{auth::init::TidalAuth, config::TidalConfig, requests::RequestClient};
+use crate::{
+    auth::init::TidalAuth, client::models::track::AudioQuality, config::TidalConfig,
+    requests::RequestClient,
+};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TidalSession {
     pub config: TidalConfig,
     pub auth: TidalAuth,
+
+    pub audio_quality: AudioQuality,
 }
 
 impl TidalSession {
@@ -12,6 +17,8 @@ impl TidalSession {
         TidalSession {
             config: TidalConfig::new(),
             auth: credentials.clone(),
+
+            audio_quality: AudioQuality::High,
         }
     }
 }
