@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+use crate::client::models::{artist::Artist, track::Track};
+
+/// Used generically to represent an album in various responses
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Album {
@@ -9,6 +12,60 @@ pub struct Album {
     pub vibrant_color: Option<String>,
     pub video_cover: Option<String>,
     pub release_date: Option<String>,
+}
+
+/// Response from TIDAL when requesting album info
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbumInfoResponse {
+    pub id: i64,
+    pub title: String,
+    pub duration: u64,
+    pub stream_ready: bool,
+    pub pay_to_stream: bool,
+    pub ad_supported_stream_ready: bool,
+    pub dj_ready: bool,
+    pub stem_ready: bool,
+    pub stream_start_date: String,
+    pub allow_streaming: bool,
+    pub premium_streaming_only: bool,
+    pub number_of_tracks: u32,
+    pub number_of_videos: u32,
+    pub number_of_volumes: u32,
+    pub release_date: String,
+    pub copyright: String,
+    #[serde(rename = "type")]
+    pub album_type: String,
+    pub version: Option<String>,
+    pub url: String,
+    pub cover: String,
+    pub vibrant_color: Option<String>,
+    pub video_cover: Option<String>,
+    pub explicit: bool,
+    pub upc: String,
+    pub popularity: u32,
+    pub audio_quality: String,
+    pub audio_modes: Vec<String>,
+    pub upload: bool,
+    pub artist: Artist,
+    pub artists: Vec<Artist>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbumItemsResponse {
+    pub limit: i32,
+    pub offset: i32,
+    pub total_number_of_items: i32,
+    pub items: Vec<AlbumItem>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbumItem {
+    pub item: Track,
+    #[serde(rename = "type")]
+    pub album_type: String,
 }
 
 impl Album {

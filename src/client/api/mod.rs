@@ -1,3 +1,4 @@
+pub mod album;
 pub mod arrival_mixes;
 pub mod logout;
 pub mod playlist;

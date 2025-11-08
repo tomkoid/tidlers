@@ -76,6 +76,15 @@ async fn main() -> Result<()> {
     println!("playlist info: {:?}", playlist_info);
     println!("playlist items: {:#?}", playlist_items);
 
+    let album_id = "341764695";
+    println!("getting album info and items for album id..");
+    let album_info = tidal.get_album(album_id.to_string()).await?;
+    let album_items = tidal
+        .get_album_items(album_id.to_string(), Some(10), Some(0))
+        .await?;
+    println!("album info: {:?}", album_info);
+    println!("album items: {:#?}", album_items);
+
     // println!("trying to logout..");
     // let logout = tidal.logout().await;
     // if logout.is_ok() {
