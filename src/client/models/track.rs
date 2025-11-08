@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    fmt::{self, Display, Formatter},
-};
+use std::collections::HashMap;
 
 use crate::client::models::{album::Album, artist::Artist, media::MediaMetadata};
 
@@ -73,19 +70,87 @@ pub struct TrackPlaybackInfoPostPaywallResponse {
     pub manifest_hash: String,
     #[serde(skip_deserializing, default)]
     pub manifest: Option<TrackManifest>,
+    #[serde(skip_deserializing, default)]
+    pub manifest_parsed: Option<ManifestType>,
     pub album_replay_gain: f64,
     pub album_peak_amplitude: f64,
     pub track_replay_gain: f64,
     pub track_peak_amplitude: f64,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+impl TrackPlaybackInfoPostPaywallResponse {
+    pub fn get_stream_urls(&self) -> Option<Vec<String>> {
+        self.manifest_parsed.as_ref().map(|m| match m {
+            ManifestType::Json(json_manifest) => json_manifest.urls.clone(),
+            ManifestType::Dash(dash_manifest) => dash_manifest.urls.clone(),
+        })
+    }
+
+    pub fn get_primary_url(&self) -> Option<String> {
+        self.get_stream_urls()
+            .and_then(|urls| urls.into_iter().next())
+    }
+
+    pub fn get_mime_type(&self) -> Option<String> {
+        self.manifest_parsed.as_ref().map(|m| match m {
+            ManifestType::Json(json_manifest) => json_manifest.mime_type.clone(),
+            ManifestType::Dash(dash_manifest) => dash_manifest.mime_type.clone(),
+        })
+    }
+
+    pub fn get_codecs(&self) -> Option<String> {
+        self.manifest_parsed.as_ref().map(|m| match m {
+            ManifestType::Json(json_manifest) => json_manifest.codecs.clone(),
+            ManifestType::Dash(dash_manifest) => dash_manifest.codecs.clone(),
+        })
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackManifest {
     pub mime_type: String,
     pub codecs: String,
     pub encryption_type: String,
     pub urls: Vec<String>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub enum ManifestType {
+    Json(TrackManifest),
+    Dash(DashManifest),
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct DashManifest {
+    pub mime_type: String,
+    pub codecs: String,
+    pub urls: Vec<String>,
+    pub bitrate: Option<u32>,
+    pub initialization_url: Option<String>,
+    pub media_url_template: Option<String>,
+}
+
+impl DashManifest {
+    /// Get the initialization segment URL (for DASH streaming)
+    pub fn get_init_url(&self) -> Option<&String> {
+        self.initialization_url
+            .as_ref()
+            .or_else(|| self.urls.first())
+    }
+
+    /// Get the media segment URL template (contains $Number$ placeholder)
+    pub fn get_media_template(&self) -> Option<&String> {
+        self.media_url_template
+            .as_ref()
+            .or_else(|| self.urls.get(1))
+    }
+
+    /// Get a specific segment URL by replacing $Number$ with the segment number
+    pub fn get_segment_url(&self, segment_number: u32) -> Option<String> {
+        self.get_media_template()
+            .map(|template| template.replace("$Number$", &segment_number.to_string()))
+    }
 }
 
 // #[derive(Debug, Serialize, Deserialize)]

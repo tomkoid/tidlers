@@ -2,4 +2,5 @@
 
 /.env
 /session.json
+/*.mp4
 /token.txt

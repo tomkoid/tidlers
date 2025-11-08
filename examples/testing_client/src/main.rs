@@ -62,7 +62,7 @@ async fn main() -> Result<()> {
         println!("mix: {} - id: {}", mix.data_type, mix.id);
     }
 
-    let track_id = "118389958";
+    let track_id = "66035607";
     println!("getting track info and track mix for track id..");
     let track_info = tidal.get_track(track_id.to_string()).await?;
     let track_mix = tidal.get_track_mix(track_id.to_string()).await?;

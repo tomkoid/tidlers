@@ -34,4 +34,7 @@ pub enum TidalError {
 
     #[error("string from utf8 error: {0}")]
     StringFromUTF8Error(#[from] std::string::FromUtf8Error),
+
+    #[error("{0}")]
+    Other(String),
 }

@@ -1,13 +1,18 @@
 use std::collections::HashMap;
 
 use base64::{Engine, engine::general_purpose};
+use quick_xml::Reader;
+use quick_xml::events::Event;
 
 use crate::{
     client::{
         models::{
             mixes::TrackMixInfo,
             playback::AssetPresentation,
-            track::{Track, TrackManifest, TrackPlaybackInfoPostPaywallResponse},
+            track::{
+                DashManifest, ManifestType, Track, TrackManifest,
+                TrackPlaybackInfoPostPaywallResponse,
+            },
         },
         tidal::TidalClient,
     },
@@ -32,6 +37,108 @@ impl TidalClient {
         let body = resp.text().await?;
 
         Ok(serde_json::from_str(&body)?)
+    }
+
+    fn parse_dash_manifest(xml: &str) -> Result<DashManifest, TidalError> {
+        let mut reader = Reader::from_str(xml);
+        reader.config_mut().trim_text(true);
+
+        let mut urls = Vec::new();
+        let mut mime_type = String::new();
+        let mut codecs = String::new();
+        let mut bitrate = None;
+        let mut buf = Vec::new();
+        let mut init_url = None;
+        let mut media_url = None;
+
+        loop {
+            match reader.read_event_into(&mut buf) {
+                Ok(Event::Empty(e)) | Ok(Event::Start(e)) => match e.name().as_ref() {
+                    b"AdaptationSet" => {
+                        for attr in e.attributes() {
+                            if let Ok(attr) = attr {
+                                if attr.key.as_ref() == b"mimeType" {
+                                    mime_type = String::from_utf8_lossy(&attr.value).to_string();
+                                }
+                            }
+                        }
+                    }
+                    b"Representation" => {
+                        for attr in e.attributes() {
+                            if let Ok(attr) = attr {
+                                match attr.key.as_ref() {
+                                    b"codecs" => {
+                                        codecs = String::from_utf8_lossy(&attr.value).to_string();
+                                    }
+                                    b"bandwidth" => {
+                                        bitrate = String::from_utf8_lossy(&attr.value)
+                                            .parse::<u32>()
+                                            .ok();
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                    b"SegmentTemplate" => {
+                        for attr in e.attributes() {
+                            if let Ok(attr) = attr {
+                                match attr.key.as_ref() {
+                                    b"initialization" => {
+                                        init_url =
+                                            Some(String::from_utf8_lossy(&attr.value).to_string());
+                                    }
+                                    b"media" => {
+                                        media_url =
+                                            Some(String::from_utf8_lossy(&attr.value).to_string());
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                    b"BaseURL" => {
+                        if let Ok(Event::Text(e)) = reader.read_event_into(&mut buf) {
+                            let url = String::from_utf8_lossy(e.as_ref()).to_string();
+                            if !url.is_empty() {
+                                urls.push(url);
+                            }
+                        }
+                    }
+                    _ => {}
+                },
+                Ok(Event::Eof) => break,
+                Err(e) => return Err(TidalError::Other(format!("XML parsing error: {}", e))),
+                _ => {}
+            }
+            buf.clear();
+        }
+
+        // If we found SegmentTemplate URLs, add them
+        let initialization_url = init_url.clone();
+        let media_url_template = media_url.clone();
+
+        if let Some(init) = init_url {
+            urls.push(init);
+        }
+        if let Some(media) = media_url {
+            urls.push(media);
+        }
+
+        if urls.is_empty() {
+            return Err(TidalError::Other(
+                "No URLs found in DASH manifest".to_string(),
+            ));
+        }
+
+        Ok(DashManifest {
+            mime_type,
+            codecs,
+            urls,
+            bitrate,
+            initialization_url,
+            media_url_template,
+        })
     }
 
     pub async fn get_track_postpaywall_playback_info(
@@ -73,9 +180,25 @@ impl TidalClient {
 
         let mut response: TrackPlaybackInfoPostPaywallResponse =
             serde_json::from_str::<TrackPlaybackInfoPostPaywallResponse>(&body)?;
-        response.manifest = Some(serde_json::from_str::<TrackManifest>(
-            &manifest_decoded_str,
-        )?);
+
+        // Try to parse as JSON first (for LOW, HIGH, LOSSLESS)
+        if let Ok(json_manifest) = serde_json::from_str::<TrackManifest>(&manifest_decoded_str) {
+            response.manifest = Some(json_manifest.clone());
+            response.manifest_parsed = Some(ManifestType::Json(json_manifest));
+        } else {
+            // If JSON parsing fails, try DASH XML (for HiRes)
+            match Self::parse_dash_manifest(&manifest_decoded_str) {
+                Ok(dash_manifest) => {
+                    response.manifest_parsed = Some(ManifestType::Dash(dash_manifest));
+                }
+                Err(e) => {
+                    return Err(TidalError::Other(format!(
+                        "Failed to parse manifest as JSON or DASH: {}",
+                        e
+                    )));
+                }
+            }
+        }
 
         Ok(response)
     }
