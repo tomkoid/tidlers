@@ -1,19 +1,20 @@
 use crate::{
     auth::init::TidalAuth,
-    client::models::user::UserInfo,
+    client::models::user::{User, UserInfo},
     error::TidalError,
     page::TidalPage,
     requests::{self, RequestClient},
     session::TidalSession,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TidalClient {
-    pub user_info: Option<UserInfo>,
+    pub user_info: Option<User>,
 
     pub session: TidalSession,
     pub page: TidalPage,
 
+    #[serde(skip_serializing, skip_deserializing)]
     pub rq: requests::RequestClient,
 }
 
@@ -51,5 +52,11 @@ impl TidalClient {
         self.page.r_get("pages/home");
         Ok(())
         // Ok(self.page.get("pages/home").await?)
+    }
+}
+
+impl Default for TidalClient {
+    fn default() -> Self {
+        Self::new(&TidalAuth::new())
     }
 }

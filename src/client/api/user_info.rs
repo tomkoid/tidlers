@@ -1,6 +1,6 @@
 use crate::{
     client::{
-        models::user::{UserData, UserInfo},
+        models::user::{User, UserData, UserInfo},
         tidal::TidalClient,
     },
     error::TidalError,
@@ -9,7 +9,7 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn fetch_user_info(&mut self) -> Result<(), TidalError> {
+    pub async fn refresh_user_info(&mut self) -> Result<(), TidalError> {
         let url = "/users/me".to_string();
 
         let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
@@ -20,12 +20,15 @@ impl TidalClient {
 
         let json: TidalGenericResponse<UserData> = serde_json::from_str(&body)?;
 
-        let user_info = UserInfo {
-            user_id: json.data.id,
+        self.user_info = Some(User {
+            user_id: json.data.id.parse()?,
+            username: json.data.attributes.username,
+            email: json.data.attributes.email,
             country_code: json.data.attributes.country,
-        };
+            email_verified: json.data.attributes.email_verified,
 
-        self.user_info = Some(user_info);
+            ..self.user_info.clone().unwrap()
+        });
 
         Ok(())
     }

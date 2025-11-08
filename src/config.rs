@@ -2,7 +2,7 @@
 // use rand::{Rng, rng};
 // use sha2::{Digest, Sha256};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct TidalConfig {}
 
 impl TidalConfig {

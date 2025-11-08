@@ -1,22 +1,18 @@
-use crate::{auth::init::TidalAuth, client::tidal::TidalClient};
+use crate::client::tidal::TidalClient;
 
 impl TidalClient {
-    pub fn from_serialized(auth_json: &str) -> Result<TidalAuth, serde_json::Error> {
-        let auth_json: TidalAuth = serde_json::from_str(auth_json)?;
+    pub fn from_serialized(client_json: &str) -> Result<TidalClient, serde_json::Error> {
+        let client_json: TidalClient = serde_json::from_str(client_json)?;
 
-        Ok(TidalAuth {
-            client_id: auth_json.client_id,
-            client_secret: auth_json.client_secret,
-            oauth_login: auth_json.oauth_login,
-            access_token: auth_json.access_token,
-            refresh_token: auth_json.refresh_token,
-            user_id: auth_json.user_id,
-            api_token_auth: auth_json.api_token_auth,
-            rq: auth_json.rq,
+        Ok(TidalClient {
+            user_info: client_json.user_info,
+            session: client_json.session,
+            page: client_json.page,
+            ..Self::default()
         })
     }
 
-    pub fn get_auth_json(&self) -> String {
-        serde_json::to_string(&self.session.auth).unwrap()
+    pub fn get_json(&self) -> String {
+        serde_json::to_string(&self).unwrap()
     }
 }

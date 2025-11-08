@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct TidalPage {
     access_token: Option<String>,
 }

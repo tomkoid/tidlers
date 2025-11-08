@@ -20,8 +20,7 @@ async fn main() -> Result<()> {
         TidalClient::new(&auth)
     } else {
         let saved_session_data = save::get_session_data().unwrap();
-        let auth = TidalClient::from_serialized(&saved_session_data)?;
-        let mut cl = TidalClient::new(&auth);
+        let mut cl = TidalClient::from_serialized(&saved_session_data)?;
 
         println!("refreshing token..");
         cl.refresh_access_token().await?;
@@ -37,7 +36,7 @@ async fn main() -> Result<()> {
         println!("oauth flow complete");
     }
 
-    save_session_data(&tidal.get_auth_json());
+    save_session_data(&tidal.get_json());
 
     println!("logged in");
     println!("checking login..");
@@ -46,8 +45,8 @@ async fn main() -> Result<()> {
         tidal.session.auth.check_login().await.is_ok()
     );
 
-    println!("getting user info..");
-    tidal.fetch_user_info().await?;
+    println!("getting new user info..");
+    tidal.refresh_user_info().await?;
 
     println!("user info: {:#?}", tidal.user_info);
 

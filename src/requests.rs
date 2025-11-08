@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use reqwest::Method;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct RequestClient {
     base_url: String,
     user_agent: String,

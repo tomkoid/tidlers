@@ -25,4 +25,7 @@ pub enum TidalError {
 
     #[error("logout failed: {0}")]
     Logout(String),
+
+    #[error("failed to parse integer: {0}")]
+    ParseIntError(#[from] std::num::ParseIntError),
 }

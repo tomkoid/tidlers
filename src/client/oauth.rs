@@ -101,6 +101,7 @@ impl TidalClient {
                     self.session.auth.access_token = Some(json.access_token.clone());
                     self.session.auth.refresh_token = Some(json.refresh_token.clone());
                     self.session.auth.user_id = Some(json.user_id);
+                    self.user_info = Some(json.user.clone());
                     return Ok(json);
                 }
                 Err(_) => {
