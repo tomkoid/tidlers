@@ -1,7 +1,10 @@
 use color_eyre::eyre::Result;
 use tidlers::client::tidal::TidalClient;
 
-use crate::{auth::handle_auth, save::remove_session_data};
+use crate::{
+    auth::handle_auth,
+    save::{remove_session_data, save_session_data},
+};
 
 mod auth;
 mod oauth_handler;
@@ -26,6 +29,15 @@ async fn main() -> Result<()> {
 
         cl
     };
+
+    // if waiting for oauth login, handle oauth flow
+    if tidal.waiting_for_oauth_login() {
+        println!("handling oauth flow..");
+        auth::handle_oauth_flow(&mut tidal).await?;
+        println!("oauth flow complete");
+    }
+
+    save_session_data(&tidal.get_auth_json());
 
     println!("logged in");
     println!("checking login..");

@@ -32,6 +32,10 @@ impl TidalClient {
         }
     }
 
+    pub fn waiting_for_oauth_login(&self) -> bool {
+        self.session.auth.oauth_login && self.session.auth.access_token.is_none()
+    }
+
     fn check_auth(&self) -> Result<bool, TidalError> {
         if self.session.auth.access_token.is_none() || !self.page.is_access_token_set() {
             Err(TidalError::NotAuthenticated)

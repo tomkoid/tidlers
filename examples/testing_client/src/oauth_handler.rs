@@ -1,4 +1,4 @@
-use tidlers::auth::oauth::OAuthStatus;
+use tidlers::client::oauth::OAuthStatus;
 
 pub fn setup_oauth_status_listener() -> tokio::sync::mpsc::UnboundedSender<OAuthStatus> {
     // create a channel to receive oauth status updates (success, pending, etc)

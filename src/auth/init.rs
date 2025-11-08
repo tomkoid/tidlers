@@ -9,6 +9,11 @@ use crate::{
     responses::AccessTokenResponse,
 };
 
+/// Returns a TidalAuth struct that can be used inside TidalClient::new(&TidalAuth)
+/// If you want to use OAuth2 (recommended), use TidalAuth::with_oauth()
+/// NOTE: TidalAuth::with_oauth() just enables OAuth2 login, you still need to get the OAuth link
+/// and wait for the user to login using TidalClient::get_oauth_link() and
+/// TidalClient::wait_for_oauth()
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TidalAuth {
     pub client_id: String,
@@ -17,6 +22,8 @@ pub struct TidalAuth {
     pub access_token: Option<String>,
     pub refresh_token: Option<String>,
     pub user_id: Option<u64>,
+
+    pub oauth_login: bool,
 
     #[serde(
         skip_serializing,
@@ -27,12 +34,18 @@ pub struct TidalAuth {
 
     pub api_token_auth: bool,
 }
-
 impl TidalAuth {
     pub fn new() -> Self {
         Self {
-            access_token: None,
             api_token_auth: false,
+            ..Default::default()
+        }
+    }
+
+    pub fn with_oauth() -> Self {
+        Self {
+            api_token_auth: false,
+            oauth_login: true,
             ..Default::default()
         }
     }
@@ -121,6 +134,7 @@ impl Default for TidalAuth {
             refresh_token: None,
             user_id: None,
             api_token_auth: false,
+            oauth_login: false,
             rq,
         }
     }

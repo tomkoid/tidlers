@@ -4,7 +4,7 @@ use reqwest::Method;
 use tokio::sync::mpsc;
 
 use crate::{
-    auth::init::TidalAuth,
+    client::tidal::TidalClient,
     requests::{self, TidalRequest},
     responses::{AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
@@ -16,17 +16,29 @@ pub enum OAuthStatus {
     Success,
 }
 
-impl TidalAuth {
+impl TidalClient {
     pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, requests::RequestClientError> {
-        if self.is_token_auth() {
+        if self.session.auth.is_token_auth() {
             eprintln!(
-                "Client secret provided, you should probably use get_access_token instead.\nIf you want to login with OAuth2, use TidalCredentials::new()"
+                "Client secret provided, you should probably use get_access_token instead.\nIf you want to login with OAuth2, use TidalAuth::with_oauth()"
+            );
+            return Err(requests::RequestClientError::InvalidCredentials);
+        }
+
+        if self.session.auth.client_id.is_empty() {
+            eprintln!("No client ID provided, cannot get OAuth link.");
+            return Err(requests::RequestClientError::InvalidCredentials);
+        }
+
+        if !self.session.auth.oauth_login {
+            eprintln!(
+                "OAuth login not enabled in TidalAuth, cannot get OAuth link. Use TidalAuth::with_oauth() to enable it."
             );
             return Err(requests::RequestClientError::InvalidCredentials);
         }
 
         let mut form = HashMap::new();
-        form.insert("client_id".to_string(), self.client_id.clone());
+        form.insert("client_id".to_string(), self.session.auth.client_id.clone());
         form.insert("scope".to_string(), "r_usr w_usr w_sub".to_string());
 
         let mut req = TidalRequest::new(Method::POST, "/device_authorization".to_string());
@@ -52,14 +64,17 @@ impl TidalAuth {
         interval: u64,
         status_tx: Option<mpsc::UnboundedSender<OAuthStatus>>,
     ) -> Result<AuthResponse, requests::RequestClientError> {
-        if self.is_token_auth() {
+        if self.session.auth.is_token_auth() {
             eprintln!("Client secret provided, cannot use this function.");
             return Err(requests::RequestClientError::InvalidCredentials);
         }
 
         let mut form = HashMap::new();
-        form.insert("client_id".to_string(), self.client_id.clone());
-        form.insert("client_secret".to_string(), self.client_secret.clone());
+        form.insert("client_id".to_string(), self.session.auth.client_id.clone());
+        form.insert(
+            "client_secret".to_string(),
+            self.session.auth.client_secret.clone(),
+        );
         form.insert("device_code".to_string(), device_code.to_string());
         form.insert(
             "grant_type".to_string(),
@@ -83,9 +98,9 @@ impl TidalAuth {
                     if let Some(tx) = &status_tx {
                         let _ = tx.send(OAuthStatus::Success);
                     }
-                    self.access_token = Some(json.access_token.clone());
-                    self.refresh_token = Some(json.refresh_token.clone());
-                    self.user_id = Some(json.user_id);
+                    self.session.auth.access_token = Some(json.access_token.clone());
+                    self.session.auth.refresh_token = Some(json.refresh_token.clone());
+                    self.session.auth.user_id = Some(json.user_id);
                     return Ok(json);
                 }
                 Err(_) => {

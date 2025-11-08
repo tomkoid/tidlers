@@ -7,6 +7,7 @@ impl TidalClient {
         Ok(TidalAuth {
             client_id: auth_json.client_id,
             client_secret: auth_json.client_secret,
+            oauth_login: auth_json.oauth_login,
             access_token: auth_json.access_token,
             refresh_token: auth_json.refresh_token,
             user_id: auth_json.user_id,
