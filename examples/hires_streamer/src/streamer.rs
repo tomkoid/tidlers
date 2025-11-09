@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use color_eyre::eyre::{Result, eyre};
-use rodio::{Decoder, OutputStream, Sink, Source};
+use rodio::{Decoder, OutputStream, Sink};
 use std::io::BufReader;
 use tidlers::client::models::track::{
     DashManifest, ManifestType, TrackPlaybackInfoPostPaywallResponse,

@@ -26,7 +26,6 @@ fn default_playback_mode() -> PlaybackMode {
 
 impl TidalSession {
     pub fn new(credentials: &TidalAuth) -> TidalSession {
-        let api_v1_location = "https://api.tidal.com/v1".to_string();
         TidalSession {
             config: TidalConfig::new(),
             auth: credentials.clone(),

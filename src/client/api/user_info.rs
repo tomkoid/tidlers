@@ -1,6 +1,6 @@
 use crate::{
     client::{
-        models::user::{User, UserData, UserInfo},
+        models::user::{User, UserData},
         tidal::TidalClient,
     },
     error::TidalError,

@@ -3,7 +3,7 @@ pub fn save_session_data(ss: &str) {
     std::fs::write("session.json", ss).unwrap();
 }
 
-pub fn remove_session_data() {
+pub fn _remove_session_data() {
     if std::fs::remove_file("session.json").is_err() {
         println!("No session data to remove.");
     }
