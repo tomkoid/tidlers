@@ -1,13 +1,8 @@
+use crate::save::remove_session_data;
 use color_eyre::eyre::Result;
-use tidlers::client::{
-    models::playback::{AudioQuality, PlaybackMode},
-    tidal::TidalClient,
-};
+use tidlers::client::{models::playback::AudioQuality, tidal::TidalClient};
 
-use crate::{
-    auth::handle_auth,
-    save::{remove_session_data, save_session_data},
-};
+use crate::{auth::handle_auth, save::save_session_data};
 
 mod auth;
 mod oauth_handler;
@@ -15,6 +10,8 @@ mod save;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let enable_logout = false;
+
     // better error reporting
     color_eyre::install()?;
 
@@ -105,16 +102,18 @@ async fn main() -> Result<()> {
     let top_artists = tidal.get_activity_top_artists(2025, 11).await?;
     println!("top artists: {:#?}", top_artists);
 
-    // println!("trying to logout..");
-    // let logout = tidal.logout().await;
-    // if logout.is_ok() {
-    //     println!("successfully logged out!");
-    //
-    //     // invalidate saved session data
-    //     remove_session_data();
-    // } else {
-    //     println!("failed to logout: {:?}", logout.err());
-    // }
+    if enable_logout {
+        println!("trying to logout..");
+        let logout = tidal.logout().await;
+        if logout.is_ok() {
+            println!("successfully logged out!");
+
+            // invalidate saved session data
+            remove_session_data();
+        } else {
+            println!("failed to logout: {:?}", logout.err());
+        }
+    }
 
     Ok(())
 }

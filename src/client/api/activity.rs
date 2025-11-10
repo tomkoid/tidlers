@@ -7,7 +7,6 @@ use crate::{
     },
     error::TidalError,
     requests::TidalRequest,
-    utils::{debug_json, debug_json_str},
 };
 
 impl TidalClient {
