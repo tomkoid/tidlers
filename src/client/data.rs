@@ -1,7 +1,7 @@
 use crate::client::tidal::TidalClient;
 
 impl TidalClient {
-    pub fn from_serialized(client_json: &str) -> Result<TidalClient, serde_json::Error> {
+    pub fn from_json(client_json: &str) -> Result<TidalClient, serde_json::Error> {
         let client_json: TidalClient = serde_json::from_str(client_json)?;
 
         Ok(TidalClient {

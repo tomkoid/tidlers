@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
         TidalClient::new(&auth)
     } else {
         let saved_session_data = save::get_session_data().unwrap();
-        let mut cl = TidalClient::from_serialized(&saved_session_data)?;
+        let mut cl = TidalClient::from_json(&saved_session_data)?;
 
         let refreshed = cl.refresh_access_token(false).await?;
         if refreshed {
