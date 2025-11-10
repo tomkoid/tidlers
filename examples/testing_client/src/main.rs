@@ -98,6 +98,10 @@ async fn main() -> Result<()> {
     let timeline = tidal.get_activity_timeline().await?;
     println!("timeline: {:#?}", timeline);
 
+    println!("getting top artists..");
+    let top_artists = tidal.get_activity_top_artists(2025, 11).await?;
+    println!("top artists: {:#?}", top_artists);
+
     // println!("trying to logout..");
     // let logout = tidal.logout().await;
     // if logout.is_ok() {

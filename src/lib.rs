@@ -6,6 +6,7 @@ pub mod page;
 pub mod requests;
 pub mod responses;
 pub mod session;
+pub mod utils;
 
 // pub fn add(left: u64, right: u64) -> u64 {
 //     left + right
