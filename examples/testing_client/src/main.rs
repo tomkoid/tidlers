@@ -94,6 +94,10 @@ async fn main() -> Result<()> {
         .await?;
     println!("playback info: {:#?}", playback_info);
 
+    println!("getting timeline..");
+    let timeline = tidal.get_activity_timeline().await?;
+    println!("timeline: {:#?}", timeline);
+
     // println!("trying to logout..");
     // let logout = tidal.logout().await;
     // if logout.is_ok() {
