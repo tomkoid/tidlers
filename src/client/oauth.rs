@@ -98,8 +98,15 @@ impl TidalClient {
                     if let Some(tx) = &status_tx {
                         let _ = tx.send(OAuthStatus::Success);
                     }
+                    let now = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs();
+
                     self.session.auth.access_token = Some(json.access_token.clone());
                     self.session.auth.refresh_token = Some(json.refresh_token.clone());
+                    self.session.auth.refresh_expiry = Some(json.expires_in);
+                    self.session.auth.last_refresh_time = Some(now);
                     self.session.auth.user_id = Some(json.user_id);
                     self.user_info = Some(json.user.clone());
                     return Ok(json);

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::SystemTime};
 
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
@@ -21,6 +21,8 @@ pub struct TidalAuth {
 
     pub access_token: Option<String>,
     pub refresh_token: Option<String>,
+    pub refresh_expiry: Option<u64>,
+    pub last_refresh_time: Option<u64>,
     pub user_id: Option<u64>,
 
     pub oauth_login: bool,
@@ -70,6 +72,18 @@ impl TidalAuth {
 
     pub fn is_token_auth(&self) -> bool {
         self.api_token_auth
+    }
+
+    pub fn is_token_expired(&self) -> bool {
+        if let (Some(expiry), Some(last_refresh)) = (self.refresh_expiry, self.last_refresh_time) {
+            let now = SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
+            now >= last_refresh + expiry
+        } else {
+            true
+        }
     }
 
     pub async fn get_access_token(
@@ -132,6 +146,8 @@ impl Default for TidalAuth {
             client_secret: c_creds.1,
             access_token: None,
             refresh_token: None,
+            refresh_expiry: None,
+            last_refresh_time: None,
             user_id: None,
             api_token_auth: false,
             oauth_login: false,

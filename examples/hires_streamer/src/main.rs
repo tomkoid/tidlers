@@ -22,9 +22,12 @@ async fn main() -> Result<()> {
         let saved_session_data = save::get_session_data().unwrap();
         let mut cl = TidalClient::from_serialized(&saved_session_data)?;
 
-        println!("Refreshing token...");
-        cl.refresh_access_token().await?;
-        println!("Token refreshed\n");
+        let refreshed = cl.refresh_access_token(false).await?;
+        if refreshed {
+            println!("token refreshed from saved session data");
+        } else {
+            println!("using saved session data");
+        }
 
         cl
     };
