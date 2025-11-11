@@ -106,6 +106,10 @@ async fn main() -> Result<()> {
     let collection_artists = tidal.get_collection_artists(50).await?;
     println!("collection artists: {:#?}", collection_artists);
 
+    println!("getting collection favorites..");
+    let collection_favorites = tidal.get_collection_favorites(Some(20)).await?;
+    println!("collection favorites: {:#?}", collection_favorites);
+
     if enable_logout {
         println!("trying to logout..");
         let logout = tidal.logout().await;

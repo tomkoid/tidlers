@@ -1,10 +1,33 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::client::models::track::Track;
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CollectionTracksResponse {
+    pub items: Vec<CollectionTrackItem>,
+    pub limit: i32,
+    pub offset: i32,
+    pub total_number_of_items: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CollectionTrackItem {
+    pub created: String,
+    pub item: Track,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CollectionArtistsResponse {
     #[serde(rename = "lastModifiedAt")]
     pub last_modified_at: String,
+    pub items: Vec<CollectionArtistMetadata>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CollectionFavoritesResponse {
+    #[serde(rename = "lastModifiedAt")]
     pub items: Vec<CollectionArtistMetadata>,
 }
 
