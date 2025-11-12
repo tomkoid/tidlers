@@ -1,11 +1,14 @@
 use std::collections::HashMap;
 
 use reqwest::Method;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct RequestClient {
     base_url: String,
     user_agent: String,
+
+    #[serde(skip)]
     client: reqwest::Client,
 }
 
