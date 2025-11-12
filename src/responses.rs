@@ -34,7 +34,7 @@ pub struct RefreshTokenResponse {
     pub user_id: i64,
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct OAuthLinkResponse {
     #[serde(rename = "deviceCode")]
     pub device_code: String,
