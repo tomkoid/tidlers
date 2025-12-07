@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use reqwest::Method;
 
 use crate::{
-    client::tidal::TidalClient,
+    client::TidalClient,
     error::TidalError,
     requests::{self, TidalRequest},
     responses::RefreshTokenResponse,

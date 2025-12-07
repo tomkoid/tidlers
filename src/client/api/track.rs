@@ -6,6 +6,7 @@ use quick_xml::events::Event;
 
 use crate::{
     client::{
+        TidalClient,
         models::{
             mixes::TrackMixInfo,
             playback::AssetPresentation,
@@ -14,7 +15,6 @@ use crate::{
                 TrackPlaybackInfoPostPaywallResponse,
             },
         },
-        tidal::TidalClient,
     },
     error::TidalError,
     requests::TidalRequest,

@@ -1,5 +1,6 @@
 use color_eyre::eyre::Result;
-use tidlers::{auth::init::TidalAuth, client::tidal::TidalClient};
+use tidlers::auth::init::TidalAuth;
+use tidlers::client::TidalClient;
 
 use crate::{oauth_handler::setup_oauth_status_listener, save::get_session_data};
 

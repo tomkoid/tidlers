@@ -4,7 +4,7 @@ use reqwest::Method;
 use tokio::sync::mpsc;
 
 use crate::{
-    client::tidal::TidalClient,
+    client::TidalClient,
     requests::{self, TidalRequest},
     responses::{AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };

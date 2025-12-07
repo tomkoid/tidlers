@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    client::{models::subscription::SubscriptionInfo, tidal::TidalClient},
+    client::{TidalClient, models::subscription::SubscriptionInfo},
     error::TidalError,
     requests::TidalRequest,
 };

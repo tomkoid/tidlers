@@ -1,6 +1,6 @@
 use crate::save::remove_session_data;
 use color_eyre::eyre::Result;
-use tidlers::client::{models::playback::AudioQuality, tidal::TidalClient};
+use tidlers::client::{TidalClient, models::playback::AudioQuality};
 
 use crate::{auth::handle_auth, save::save_session_data};
 

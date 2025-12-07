@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use crate::{
     client::{
+        TidalClient,
         models::activity::{ActivityTimeline, TopArtistsResponse},
-        tidal::TidalClient,
     },
     error::TidalError,
     requests::TidalRequest,

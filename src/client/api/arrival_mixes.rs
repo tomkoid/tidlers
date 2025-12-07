@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    client::tidal::TidalClient, error::TidalError, requests::TidalRequest,
-    responses::TidalGenericResponse,
+    client::TidalClient, error::TidalError, requests::TidalRequest, responses::TidalGenericResponse,
 };
 
 impl TidalClient {

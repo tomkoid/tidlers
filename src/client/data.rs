@@ -1,4 +1,4 @@
-use crate::client::tidal::TidalClient;
+use crate::client::TidalClient;
 
 impl TidalClient {
     pub fn from_json(client_json: &str) -> Result<TidalClient, serde_json::Error> {

@@ -1,7 +1,7 @@
 use crate::{
     client::{
+        TidalClient,
         models::user::{User, UserData},
-        tidal::TidalClient,
     },
     error::TidalError,
     requests::TidalRequest,

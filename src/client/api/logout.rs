@@ -1,4 +1,4 @@
-use crate::{client::tidal::TidalClient, error::TidalError, requests::TidalRequest};
+use crate::{client::TidalClient, error::TidalError, requests::TidalRequest};
 
 impl TidalClient {
     pub async fn logout(&mut self) -> Result<(), TidalError> {

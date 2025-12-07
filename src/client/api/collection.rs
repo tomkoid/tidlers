@@ -1,10 +1,8 @@
+use crate::client::TidalClient;
 use std::collections::HashMap;
 
 use crate::{
-    client::{
-        models::collection::{CollectionArtistsResponse, CollectionTracksResponse},
-        tidal::TidalClient,
-    },
+    client::models::collection::{CollectionArtistsResponse, CollectionTracksResponse},
     error::TidalError,
     requests::TidalRequest,
     utils::debug_json_str,
