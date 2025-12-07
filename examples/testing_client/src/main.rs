@@ -111,7 +111,7 @@ async fn main() -> Result<()> {
     println!("collection favorites: {:#?}", collection_favorites);
 
     println!("getting home page..");
-    let home_page = tidal.get_home_feed(20, Some("+01:00")).await?;
+    let home_page = tidal.get_home_feed(20, Some("+01:00".to_string())).await?;
     println!("home page: {:#?}", home_page);
 
     if enable_logout {

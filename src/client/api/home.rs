@@ -8,10 +8,10 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_home_feed<TO: Into<String>>(
+    pub async fn get_home_feed(
         &mut self,
         limit: u32,
-        time_offset: Option<TO>,
+        time_offset: Option<String>,
     ) -> Result<HomeFeed, TidalError> {
         let url = format!("/home/feed/STATIC");
 
@@ -26,7 +26,7 @@ impl TidalClient {
         params.insert("deviceType".to_string(), "PHONE".to_string());
         params.insert("platform".to_string(), "ANDROID".to_string());
         if let Some(to) = time_offset {
-            params.insert("timeOffset".to_string(), to.into());
+            params.insert("timeOffset".to_string(), to);
         }
 
         let mut header_map = reqwest::header::HeaderMap::new();
@@ -42,7 +42,6 @@ impl TidalClient {
 
         let resp = self.rq.request(req).await?;
         let body = resp.text().await?;
-        debug_json_str(&body);
 
         Ok(serde_json::from_str(&body)?)
     }
