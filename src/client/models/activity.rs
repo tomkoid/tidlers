@@ -20,9 +20,9 @@ pub struct Activity {
     pub artists: Vec<TopArtist>,
     pub images: Vec<Image>,
     pub month: u32,
-    pub nr_of_days_left: u32,
-    pub subtitle: String,
-    pub title: String,
+    pub total_nr_of_days_left: Option<u32>,
+    pub subtitle: Option<String>,
+    pub title: Option<String>,
     pub year: u32,
 }
 
