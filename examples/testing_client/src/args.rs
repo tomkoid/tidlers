@@ -14,14 +14,11 @@ pub enum Commands {
     /// List user's playlists
     Playlists,
 
-    /// Show details of a specific playlist
-    Playlist {
-        /// Playlist ID
-        playlist_id: String,
-    },
-
     /// Show user's collection
-    Collection,
+    Collection {
+        #[clap(subcommand)]
+        command: CollectionCommands,
+    },
 
     /// Show user's activity
     Activity,
@@ -46,4 +43,71 @@ pub enum Commands {
 
     /// Logout the user
     Logout,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum CollectionCommands {
+    /// Show details of a specific playlist
+    Playlist {
+        #[clap(subcommand)]
+        command: PlaylistCommands,
+    },
+
+    Folder {
+        #[clap(subcommand)]
+        command: FolderCommands,
+    },
+
+    /// Show collection artists
+    Artists,
+    /// Show collection favorites
+    Favorites,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum FolderCommands {
+    Create {
+        /// Folder name
+        name: String,
+
+        /// Parent ID to create the folder in
+        #[clap(short, long)]
+        parent_id: Option<String>,
+    },
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum PlaylistCommands {
+    /// Show details of a specific playlist
+    Info {
+        /// Playlist UUID
+        playlist_id: String,
+    },
+    /// Show items of a specific playlist
+    Items {
+        /// Playlist UUID
+        playlist_id: String,
+    },
+    Create {
+        /// Playlist name
+        name: String,
+        /// Playlist description
+        #[clap(short, long, default_value = "")]
+        description: String,
+        /// Folder ID to create the playlist in
+        #[clap(short, long)]
+        folder_id: Option<String>,
+        /// Sharing level (PUBLIC or PRIVATE)
+        #[clap(short, long)]
+        sharing_level: Option<SharingLevel>,
+    },
+}
+
+#[derive(clap::ValueEnum, Clone, Default, Debug)]
+pub enum SharingLevel {
+    #[clap(name = "PUBLIC")]
+    Public,
+    #[clap(name = "PRIVATE")]
+    #[default]
+    Private,
 }

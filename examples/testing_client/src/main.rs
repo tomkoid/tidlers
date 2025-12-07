@@ -1,4 +1,4 @@
-use crate::save::remove_session_data;
+use crate::{args::SharingLevel, save::remove_session_data};
 use clap::Parser;
 use color_eyre::eyre::Result;
 use tidlers::client::{TidalClient, models::playback::AudioQuality};
@@ -60,25 +60,66 @@ async fn main() -> Result<()> {
             println!("favorites: {:#?}", favorites);
         }
 
-        args::Commands::Playlist { playlist_id } => {
-            println!("getting playlist info for playlist uuid: {}..", playlist_id);
-            let playlist_info = tidal.get_playlist(playlist_id.clone()).await?;
-            let playlist_items = tidal
-                .get_playlist_items(playlist_id, Some(10), Some(0))
-                .await?;
-            println!("playlist info: {:?}", playlist_info);
-            println!("playlist items: {:#?}", playlist_items);
-        }
-
-        args::Commands::Collection => {
-            println!("getting collection artists..");
-            let collection_artists = tidal.get_collection_artists(50).await?;
-            println!("collection artists: {:#?}", collection_artists);
-
-            println!("getting collection favorites..");
-            let collection_favorites = tidal.get_collection_favorites(Some(20)).await?;
-            println!("collection favorites: {:#?}", collection_favorites);
-        }
+        args::Commands::Collection { command } => match command {
+            args::CollectionCommands::Artists => {
+                println!("getting collection artists..");
+                let collection_artists = tidal.get_collection_artists(50).await?;
+                println!("collection artists: {:#?}", collection_artists);
+            }
+            args::CollectionCommands::Favorites => {
+                println!("getting collection favorites..");
+                let collection_favorites = tidal.get_collection_favorites(Some(20)).await?;
+                println!("collection favorites: {:#?}", collection_favorites);
+            }
+            args::CollectionCommands::Playlist { command } => match command {
+                args::PlaylistCommands::Create {
+                    description,
+                    folder_id,
+                    name,
+                    sharing_level,
+                } => {
+                    let sharing_level = match sharing_level.unwrap_or(SharingLevel::Private) {
+                        SharingLevel::Private => {
+                            tidlers::client::models::collection::SharingLevel::Private
+                        }
+                        SharingLevel::Public => {
+                            tidlers::client::models::collection::SharingLevel::Public
+                        }
+                    };
+                    println!("creating playlist with title: {}..", name);
+                    let playlist = tidal
+                        .create_playlist(name, description, Some(sharing_level), None)
+                        .await?;
+                    println!("created playlist: {:#?}", playlist);
+                }
+                args::PlaylistCommands::Info { playlist_id } => {
+                    println!("getting playlist info for playlist uuid: {}..", playlist_id);
+                    let playlist_info = tidal.get_playlist(playlist_id.clone()).await?;
+                    println!("playlist info: {:?}", playlist_info);
+                }
+                args::PlaylistCommands::Items { playlist_id } => {
+                    println!(
+                        "getting playlist items for playlist uuid: {}..",
+                        playlist_id
+                    );
+                    let playlist_items = tidal
+                        .get_playlist_items(playlist_id, Some(10), Some(0))
+                        .await?;
+                    println!("playlist items: {:#?}", playlist_items);
+                }
+            },
+            args::CollectionCommands::Folder { command } => match command {
+                args::FolderCommands::Create { name, parent_id } => {
+                    println!(
+                        "creating folder with name: {} in parent id: {}..",
+                        name,
+                        parent_id.as_ref().map(|s| s.as_str()).unwrap_or("root")
+                    );
+                    let folder = tidal.create_folder(name, None).await?;
+                    println!("created folder: {:#?}", folder);
+                }
+            },
+        },
 
         args::Commands::Activity => {
             println!("getting timeline..");
@@ -105,7 +146,10 @@ async fn main() -> Result<()> {
         }
 
         args::Commands::Track { track_id } => {
-            println!("getting track info and track mix for track id: {}..", track_id);
+            println!(
+                "getting track info and track mix for track id: {}..",
+                track_id
+            );
             let track_info = tidal.get_track(track_id.clone()).await?;
             let track_mix = tidal.get_track_mix(track_id.clone()).await?;
             println!("track info: {:#?}", track_info);
@@ -113,18 +157,14 @@ async fn main() -> Result<()> {
 
             println!("getting playback info for track id..");
             tidal.set_audio_quality(AudioQuality::HiRes);
-            let playback_info = tidal
-                .get_track_postpaywall_playback_info(track_id)
-                .await?;
+            let playback_info = tidal.get_track_postpaywall_playback_info(track_id).await?;
             println!("playback info: {:#?}", playback_info);
         }
 
         args::Commands::Album { album_id } => {
             println!("getting album info and items for album id: {}..", album_id);
             let album_info = tidal.get_album(album_id.clone()).await?;
-            let album_items = tidal
-                .get_album_items(album_id, Some(10), Some(0))
-                .await?;
+            let album_items = tidal.get_album_items(album_id, Some(10), Some(0)).await?;
             println!("album info: {:?}", album_info);
             println!("album items: {:#?}", album_items);
         }
