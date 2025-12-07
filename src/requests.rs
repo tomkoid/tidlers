@@ -125,7 +125,7 @@ impl RequestClient {
         let url = format!("{base_url}{}", request.path);
         let url_w_params = reqwest::Url::parse_with_params(&url, &req_params)?.to_string();
 
-        println!("Request URL: {}", url_w_params.to_string());
+        // println!("Request URL: {}", url_w_params.to_string());
 
         let method_req: Result<reqwest::RequestBuilder, RequestClientError> = match request.method {
             Method::GET => Ok(self.client.get(url_w_params)),
