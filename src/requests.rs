@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use reqwest::Method;
+use reqwest::{
+    Method,
+    header::{HeaderMap, HeaderValue},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -21,7 +24,7 @@ pub struct TidalRequest {
     pub basic_auth: Option<BasicAuth>,
     pub access_token: Option<String>,
     pub data: Option<String>,
-    pub headers: Option<String>,
+    pub headers: Option<HeaderMap<HeaderValue>>,
     pub base_url: Option<String>,
     pub send_params_as_form: bool,
     pub enable_useful_params: bool,
@@ -122,7 +125,7 @@ impl RequestClient {
         let url = format!("{base_url}{}", request.path);
         let url_w_params = reqwest::Url::parse_with_params(&url, &req_params)?.to_string();
 
-        // println!("Request URL: {}", url_w_params.to_string());
+        println!("Request URL: {}", url_w_params.to_string());
 
         let method_req: Result<reqwest::RequestBuilder, RequestClientError> = match request.method {
             Method::GET => Ok(self.client.get(url_w_params)),
@@ -152,6 +155,12 @@ impl RequestClient {
 
         let req = if let Some(basic_auth) = request.basic_auth {
             req.basic_auth(basic_auth.name, Some(basic_auth.pass))
+        } else {
+            req
+        };
+
+        let req = if let Some(headers) = request.headers {
+            req.headers(headers)
         } else {
             req
         };

@@ -13,4 +13,15 @@ pub fn debug_json_str(json_str: &str) {
         },
         Err(e) => eprintln!("Failed to parse JSON string: {}", e),
     }
+
+    // save the json to a debug file
+    save_json_to_file(json_str);
+}
+
+const DEFAULT_DEBUG_FILE: &str = "debug_output.json";
+
+fn save_json_to_file(data: &str) {
+    if let Err(e) = std::fs::write(DEFAULT_DEBUG_FILE, data) {
+        eprintln!("Failed to write JSON to file {}: {}", DEFAULT_DEBUG_FILE, e);
+    }
 }

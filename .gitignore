@@ -2,5 +2,6 @@
 
 /.env
 /session.json
+/debug_output.json
 /*.mp4
 /token.txt
