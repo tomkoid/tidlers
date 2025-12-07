@@ -4,7 +4,6 @@ use crate::{
     client::{TidalClient, models::home::HomeFeed},
     error::TidalError,
     requests::TidalRequest,
-    utils::debug_json_str,
 };
 
 impl TidalClient {
