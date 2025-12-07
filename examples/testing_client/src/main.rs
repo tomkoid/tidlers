@@ -112,6 +112,11 @@ async fn main() -> Result<()> {
                     let playlists = tidal.list_playlists().await?;
                     println!("playlists: {:#?}", playlists);
                 }
+                args::PlaylistCommands::ListPublic => {
+                    println!("listing public playlists..");
+                    let playlists = tidal.list_public_playlists(None, None).await?;
+                    println!("playlists: {:#?}", playlists);
+                }
             },
             args::CollectionCommands::Folder { command } => match command {
                 args::FolderCommands::Create { name, parent_id } => {

@@ -1,9 +1,6 @@
 use crate::client::{
     TidalClient,
-    models::{
-        collection::{FolderCollectionItem, PlaylistCollectionItem, SharingLevel},
-        playlist::PlaylistInfo,
-    },
+    models::collection::{FolderCollectionItem, PlaylistCollectionItem, SharingLevel},
 };
 use std::collections::HashMap;
 

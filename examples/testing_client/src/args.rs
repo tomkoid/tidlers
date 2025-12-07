@@ -103,6 +103,8 @@ pub enum PlaylistCommands {
     },
     /// List playlists
     List,
+    /// List public playlists
+    ListPublic,
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]

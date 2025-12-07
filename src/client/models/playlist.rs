@@ -60,3 +60,82 @@ pub struct PlaylistInfo {
 pub struct PlaylistCreator {
     pub id: u64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicUserPlaylistsResponse {
+    pub items: Vec<PublicUserPlaylistItem>,
+    pub cursor: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicUserPlaylistItem {
+    pub playlist: PublicUserPlaylist,
+    pub follow_info: FollowInfo,
+    pub profile: Profile,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicUserPlaylist {
+    pub uuid: String,
+    #[serde(rename = "type")]
+    pub playlist_type: String,
+    pub creator: PlaylistCreatorInfo,
+    pub curators: Vec<Curator>,
+    pub content_behavior: String,
+    pub sharing_level: String,
+    pub status: String,
+    pub source: String,
+    pub title: String,
+    pub description: String,
+    pub image: String,
+    pub square_image: String,
+    pub custom_image_url: Option<String>,
+    pub url: String,
+    pub created: String,
+    pub last_updated: String,
+    pub last_item_added_at: Option<String>,
+    pub duration: i64,
+    pub number_of_tracks: i64,
+    pub number_of_videos: i64,
+    pub promoted_artists: Vec<serde_json::Value>,
+    pub trn: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaylistCreatorInfo {
+    pub id: i64,
+    pub name: Option<String>,
+    pub picture: Option<String>,
+    #[serde(rename = "type")]
+    pub creator_type: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Curator {
+    pub id: i64,
+    pub name: String,
+    pub handle: String,
+    pub picture: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FollowInfo {
+    pub nr_of_followers: i64,
+    pub tidal_resource_name: String,
+    pub followed: bool,
+    pub follow_type: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Profile {
+    pub user_id: i64,
+    pub name: String,
+    pub color: Vec<serde_json::Value>,
+}

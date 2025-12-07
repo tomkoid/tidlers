@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use crate::{
     client::{
         TidalClient,
-        models::playlist::{PlaylistInfo, PlaylistItemsResponse, PlaylistsResponse},
+        models::playlist::{
+            PlaylistInfo, PlaylistItemsResponse, PlaylistsResponse, PublicUserPlaylistsResponse,
+        },
     },
     error::TidalError,
     requests::TidalRequest,
@@ -30,6 +32,36 @@ impl TidalClient {
 
         Ok(serde_json::from_str(&body)?)
     }
+
+    pub async fn list_public_playlists(
+        &mut self,
+        limit: Option<u64>,
+        offset: Option<u64>,
+    ) -> Result<PublicUserPlaylistsResponse, TidalError> {
+        let url = format!(
+            "/user-playlists/{}/public",
+            self.user_info.as_ref().unwrap().user_id
+        );
+
+        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
+        let mut params = HashMap::new();
+        params.insert(
+            "countryCode".to_string(),
+            self.user_info.as_ref().unwrap().country_code.clone(),
+        );
+        params.insert("limit".to_string(), limit.unwrap_or(50).to_string());
+        params.insert("offset".to_string(), offset.unwrap_or(0).to_string());
+
+        req.params = Some(params);
+        req.access_token = self.session.auth.access_token.clone();
+        req.base_url = Some(Self::API_V2_LOCATION.to_string());
+
+        let resp = self.rq.request(req).await?;
+        let body = resp.text().await?;
+
+        Ok(serde_json::from_str(&body)?)
+    }
+
     pub async fn get_playlist(
         &mut self,
         playlist_uuid: String,
