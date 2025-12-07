@@ -129,6 +129,8 @@ impl RequestClient {
 
         let method_req: Result<reqwest::RequestBuilder, RequestClientError> = match request.method {
             Method::GET => Ok(self.client.get(url_w_params)),
+            Method::DELETE => Ok(self.client.delete(url_w_params)),
+            Method::PUT => Ok(self.client.put(url_w_params)),
             Method::POST => Ok(self.client.post(url_w_params)),
             _ => Err(RequestClientError::InvalidMethod),
         };
