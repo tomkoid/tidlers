@@ -20,6 +20,12 @@ pub struct PlaylistItem {
     pub cut: Option<serde_json::Value>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaylistsResponse {
+    pub items: Vec<PlaylistInfo>,
+}
+
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct PlaylistInfo {
     pub uuid: String,

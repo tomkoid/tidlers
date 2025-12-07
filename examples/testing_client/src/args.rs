@@ -101,6 +101,8 @@ pub enum PlaylistCommands {
         #[clap(short, long)]
         sharing_level: Option<SharingLevel>,
     },
+    /// List playlists
+    List,
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
