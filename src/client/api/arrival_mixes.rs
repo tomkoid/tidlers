@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    client::TidalClient, error::TidalError, requests::TidalRequest, responses::TidalGenericResponse,
-};
+use crate::{client::TidalClient, error::TidalError, responses::TidalGenericResponse};
 
 impl TidalClient {
     pub async fn get_arrival_mixes(
@@ -13,15 +11,10 @@ impl TidalClient {
             self.user_info.as_ref().unwrap().user_id
         );
 
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        req.access_token = self.session.auth.access_token.clone();
-        req.base_url = Some(Self::OPEN_API_V2_LOCATION.to_string());
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        let json: TidalGenericResponse<Vec<ArrivalMixData>> = serde_json::from_str(&body)?;
-
-        Ok(json)
+        self.request(reqwest::Method::GET, url)
+            .with_base_url(Self::OPEN_API_V2_LOCATION)
+            .send()
+            .await
     }
 }
 
