@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    client::{TidalClient, models::playlist::PlaylistInfo},
+    client::{TidalClient, models::home::HomeFeed},
     error::TidalError,
     requests::TidalRequest,
     utils::debug_json_str,
@@ -12,7 +12,7 @@ impl TidalClient {
         &mut self,
         limit: u32,
         time_offset: Option<TO>,
-    ) -> Result<PlaylistInfo, TidalError> {
+    ) -> Result<HomeFeed, TidalError> {
         let url = format!("/home/feed/STATIC");
 
         let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
