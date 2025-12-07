@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use base64::{Engine, engine::general_purpose};
 use quick_xml::Reader;
 use quick_xml::events::Event;
@@ -17,26 +15,14 @@ use crate::{
         },
     },
     error::TidalError,
-    requests::TidalRequest,
 };
 
 impl TidalClient {
     pub async fn get_track(&mut self, track_id: String) -> Result<Track, TidalError> {
-        let url = format!("/tracks/{}/", track_id);
-
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        let mut params = HashMap::new();
-        params.insert(
-            "countryCode".to_string(),
-            self.user_info.as_ref().unwrap().country_code.clone(),
-        );
-        req.params = Some(params);
-        req.access_token = self.session.auth.access_token.clone();
-
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        Ok(serde_json::from_str(&body)?)
+        self.request(reqwest::Method::GET, format!("/tracks/{}/", track_id))
+            .with_country_code()
+            .send()
+            .await
     }
 
     fn parse_dash_manifest(xml: &str) -> Result<DashManifest, TidalError> {
@@ -114,7 +100,6 @@ impl TidalClient {
             buf.clear();
         }
 
-        // If we found SegmentTemplate URLs, add them
         let initialization_url = init_url.clone();
         let media_url_template = media_url.clone();
 
@@ -145,33 +130,21 @@ impl TidalClient {
         &mut self,
         track_id: String,
     ) -> Result<TrackPlaybackInfoPostPaywallResponse, TidalError> {
-        let url = format!("/tracks/{}/playbackinfopostpaywall", track_id);
+        let audio_quality = self.session.audio_quality.to_string();
+        let playback_mode = self.session.playback_mode.to_string();
 
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        let mut params = HashMap::new();
-        params.insert(
-            "countryCode".to_string(),
-            self.user_info.as_ref().unwrap().country_code.clone(),
-        );
-        params.insert(
-            "audioquality".to_string(),
-            self.session.audio_quality.to_string(),
-        );
+        let body: String = self
+            .request(
+                reqwest::Method::GET,
+                format!("/tracks/{}/playbackinfopostpaywall", track_id),
+            )
+            .with_country_code()
+            .with_param("audioquality", audio_quality)
+            .with_param("playbackmode", playback_mode)
+            .with_param("assetpresentation", AssetPresentation::Full.to_string())
+            .send_raw()
+            .await?;
 
-        params.insert(
-            "playbackmode".to_string(),
-            self.session.playback_mode.to_string(),
-        );
-
-        params.insert(
-            "assetpresentation".to_string(),
-            AssetPresentation::Full.to_string(),
-        );
-        req.params = Some(params);
-        req.access_token = self.session.auth.access_token.clone();
-
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
         let parsed = serde_json::from_str::<serde_json::Value>(&body)?;
 
         let manifest_decoded =
@@ -204,20 +177,9 @@ impl TidalClient {
     }
 
     pub async fn get_track_mix(&mut self, track_id: String) -> Result<TrackMixInfo, TidalError> {
-        let url = format!("/tracks/{}/mix", track_id);
-
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        let mut params = HashMap::new();
-        params.insert(
-            "countryCode".to_string(),
-            self.user_info.as_ref().unwrap().country_code.clone(),
-        );
-        req.params = Some(params);
-        req.access_token = self.session.auth.access_token.clone();
-
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        Ok(serde_json::from_str(&body)?)
+        self.request(reqwest::Method::GET, format!("/tracks/{}/mix", track_id))
+            .with_country_code()
+            .send()
+            .await
     }
 }

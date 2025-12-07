@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     client::{
         TidalClient,
@@ -8,7 +6,6 @@ use crate::{
         },
     },
     error::TidalError,
-    requests::TidalRequest,
 };
 
 impl TidalClient {
@@ -18,19 +15,10 @@ impl TidalClient {
             self.user_info.as_ref().unwrap().user_id
         );
 
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        let mut params = HashMap::new();
-        params.insert(
-            "countryCode".to_string(),
-            self.user_info.as_ref().unwrap().country_code.clone(),
-        );
-        req.params = Some(params);
-        req.access_token = self.session.auth.access_token.clone();
-
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        Ok(serde_json::from_str(&body)?)
+        self.request(reqwest::Method::GET, url)
+            .with_country_code()
+            .send()
+            .await
     }
 
     pub async fn list_public_playlists(
@@ -43,45 +31,28 @@ impl TidalClient {
             self.user_info.as_ref().unwrap().user_id
         );
 
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        let mut params = HashMap::new();
-        params.insert(
-            "countryCode".to_string(),
-            self.user_info.as_ref().unwrap().country_code.clone(),
-        );
-        params.insert("limit".to_string(), limit.unwrap_or(50).to_string());
-        params.insert("offset".to_string(), offset.unwrap_or(0).to_string());
-
-        req.params = Some(params);
-        req.access_token = self.session.auth.access_token.clone();
-        req.base_url = Some(Self::API_V2_LOCATION.to_string());
-
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        Ok(serde_json::from_str(&body)?)
+        self.request(reqwest::Method::GET, url)
+            .with_country_code()
+            .with_param("limit", limit.unwrap_or(50).to_string())
+            .with_param("offset", offset.unwrap_or(0).to_string())
+            .with_base_url(Self::API_V2_LOCATION)
+            .send()
+            .await
     }
 
     pub async fn get_playlist(
         &mut self,
         playlist_uuid: String,
     ) -> Result<PlaylistInfo, TidalError> {
-        let url = format!("/playlists/{}/", playlist_uuid);
-
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        let mut params = HashMap::new();
-        params.insert(
-            "countryCode".to_string(),
-            self.user_info.as_ref().unwrap().country_code.clone(),
-        );
-        req.params = Some(params);
-        req.access_token = self.session.auth.access_token.clone();
-
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        Ok(serde_json::from_str(&body)?)
+        self.request(
+            reqwest::Method::GET,
+            format!("/playlists/{}/", playlist_uuid),
+        )
+        .with_country_code()
+        .send()
+        .await
     }
+
     pub async fn get_playlist_items(
         &mut self,
         playlist_uuid: String,
@@ -97,22 +68,14 @@ impl TidalClient {
             ));
         }
 
-        let url = format!("/playlists/{}/items", playlist_uuid);
-
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        let mut params = HashMap::new();
-        params.insert(
-            "countryCode".to_string(),
-            self.user_info.as_ref().unwrap().country_code.clone(),
-        );
-        params.insert("limit".to_string(), limit.to_string());
-        params.insert("offset".to_string(), offset.to_string());
-        req.params = Some(params);
-        req.access_token = self.session.auth.access_token.clone();
-
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        Ok(serde_json::from_str(&body)?)
+        self.request(
+            reqwest::Method::GET,
+            format!("/playlists/{}/items", playlist_uuid),
+        )
+        .with_country_code()
+        .with_param("limit", limit.to_string())
+        .with_param("offset", offset.to_string())
+        .send()
+        .await
     }
 }
