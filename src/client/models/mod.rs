@@ -2,6 +2,7 @@ pub mod activity;
 pub mod album;
 pub mod artist;
 pub mod collection;
+pub mod home;
 pub mod media;
 pub mod mixes;
 pub mod playback;

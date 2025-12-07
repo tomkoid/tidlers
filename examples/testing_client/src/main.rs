@@ -1,19 +1,22 @@
 use crate::save::remove_session_data;
+use clap::Parser;
 use color_eyre::eyre::Result;
 use tidlers::client::{TidalClient, models::playback::AudioQuality};
 
-use crate::{auth::handle_auth, save::save_session_data};
+use crate::{args::Args, auth::handle_auth, save::save_session_data};
 
+mod args;
 mod auth;
 mod oauth_handler;
 mod save;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let enable_logout = false;
-
     // better error reporting
     color_eyre::install()?;
+
+    // parse command line arguments
+    let args = Args::parse();
 
     // handle authentication and create Tidal client
     let mut tidal = if let Some(auth) = handle_auth().await? {
@@ -40,86 +43,101 @@ async fn main() -> Result<()> {
     }
 
     println!("logged in");
-    println!("checking login..");
-    println!(
-        "status: {:?}",
-        tidal.session.auth.check_login().await.is_ok()
-    );
 
-    println!("getting new user info..");
+    // refresh user info for all commands
     tidal.refresh_user_info().await?;
     save_session_data(&tidal.get_json());
 
-    println!("user info: {:#?}", tidal.user_info);
+    // execute command
+    match args.command {
+        args::Commands::UserInfo => {
+            println!("user info: {:#?}", tidal.user_info);
+        }
 
-    println!("getting subscription info..");
-    let subscription = tidal.subscription().await?;
-    println!("subscription info: {:#?}", subscription);
+        args::Commands::Playlists => {
+            println!("getting collection favorites (includes playlists)..");
+            let favorites = tidal.get_collection_favorites(Some(50)).await?;
+            println!("favorites: {:#?}", favorites);
+        }
 
-    println!("getting new arrival mixes..");
-    let am = tidal.get_arrival_mixes().await?;
-    for mix in am.data {
-        println!("mix: {} - id: {}", mix.data_type, mix.id);
-    }
+        args::Commands::Playlist { playlist_id } => {
+            println!("getting playlist info for playlist uuid: {}..", playlist_id);
+            let playlist_info = tidal.get_playlist(playlist_id.clone()).await?;
+            let playlist_items = tidal
+                .get_playlist_items(playlist_id, Some(10), Some(0))
+                .await?;
+            println!("playlist info: {:?}", playlist_info);
+            println!("playlist items: {:#?}", playlist_items);
+        }
 
-    let track_id = "66035607";
-    println!("getting track info and track mix for track id..");
-    let track_info = tidal.get_track(track_id.to_string()).await?;
-    let track_mix = tidal.get_track_mix(track_id.to_string()).await?;
-    println!("track info: {:#?}", track_info);
-    println!("track mix: {:?}", track_mix);
+        args::Commands::Collection => {
+            println!("getting collection artists..");
+            let collection_artists = tidal.get_collection_artists(50).await?;
+            println!("collection artists: {:#?}", collection_artists);
 
-    let playlist_uuid = "28a73f00-5988-4621-aaa4-966c6eaea651";
-    println!("getting playlist info for playlist uuid..");
-    let playlist_info = tidal.get_playlist(playlist_uuid.to_string()).await?;
-    let playlist_items = tidal
-        .get_playlist_items(playlist_uuid.to_string(), Some(10), Some(0))
-        .await?;
-    println!("playlist info: {:?}", playlist_info);
-    println!("playlist items: {:#?}", playlist_items);
+            println!("getting collection favorites..");
+            let collection_favorites = tidal.get_collection_favorites(Some(20)).await?;
+            println!("collection favorites: {:#?}", collection_favorites);
+        }
 
-    let album_id = "341764695";
-    println!("getting album info and items for album id..");
-    let album_info = tidal.get_album(album_id.to_string()).await?;
-    let album_items = tidal
-        .get_album_items(album_id.to_string(), Some(10), Some(0))
-        .await?;
-    println!("album info: {:?}", album_info);
-    println!("album items: {:#?}", album_items);
+        args::Commands::Activity => {
+            println!("getting timeline..");
+            let timeline = tidal.get_activity_timeline().await?;
+            println!("timeline: {:#?}", timeline);
 
-    println!("getting playback info for track id..");
-    tidal.set_audio_quality(AudioQuality::HiRes);
-    let playback_info = tidal
-        .get_track_postpaywall_playback_info(track_id.to_string())
-        .await?;
-    println!("playback info: {:#?}", playback_info);
+            println!("getting top artists..");
+            let top_artists = tidal.get_activity_top_artists(2025, 11).await?;
+            println!("top artists: {:#?}", top_artists);
+        }
 
-    println!("getting timeline..");
-    let timeline = tidal.get_activity_timeline().await?;
-    println!("timeline: {:#?}", timeline);
+        args::Commands::Subscription => {
+            println!("getting subscription info..");
+            let subscription = tidal.subscription().await?;
+            println!("subscription info: {:#?}", subscription);
+        }
 
-    println!("getting top artists..");
-    let top_artists = tidal.get_activity_top_artists(2025, 11).await?;
-    println!("top artists: {:#?}", top_artists);
+        args::Commands::ArrivalMixes => {
+            println!("getting new arrival mixes..");
+            let am = tidal.get_arrival_mixes().await?;
+            for mix in am.data {
+                println!("mix: {} - id: {}", mix.data_type, mix.id);
+            }
+        }
 
-    println!("getting collection artists..");
-    let collection_artists = tidal.get_collection_artists(50).await?;
-    println!("collection artists: {:#?}", collection_artists);
+        args::Commands::Track { track_id } => {
+            println!("getting track info and track mix for track id: {}..", track_id);
+            let track_info = tidal.get_track(track_id.clone()).await?;
+            let track_mix = tidal.get_track_mix(track_id.clone()).await?;
+            println!("track info: {:#?}", track_info);
+            println!("track mix: {:?}", track_mix);
 
-    println!("getting collection favorites..");
-    let collection_favorites = tidal.get_collection_favorites(Some(20)).await?;
-    println!("collection favorites: {:#?}", collection_favorites);
+            println!("getting playback info for track id..");
+            tidal.set_audio_quality(AudioQuality::HiRes);
+            let playback_info = tidal
+                .get_track_postpaywall_playback_info(track_id)
+                .await?;
+            println!("playback info: {:#?}", playback_info);
+        }
 
-    if enable_logout {
-        println!("trying to logout..");
-        let logout = tidal.logout().await;
-        if logout.is_ok() {
-            println!("successfully logged out!");
+        args::Commands::Album { album_id } => {
+            println!("getting album info and items for album id: {}..", album_id);
+            let album_info = tidal.get_album(album_id.clone()).await?;
+            let album_items = tidal
+                .get_album_items(album_id, Some(10), Some(0))
+                .await?;
+            println!("album info: {:?}", album_info);
+            println!("album items: {:#?}", album_items);
+        }
 
-            // invalidate saved session data
-            remove_session_data();
-        } else {
-            println!("failed to logout: {:?}", logout.err());
+        args::Commands::Logout => {
+            println!("trying to logout..");
+            let logout = tidal.logout().await;
+            if logout.is_ok() {
+                println!("successfully logged out!");
+                remove_session_data();
+            } else {
+                println!("failed to logout: {:?}", logout.err());
+            }
         }
     }
 
