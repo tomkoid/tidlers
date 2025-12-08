@@ -67,6 +67,10 @@ pub enum ArtistCommands {
     Info,
     /// Show artist's top tracks
     TopTracks,
+    /// Show artist's bio
+    Bio,
+    /// Show artist's links
+    Links,
     // /// Show artist's albums
     // Albums,
     // /// Show artist's related artists

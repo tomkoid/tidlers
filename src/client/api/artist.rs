@@ -1,7 +1,9 @@
 use crate::{
     client::{
         TidalClient,
-        models::artist::{ArtistResponse, ArtistTopTracksResponse},
+        models::artist::{
+            ArtistBioResponse, ArtistLinksResponse, ArtistResponse, ArtistTopTracksResponse,
+        },
     },
     error::TidalError,
 };
@@ -12,6 +14,29 @@ impl TidalClient {
             .with_country_code()
             .send()
             .await
+    }
+
+    pub async fn get_artist_bio(
+        &mut self,
+        artist_id: String,
+    ) -> Result<ArtistBioResponse, TidalError> {
+        self.request(reqwest::Method::GET, format!("/artists/{}/bio", artist_id))
+            .with_country_code()
+            .send()
+            .await
+    }
+
+    pub async fn get_artist_links(
+        &mut self,
+        artist_id: String,
+    ) -> Result<ArtistLinksResponse, TidalError> {
+        self.request(
+            reqwest::Method::GET,
+            format!("/artists/{}/links", artist_id),
+        )
+        .with_country_code()
+        .send()
+        .await
     }
 
     pub async fn get_artist_tracks(

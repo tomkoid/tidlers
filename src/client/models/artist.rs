@@ -45,3 +45,29 @@ pub struct ArtistTopTracksResponse {
     pub total_number_of_items: u32,
     pub items: Vec<Track>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtistBioResponse {
+    pub source: String,
+    pub last_updated: String,
+    pub text: String,
+    pub summary: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtistLink {
+    pub url: String,
+    pub site_name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtistLinksResponse {
+    pub limit: u32,
+    pub offset: u32,
+    pub total_number_of_items: u32,
+    pub items: Vec<ArtistLink>,
+    pub source: String,
+}
