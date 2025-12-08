@@ -1,7 +1,6 @@
 use anyhow::{Context, Result};
 use bytes::Bytes;
 use futures::stream::{self, StreamExt};
-use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -20,7 +19,7 @@ pub struct Downloader {
 struct DownloadSummary {
     downloaded: usize,
     skipped: usize,
-    failed: Vec<String>,
+    failed: Vec<(String, anyhow::Error)>,
 }
 
 // Rate limiting state shared across all downloads
@@ -28,6 +27,7 @@ struct RateLimitState {
     is_rate_limited: AtomicBool,
     consecutive_errors: AtomicU64,
     last_backoff_time: Arc<tokio::sync::Mutex<Option<std::time::Instant>>>,
+    rate_limit_lock: Arc<tokio::sync::Mutex<()>>,
 }
 
 impl RateLimitState {
@@ -36,43 +36,61 @@ impl RateLimitState {
             is_rate_limited: AtomicBool::new(false),
             consecutive_errors: AtomicU64::new(0),
             last_backoff_time: Arc::new(tokio::sync::Mutex::new(None)),
+            rate_limit_lock: Arc::new(tokio::sync::Mutex::new(())),
         })
     }
 
-    async fn on_error(&self, multi_progress: &MultiProgress) {
+    async fn on_error(&self) {
         let errors = self.consecutive_errors.fetch_add(1, Ordering::SeqCst) + 1;
-        
+
         // If we hit 3 consecutive errors, trigger rate limit backoff
-        if errors >= 3 && !self.is_rate_limited.swap(true, Ordering::SeqCst) {
-            multi_progress.clear().ok();
-            println!("\nrate limit detected! pausing all downloads for 5 seconds...");
-            let mut last_time = self.last_backoff_time.lock().await;
-            *last_time = Some(std::time::Instant::now());
+        if errors >= 3 {
+            // Use lock to ensure only one thread prints the message
+            let _guard = self.rate_limit_lock.lock().await;
+
+            // Check again after acquiring lock
+            if !self.is_rate_limited.swap(true, Ordering::SeqCst) {
+                // Suspend multi-progress to stop all updates
+                println!("\nrate limit detected! pausing all downloads for 5 seconds...");
+                let mut last_time = self.last_backoff_time.lock().await;
+                *last_time = Some(std::time::Instant::now());
+            }
         }
     }
 
     async fn on_success(&self) {
-        self.consecutive_errors.store(0, Ordering::SeqCst);
+        // Only reset if not rate limited
+        if !self.is_rate_limited.load(Ordering::SeqCst) {
+            self.consecutive_errors.store(0, Ordering::SeqCst);
+        }
     }
 
     async fn wait_if_rate_limited(&self) {
         if self.is_rate_limited.load(Ordering::SeqCst) {
-            let mut last_time = self.last_backoff_time.lock().await;
-            
-            if let Some(backoff_start) = *last_time {
-                let elapsed = backoff_start.elapsed();
-                let backoff_duration = std::time::Duration::from_secs(5);
-                
-                if elapsed < backoff_duration {
-                    let remaining = backoff_duration - elapsed;
-                    tokio::time::sleep(remaining).await;
+            // Use lock to ensure only one thread does the wait and reset
+            let _guard = self.rate_limit_lock.lock().await;
+
+            // Check again after acquiring lock
+            if self.is_rate_limited.load(Ordering::SeqCst) {
+                let mut last_time = self.last_backoff_time.lock().await;
+
+                if let Some(backoff_start) = *last_time {
+                    let elapsed = backoff_start.elapsed();
+                    let backoff_duration = std::time::Duration::from_secs(5);
+
+                    if elapsed < backoff_duration {
+                        let remaining = backoff_duration - elapsed;
+                        drop(last_time); // Release lock before sleeping
+                        tokio::time::sleep(remaining).await;
+                        last_time = self.last_backoff_time.lock().await;
+                    }
+
+                    // Reset rate limit state
+                    *last_time = None;
+                    self.is_rate_limited.store(false, Ordering::SeqCst);
+                    self.consecutive_errors.store(0, Ordering::SeqCst);
+                    println!("resuming downloads...");
                 }
-                
-                // Reset rate limit state
-                *last_time = None;
-                self.is_rate_limited.store(false, Ordering::SeqCst);
-                self.consecutive_errors.store(0, Ordering::SeqCst);
-                println!("resuming downloads...");
             }
         }
     }
@@ -93,7 +111,7 @@ impl DownloadSummary {
             match result {
                 Ok(true) => summary.downloaded += 1,
                 Ok(false) => summary.skipped += 1,
-                Err(_) => summary.failed.push(track_name),
+                Err(e) => summary.failed.push((track_name, e)),
             }
         }
         summary
@@ -108,7 +126,7 @@ impl DownloadSummary {
         if !self.failed.is_empty() {
             println!("  failed: {}", self.failed.len());
             for track in &self.failed {
-                println!("    - {}", track);
+                println!("    - {} ({})", track.0, track.1.to_string());
             }
         }
     }
@@ -139,7 +157,7 @@ impl Downloader {
             .context("Failed to get playback info")?;
 
         let was_downloaded = self
-            .download_track_with_info(&track, &playback_info, None, &self.output_dir)
+            .download_track_with_info(&track, &playback_info, &self.output_dir)
             .await?;
 
         if was_downloaded {
@@ -251,32 +269,29 @@ impl Downloader {
         use_index_as_track_number: bool,
     ) -> Result<()> {
         println!(
-            "\ndownloading {} tracks in parallel (max {})...",
+            "\ndownloading {} tracks in parallel (max {})...\n",
             tracks.len(),
             self.max_parallel
         );
 
-        let multi_progress = Arc::new(MultiProgress::new());
+        // For parallel downloads, hide individual progress bars to avoid messy output
+        // Only show them for single-threaded downloads
         let downloader = Arc::new(self);
         let client = Arc::new(tokio::sync::Mutex::new(client));
         let rate_limit_state = RateLimitState::new();
 
         let results = stream::iter(tracks.into_iter().enumerate())
-            .map(|(index, track)| {
+            .map(async |(index, track)| {
                 let downloader = Arc::clone(&downloader);
                 let client = Arc::clone(&client);
-                let multi_progress = Arc::clone(&multi_progress);
                 let output_dir = output_dir.clone();
                 let rate_limit_state = Arc::clone(&rate_limit_state);
+                let mut attempt = 0;
+                let max_attempts = 10;
 
-                async move {
-                    let pb = multi_progress.add(ProgressBar::new(100));
-                    pb.set_style(
-                        ProgressStyle::default_bar()
-                            .template("{msg} [{bar:40.cyan/blue}] {percent}%")
-                            .unwrap()
-                            .progress_chars("#>-"),
-                    );
+                loop {
+                    // Wait if rate limited BEFORE creating progress bar
+                    rate_limit_state.wait_if_rate_limited().await;
 
                     let track_number = if use_index_as_track_number {
                         (index + 1) as u32
@@ -290,10 +305,7 @@ impl Downloader {
                         format!("{:02} - {}", track_number, track.title)
                     };
 
-                    pb.set_message(format_str.clone());
-
-                    // Wait if rate limited
-                    rate_limit_state.wait_if_rate_limited().await;
+                    println!("download: {}", format_str);
 
                     let track_id = track.id.to_string();
                     let result = {
@@ -306,29 +318,58 @@ impl Downloader {
                     match result {
                         Ok(playback_info) => {
                             rate_limit_state.on_success().await;
-                            
+
                             let result = downloader
                                 .download_track_with_info_numbered(
                                     &track,
                                     &playback_info,
-                                    Some(pb.clone()),
                                     &output_dir,
                                     track_number,
                                 )
                                 .await;
 
-                            pb.finish_and_clear();
-                            (format_str, result)
+                            if result.is_ok() {
+                                println!("finished: {}", format_str);
+                            } else {
+                                println!(
+                                    "failed (attempt: {}/{}): {}",
+                                    format_str, attempt, max_attempts
+                                );
+                                if attempt < max_attempts {
+                                    attempt += 1;
+                                    // notify rate limit state of error
+                                    rate_limit_state.on_error().await;
+
+                                    // println!("retrying... (attempt {}/{})", attempt, max_attempts);
+                                    continue;
+                                } else {
+                                    // notify rate limit state of error
+                                    rate_limit_state.on_error().await;
+                                }
+                            }
+
+                            return (format_str, result);
                         }
                         Err(e) => {
-                            // Check if this is a rate limit error (empty response)
-                            let error_str = e.to_string();
-                            if error_str.contains("EOF while parsing") || error_str.contains("expected value") {
-                                rate_limit_state.on_error(&multi_progress).await;
+                            // println!(
+                            //     "error fetching playback info for track {}: {}",
+                            //     track.title, e
+                            // );
+
+                            if attempt < max_attempts {
+                                attempt += 1;
+
+                                // Notify rate limit state of error
+                                rate_limit_state.on_error().await;
+
+                                // println!("retrying... (attempt {}/{})", attempt, max_attempts);
+                                continue;
+                            } else {
+                                // Notify rate limit state of error
+                                rate_limit_state.on_error().await;
+
+                                return (format_str, Err(e).context("Failed to get playback info"));
                             }
-                            
-                            pb.finish_and_clear();
-                            (format_str, Err(e.into()))
                         }
                     }
                 }
@@ -344,24 +385,16 @@ impl Downloader {
         &self,
         track: &Track,
         playback_info: &TrackPlaybackInfoPostPaywallResponse,
-        progress_bar: Option<ProgressBar>,
         output_dir: &PathBuf,
     ) -> Result<bool> {
-        self.download_track_with_info_numbered(
-            track,
-            playback_info,
-            progress_bar,
-            output_dir,
-            track.track_number,
-        )
-        .await
+        self.download_track_with_info_numbered(track, playback_info, output_dir, track.track_number)
+            .await
     }
 
     async fn download_track_with_info_numbered(
         &self,
         track: &Track,
         playback_info: &TrackPlaybackInfoPostPaywallResponse,
-        progress_bar: Option<ProgressBar>,
         output_dir: &PathBuf,
         track_number: u32,
     ) -> Result<bool> {
@@ -376,9 +409,6 @@ impl Downloader {
         let output_path = output_dir.join(format!("{}.{}", base_name, extension));
 
         if output_path.exists() {
-            if let Some(pb) = progress_bar {
-                pb.set_position(100);
-            }
             return Ok(false); // file was skipped
         }
 
@@ -397,12 +427,11 @@ impl Downloader {
 
         match &playback_info.manifest_parsed {
             Some(ManifestType::Dash(dash)) => {
-                self.download_dash_track(dash, &output_path, progress_bar)
-                    .await?;
+                self.download_dash_track(dash, &output_path).await?;
             }
             Some(ManifestType::Json(json_manifest)) => {
                 if let Some(url) = json_manifest.urls.first() {
-                    self.download_file(url, &output_path, progress_bar).await?;
+                    self.download_file(url, &output_path).await?;
                 } else {
                     anyhow::bail!("No URLs in manifest");
                 }
@@ -419,7 +448,6 @@ impl Downloader {
         &self,
         dash: &tidlers::client::models::track::DashManifest,
         output_path: &PathBuf,
-        progress_bar: Option<ProgressBar>,
     ) -> Result<()> {
         let mut combined_data = Vec::new();
 
@@ -427,9 +455,6 @@ impl Downloader {
         if let Some(init_url) = dash.get_init_url() {
             let init_data = self.download_segment(init_url).await?;
             combined_data.extend_from_slice(&init_data);
-            if let Some(ref pb) = progress_bar {
-                pb.set_position(5);
-            }
         } else {
             anyhow::bail!("No initialization segment found");
         }
@@ -446,16 +471,6 @@ impl Downloader {
                         combined_data.extend_from_slice(&segment_data);
                         consecutive_failures = 0;
                         segments_downloaded += 1;
-
-                        // lets estimate around 150-200 segments for most tracks
-                        // progress goes from 5% (after init) to 95%, then 100% after write
-                        if let Some(ref pb) = progress_bar {
-                            let estimated_total_segments = 150;
-                            let progress = 5
-                                + ((segments_downloaded * 90).min(estimated_total_segments * 90)
-                                    / estimated_total_segments);
-                            pb.set_position(progress as u64);
-                        }
                     }
                     Err(_) => {
                         consecutive_failures += 1;
@@ -473,19 +488,10 @@ impl Downloader {
         // Write to file
         std::fs::write(output_path, combined_data).context("Failed to write file")?;
 
-        if let Some(ref pb) = progress_bar {
-            pb.set_position(100);
-        }
-
         Ok(())
     }
 
-    async fn download_file(
-        &self,
-        url: &str,
-        output_path: &PathBuf,
-        progress_bar: Option<ProgressBar>,
-    ) -> Result<()> {
+    async fn download_file(&self, url: &str, output_path: &PathBuf) -> Result<()> {
         use futures::StreamExt;
 
         let response = self
@@ -509,20 +515,9 @@ impl Downloader {
             let chunk = chunk.context("Failed to read chunk")?;
             file_data.extend_from_slice(&chunk);
             downloaded += chunk.len() as u64;
-
-            if let Some(ref pb) = progress_bar {
-                if total_size > 0 {
-                    let progress = (downloaded * 100 / total_size).min(100);
-                    pb.set_position(progress);
-                }
-            }
         }
 
         std::fs::write(output_path, file_data).context("Failed to write file")?;
-
-        if let Some(ref pb) = progress_bar {
-            pb.set_position(100);
-        }
 
         Ok(())
     }
