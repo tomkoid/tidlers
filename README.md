@@ -180,9 +180,9 @@ match &playback_info.manifest_parsed {
 
 The repository includes several examples demonstrating different use cases:
 
-### tidal_downloader (NEW!)
+### tidal_downloader
 
-**Complete command-line downloader with parallel downloads and all quality support:**
+Command-line downloader with parallel downloads and all quality support:
 
 ```bash
 # Download a single track in HiRes
@@ -196,15 +196,13 @@ cargo run -p tidal-downloader -- 251380836 -q lossless -o ~/Music
 ```
 
 **Features:**
-- ✅ Downloads tracks, albums, and playlists
-- ✅ All quality levels (Low, High, Lossless, HiRes)
-- ✅ DASH manifest parsing for HiRes
-- ✅ Parallel downloads (configurable)
-- ✅ OAuth authentication with session persistence
-- ✅ Progress bars and automatic file naming
-- ✅ CLI powered by clap
-
-See [`examples/tidal_downloader/README.md`](examples/tidal_downloader/README.md) for full documentation.
+- Downloads tracks, albums, and playlists
+- All quality levels (Low, High, Lossless, HiRes)
+- DASH manifest parsing for HiRes
+- Parallel downloads (configurable)
+- OAuth authentication with session persistence
+- Progress bars and automatic file naming
+- CLI powered by clap
 
 ### testing_client
 
