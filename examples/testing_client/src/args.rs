@@ -44,6 +44,9 @@ pub enum Commands {
 
     /// Show details of a specific album
     Album {
+        #[clap(subcommand)]
+        command: AlbumCommands,
+
         /// Album ID
         album_id: String,
     },
@@ -59,6 +62,18 @@ pub enum Commands {
 
     /// Logout the user
     Logout,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum AlbumCommands {
+    /// Show album info
+    Info,
+
+    /// Show album items
+    Items,
+
+    /// Show album credits
+    Credits,
 }
 
 #[derive(Parser, Debug, Clone)]

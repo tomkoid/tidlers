@@ -1,7 +1,7 @@
 use crate::{
     client::{
         TidalClient,
-        models::album::{AlbumInfoResponse, AlbumItemsResponse},
+        models::album::{AlbumCreditsResponse, AlbumInfoResponse, AlbumItemsResponse},
     },
     error::TidalError,
 };
@@ -35,5 +35,18 @@ impl TidalClient {
             .with_param("offset", offset.to_string())
             .send()
             .await
+    }
+
+    pub async fn get_album_credits(
+        &mut self,
+        album_id: String,
+    ) -> Result<AlbumCreditsResponse, TidalError> {
+        self.request(
+            reqwest::Method::GET,
+            format!("/albums/{}/credits", album_id),
+        )
+        .with_country_code()
+        .send()
+        .await
     }
 }

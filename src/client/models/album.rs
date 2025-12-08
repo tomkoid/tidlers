@@ -118,3 +118,19 @@ impl Album {
         format!("https://resources.tidal.com/images/{}/{}", cover_path, size)
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AlbumCreditContributor {
+    pub name: String,
+    pub id: Option<u64>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbumCredit {
+    #[serde(rename = "type")]
+    pub credit_type: String,
+    pub contributors: Vec<AlbumCreditContributor>,
+}
+
+pub type AlbumCreditsResponse = Vec<AlbumCredit>;

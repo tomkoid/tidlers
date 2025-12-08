@@ -214,13 +214,25 @@ async fn main() -> Result<()> {
             println!("playback info: {:#?}", playback_info);
         }
 
-        args::Commands::Album { album_id } => {
-            println!("getting album info and items for album id: {}..", album_id);
-            let album_info = tidal.get_album(album_id.clone()).await?;
-            let album_items = tidal.get_album_items(album_id, Some(10), Some(0)).await?;
-            println!("album info: {:?}", album_info);
-            println!("album items: {:#?}", album_items);
-        }
+        args::Commands::Album { command, album_id } => match command {
+            args::AlbumCommands::Info => {
+                println!("getting album info for album id: {}..", album_id);
+                let album_info = tidal.get_album(album_id.clone()).await?;
+                println!("album info: {:?}", album_info);
+            }
+            args::AlbumCommands::Items => {
+                println!("getting album items for album id: {}..", album_id);
+                let album_items = tidal
+                    .get_album_items(album_id.clone(), Some(10), Some(0))
+                    .await?;
+                println!("album items: {:#?}", album_items);
+            }
+            args::AlbumCommands::Credits => {
+                println!("getting album credits for album id: {}..", album_id);
+                let album_credits = tidal.get_album_credits(album_id.clone()).await?;
+                println!("album credits: {:#?}", album_credits);
+            }
+        },
 
         args::Commands::Logout => {
             println!("trying to logout..");
