@@ -90,7 +90,7 @@ async fn main() -> Result<()> {
                     };
                     println!("creating playlist with title: {}..", name);
                     let playlist = tidal
-                        .create_playlist(name, description, Some(sharing_level), None)
+                        .create_playlist(name, description, Some(sharing_level), folder_id)
                         .await?;
                     println!("created playlist: {:#?}", playlist);
                 }
