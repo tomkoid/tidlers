@@ -4,7 +4,7 @@ use crate::{
         models::{
             artist::{
                 ArtistAlbumsResponse, ArtistBioResponse, ArtistLinksResponse, ArtistResponse,
-                ArtistTopTracksResponse,
+                ArtistTopTracksResponse, ArtistVideosResponse,
             },
             mixes::TrackMixInfo,
         },
@@ -87,6 +87,32 @@ impl TidalClient {
         self.request(
             reqwest::Method::GET,
             format!("/artists/{}/albums", artist_id),
+        )
+        .with_country_code()
+        .with_param("limit", limit.to_string())
+        .with_param("offset", offset.to_string())
+        .send()
+        .await
+    }
+
+    pub async fn get_artist_videos(
+        &mut self,
+        artist_id: String,
+        limit: Option<u64>,
+        offset: Option<u64>,
+    ) -> Result<ArtistVideosResponse, TidalError> {
+        let limit = limit.unwrap_or(50);
+        let offset = offset.unwrap_or(0);
+
+        if limit > 100 {
+            return Err(TidalError::InvalidArgument(
+                "limit cannot be greater than 100".to_string(),
+            ));
+        }
+
+        self.request(
+            reqwest::Method::GET,
+            format!("/artists/{}/videos", artist_id),
         )
         .with_country_code()
         .with_param("limit", limit.to_string())

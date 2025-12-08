@@ -75,6 +75,8 @@ pub enum ArtistCommands {
     Albums,
     /// Show artist's mix
     Mix,
+    /// Show artist's videos
+    Videos,
     // /// Show artist's related artists
     // Related,
 }
