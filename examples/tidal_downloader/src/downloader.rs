@@ -4,6 +4,7 @@ use futures::stream::{self, StreamExt};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use tidlers::client::{
     TidalClient,
     models::track::{ManifestType, Track, TrackPlaybackInfoPostPaywallResponse},
@@ -20,6 +21,60 @@ struct DownloadSummary {
     downloaded: usize,
     skipped: usize,
     failed: usize,
+}
+
+// Rate limiting state shared across all downloads
+struct RateLimitState {
+    is_rate_limited: AtomicBool,
+    consecutive_errors: AtomicU64,
+    last_backoff_time: Arc<tokio::sync::Mutex<Option<std::time::Instant>>>,
+}
+
+impl RateLimitState {
+    fn new() -> Arc<Self> {
+        Arc::new(Self {
+            is_rate_limited: AtomicBool::new(false),
+            consecutive_errors: AtomicU64::new(0),
+            last_backoff_time: Arc::new(tokio::sync::Mutex::new(None)),
+        })
+    }
+
+    async fn on_error(&self) {
+        let errors = self.consecutive_errors.fetch_add(1, Ordering::SeqCst) + 1;
+        
+        // If we hit 3 consecutive errors, trigger rate limit backoff
+        if errors >= 3 && !self.is_rate_limited.swap(true, Ordering::SeqCst) {
+            println!("\nrate limit detected! pausing all downloads for 5 seconds...");
+            let mut last_time = self.last_backoff_time.lock().await;
+            *last_time = Some(std::time::Instant::now());
+        }
+    }
+
+    async fn on_success(&self) {
+        self.consecutive_errors.store(0, Ordering::SeqCst);
+    }
+
+    async fn wait_if_rate_limited(&self) {
+        if self.is_rate_limited.load(Ordering::SeqCst) {
+            let mut last_time = self.last_backoff_time.lock().await;
+            
+            if let Some(backoff_start) = *last_time {
+                let elapsed = backoff_start.elapsed();
+                let backoff_duration = std::time::Duration::from_secs(5);
+                
+                if elapsed < backoff_duration {
+                    let remaining = backoff_duration - elapsed;
+                    tokio::time::sleep(remaining).await;
+                }
+                
+                // Reset rate limit state
+                *last_time = None;
+                self.is_rate_limited.store(false, Ordering::SeqCst);
+                self.consecutive_errors.store(0, Ordering::SeqCst);
+                println!("resuming downloads...\n");
+            }
+        }
+    }
 }
 
 impl DownloadSummary {
@@ -200,6 +255,7 @@ impl Downloader {
         let multi_progress = Arc::new(MultiProgress::new());
         let downloader = Arc::new(self);
         let client = Arc::new(tokio::sync::Mutex::new(client));
+        let rate_limit_state = RateLimitState::new();
 
         let results = stream::iter(tracks.into_iter().enumerate())
             .map(|(index, track)| {
@@ -207,6 +263,7 @@ impl Downloader {
                 let client = Arc::clone(&client);
                 let multi_progress = Arc::clone(&multi_progress);
                 let output_dir = output_dir.clone();
+                let rate_limit_state = Arc::clone(&rate_limit_state);
 
                 async move {
                     let pb = multi_progress.add(ProgressBar::new(100));
@@ -231,6 +288,9 @@ impl Downloader {
 
                     pb.set_message(format_str.clone());
 
+                    // Wait if rate limited
+                    rate_limit_state.wait_if_rate_limited().await;
+
                     let track_id = track.id.to_string();
                     let result = {
                         let mut client_guard = client.lock().await;
@@ -241,6 +301,8 @@ impl Downloader {
 
                     match result {
                         Ok(playback_info) => {
+                            rate_limit_state.on_success().await;
+                            
                             let result = downloader
                                 .download_track_with_info_numbered(
                                     &track,
@@ -261,6 +323,12 @@ impl Downloader {
                             result
                         }
                         Err(e) => {
+                            // Check if this is a rate limit error (empty response)
+                            let error_str = e.to_string();
+                            if error_str.contains("EOF while parsing") || error_str.contains("expected value") {
+                                rate_limit_state.on_error().await;
+                            }
+                            
                             pb.finish_with_message(format!(
                                 " {} (failed to get playback info: {})",
                                 format_str, e
