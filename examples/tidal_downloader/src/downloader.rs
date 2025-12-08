@@ -40,8 +40,17 @@ impl Downloader {
             .await
             .context("Failed to get playback info")?;
 
-        self.download_track_with_info(&track, &playback_info, None, &self.output_dir)
-            .await
+        let was_downloaded = self
+            .download_track_with_info(&track, &playback_info, None, &self.output_dir)
+            .await?;
+
+        if was_downloaded {
+            println!("\ntrack downloaded successfully");
+        } else {
+            println!("\ntrack already exists, skipped download");
+        }
+
+        Ok(())
     }
 
     pub async fn download_album(&self, client: &mut TidalClient, album_id: &str) -> Result<()> {
@@ -82,7 +91,7 @@ impl Downloader {
         }
 
         println!(
-            "\ndownloading {} tracks in parallel (max {})...\n",
+            "\ndownloading {} tracks in parallel (max {})...",
             all_tracks.len(),
             self.max_parallel
         );
@@ -93,7 +102,7 @@ impl Downloader {
         let downloader = Arc::new(self);
         let client = Arc::new(tokio::sync::Mutex::new(client));
 
-        stream::iter(all_tracks)
+        let results = stream::iter(all_tracks)
             .map(|track| {
                 let downloader = Arc::clone(&downloader);
                 let client = Arc::clone(&client);
@@ -128,15 +137,33 @@ impl Downloader {
                                     &album_dir,
                                 )
                                 .await;
-                            pb.finish_with_message(format!(
-                                " {:02} - {}",
-                                track.track_number, track.title
-                            ));
+
+                            match &result {
+                                Ok(true) => {
+                                    pb.finish_with_message(format!(
+                                        " {:02} - {}",
+                                        track.track_number, track.title
+                                    ));
+                                }
+                                Ok(false) => {
+                                    pb.finish_with_message(format!(
+                                        " {:02} - {} (skipped - already exists)",
+                                        track.track_number, track.title
+                                    ));
+                                }
+                                Err(e) => {
+                                    pb.finish_with_message(format!(
+                                        " {:02} - {} (failed: {})",
+                                        track.track_number, track.title, e
+                                    ));
+                                }
+                            }
+
                             result
                         }
                         Err(e) => {
                             pb.finish_with_message(format!(
-                                " {:02} - {} ({})",
+                                " {:02} - {} (failed to get playback info: {})",
                                 track.track_number, track.title, e
                             ));
                             Err(e.into())
@@ -147,6 +174,28 @@ impl Downloader {
             .buffer_unordered(self.max_parallel)
             .collect::<Vec<_>>()
             .await;
+
+        // print summary
+        let mut downloaded = 0;
+        let mut skipped = 0;
+        let mut failed = 0;
+
+        for result in results {
+            match result {
+                Ok(true) => downloaded += 1,
+                Ok(false) => skipped += 1,
+                Err(_) => failed += 1,
+            }
+        }
+
+        println!("\n\nsummary:");
+        println!("  downloaded: {}", downloaded);
+        if skipped > 0 {
+            println!("  skipped: {} (already exist)", skipped);
+        }
+        if failed > 0 {
+            println!("  failed: {}", failed);
+        }
 
         Ok(())
     }
@@ -170,25 +219,35 @@ impl Downloader {
         playback_info: &TrackPlaybackInfoPostPaywallResponse,
         progress_bar: Option<ProgressBar>,
         output_dir: &PathBuf,
-    ) -> Result<()> {
-        let file_name = format!(
-            "{:02} - {}.{}",
+    ) -> Result<bool> {
+        let extension = self.get_file_extension(playback_info);
+        let base_name = format!(
+            "{:02} - {}",
             track.track_number,
-            sanitize_filename::sanitize(&track.title),
-            self.get_file_extension(playback_info)
+            sanitize_filename::sanitize(&track.title)
         );
 
-        let output_path = output_dir.join(&file_name);
+        // check if file exists with current extension
+        let output_path = output_dir.join(format!("{}.{}", base_name, extension));
 
-        // Skip if already exists
         if output_path.exists() {
             if let Some(pb) = progress_bar {
-                pb.finish_with_message(format!(
-                    " {:02} - {} (exists)",
-                    track.track_number, track.title
-                ));
+                pb.set_position(100);
             }
-            return Ok(());
+            return Ok(false); // file was skipped
+        }
+
+        // check if file exists with different extension (different quality already downloaded)
+        let possible_extensions = ["m4a", "flac", "mp3"];
+        for ext in &possible_extensions {
+            if ext != &extension {
+                let other_path = output_dir.join(format!("{}.{}", base_name, ext));
+                if other_path.exists() {
+                    // delete the old file to replace it with new quality
+                    std::fs::remove_file(&other_path)
+                        .context("Failed to remove old file with different quality")?;
+                }
+            }
         }
 
         match &playback_info.manifest_parsed {
@@ -208,7 +267,7 @@ impl Downloader {
             }
         }
 
-        Ok(())
+        Ok(true) // file was downloaded
     }
 
     async fn download_dash_track(
