@@ -17,6 +17,12 @@ A Rust library for interacting with the TIDAL music streaming API.
 - Session persistence for seamless re-authentication
 - Type-safe API with serde-based deserialization
 
+## Projects using Tidlers
+
+Tidlers is still very WIP, but here is my project that uses it:
+
+- [yadal](https://codeberg.org/tomkoid/yadal) - Command-line downloader with parallel downloads and all quality support
+
 ## Installation
 
 Add this to your `Cargo.toml`:
@@ -180,29 +186,6 @@ match &playback_info.manifest_parsed {
 
 The repository includes several examples demonstrating different use cases:
 
-### tidal_downloader
-
-Command-line downloader with parallel downloads and all quality support:
-
-```bash
-# Download a single track in HiRes
-cargo run -p tidal-downloader -- 251380835 -m track -q hires
-
-# Download entire album with 10 parallel downloads
-cargo run -p tidal-downloader -- 251380836 -m album -p 10
-
-# Download in Lossless quality
-cargo run -p tidal-downloader -- 251380836 -q lossless -o ~/Music
-```
-
-**Features:**
-- Downloads tracks, albums, and playlists
-- All quality levels (Low, High, Lossless, HiRes)
-- DASH manifest parsing for HiRes
-- Parallel downloads (configurable)
-- OAuth authentication with session persistence
-- Progress bars and automatic file naming
-- CLI powered by clap
 
 ### testing_client
 
