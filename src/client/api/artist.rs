@@ -2,11 +2,11 @@ use crate::{
     client::{
         TidalClient,
         models::{
-            album::AlbumItemsResponse,
             artist::{
                 ArtistAlbumsResponse, ArtistBioResponse, ArtistLinksResponse, ArtistResponse,
                 ArtistTopTracksResponse,
             },
+            mixes::TrackMixInfo,
         },
     },
     error::TidalError,
@@ -93,5 +93,12 @@ impl TidalClient {
         .with_param("offset", offset.to_string())
         .send()
         .await
+    }
+
+    pub async fn get_artist_mix(&mut self, artist_id: String) -> Result<TrackMixInfo, TidalError> {
+        self.request(reqwest::Method::GET, format!("/artists/{}/mix", artist_id))
+            .with_country_code()
+            .send()
+            .await
     }
 }

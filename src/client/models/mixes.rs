@@ -10,3 +10,16 @@ pub struct TrackMixInfo {
 pub struct Mixes {
     pub track_mix: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArrivalMixData {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub data_type: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArrivalMixLinks {
+    #[serde(rename = "self")]
+    pub self_link: String,
+}

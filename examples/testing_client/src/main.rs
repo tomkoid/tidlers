@@ -170,6 +170,12 @@ async fn main() -> Result<()> {
                 let artist_albums = tidal.get_artist_albums(artist_id, None, None).await?;
                 println!("artist albums: {:#?}", artist_albums);
             }
+
+            args::ArtistCommands::Mix => {
+                println!("getting artist mix for artist id: {}..", artist_id);
+                let artist_mix = tidal.get_artist_mix(artist_id).await?;
+                println!("artist mix: {:#?}", artist_mix);
+            }
         },
 
         args::Commands::Subscription => {

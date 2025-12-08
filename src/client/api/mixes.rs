@@ -1,6 +1,8 @@
-use serde::{Deserialize, Serialize};
-
-use crate::{client::TidalClient, error::TidalError, responses::TidalGenericResponse};
+use crate::{
+    client::{TidalClient, models::mixes::ArrivalMixData},
+    error::TidalError,
+    responses::TidalGenericResponse,
+};
 
 impl TidalClient {
     pub async fn get_arrival_mixes(
@@ -16,17 +18,4 @@ impl TidalClient {
             .send()
             .await
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ArrivalMixData {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub data_type: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ArrivalMixLinks {
-    #[serde(rename = "self")]
-    pub self_link: String,
 }

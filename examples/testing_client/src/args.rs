@@ -73,6 +73,8 @@ pub enum ArtistCommands {
     Links,
     /// Show artist's albums
     Albums,
+    /// Show artist's mix
+    Mix,
     // /// Show artist's related artists
     // Related,
 }
