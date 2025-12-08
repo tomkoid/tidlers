@@ -233,6 +233,7 @@ impl Downloader {
         // Step 2: Download media segments sequentially until we hit 3 consecutive failures
         let mut segment_num = 1;
         let mut consecutive_failures = 0;
+        let mut segments_downloaded = 0;
 
         loop {
             if let Some(segment_url) = dash.get_segment_url(segment_num) {
@@ -240,11 +241,16 @@ impl Downloader {
                     Ok(segment_data) => {
                         combined_data.extend_from_slice(&segment_data);
                         consecutive_failures = 0;
+                        segments_downloaded += 1;
 
-                        // Update progress (rough estimate based on segments)
+                        // lets estimate around 150-200 segments for most tracks
+                        // progress goes from 5% (after init) to 95%, then 100% after write
                         if let Some(ref pb) = progress_bar {
-                            let progress = 5 + (segment_num as u64 * 95 / 200).min(95);
-                            pb.set_position(progress);
+                            let estimated_total_segments = 150;
+                            let progress = 5
+                                + ((segments_downloaded * 90).min(estimated_total_segments * 90)
+                                    / estimated_total_segments);
+                            pb.set_position(progress as u64);
                         }
                     }
                     Err(_) => {
@@ -276,8 +282,39 @@ impl Downloader {
         output_path: &PathBuf,
         progress_bar: Option<ProgressBar>,
     ) -> Result<()> {
-        let data = self.download_segment(url).await?;
-        std::fs::write(output_path, data).context("Failed to write file")?;
+        use futures::StreamExt;
+
+        let response = self
+            .http_client
+            .get(url)
+            .timeout(std::time::Duration::from_secs(60))
+            .send()
+            .await
+            .context("Failed to send request")?;
+
+        if !response.status().is_success() {
+            anyhow::bail!("HTTP {}", response.status());
+        }
+
+        let total_size = response.content_length().unwrap_or(0);
+        let mut downloaded: u64 = 0;
+        let mut stream = response.bytes_stream();
+        let mut file_data = Vec::new();
+
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.context("Failed to read chunk")?;
+            file_data.extend_from_slice(&chunk);
+            downloaded += chunk.len() as u64;
+
+            if let Some(ref pb) = progress_bar {
+                if total_size > 0 {
+                    let progress = (downloaded * 100 / total_size).min(100);
+                    pb.set_position(progress);
+                }
+            }
+        }
+
+        std::fs::write(output_path, file_data).context("Failed to write file")?;
 
         if let Some(ref pb) = progress_bar {
             pb.set_position(100);
