@@ -99,6 +99,11 @@ impl<'a> ApiRequestBuilder<'a> {
         req.headers = self.headers;
 
         let resp = self.client.rq.request(req).await?;
+
+        if resp.status() == reqwest::StatusCode::NOT_FOUND {
+            return Err(TidalError::NotFound);
+        }
+
         let body = resp.text().await?;
 
         if self.request_debug {

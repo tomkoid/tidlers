@@ -3,6 +3,9 @@ use thiserror::Error;
 
 #[derive(Error, Debug, Serialize)]
 pub enum TidalError {
+    #[error("resource not found")]
+    NotFound,
+
     #[error("not authenticated, either session and/or page doesn't have access token set")]
     NotAuthenticated,
 
