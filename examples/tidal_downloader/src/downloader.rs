@@ -130,10 +130,7 @@ impl Downloader {
         }
 
         self.download_tracks_parallel(
-            client,
-            all_tracks,
-            &album_dir,
-            false, // use original track numbers
+            client, all_tracks, &album_dir, false, // use original track numbers
         )
         .await
     }
@@ -152,7 +149,7 @@ impl Downloader {
         println!("tracks: {}", playlist.number_of_tracks);
 
         let playlist_dir = self.output_dir.join(sanitize_filename::sanitize(format!(
-            "{} (playlist)",
+            "{}-playlist",
             playlist.title
         )));
         std::fs::create_dir_all(&playlist_dir).context("Failed to create playlist directory")?;
