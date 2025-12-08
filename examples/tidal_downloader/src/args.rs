@@ -8,8 +8,14 @@ use crate::{MediaTypeArg, QualityArg};
 #[command(name = "tidal-downloader")]
 #[command(author, version, about = "Download music from TIDAL", long_about = None)]
 pub struct Cli {
-    /// Media ID (track, album, or playlist)
-    #[arg(value_name = "ID")]
+    /// TIDAL URL or media ID (track, album, or playlist)
+    /// 
+    /// Examples:
+    ///   https://tidal.com/track/437468401
+    ///   https://tidal.com/album/55130630
+    ///   https://tidal.com/playlist/aa692128-2954-4fe1-b5a1-4ede1add485d
+    ///   437468401
+    #[arg(value_name = "URL_OR_ID")]
     pub id: String,
 
     /// Type of media to download
