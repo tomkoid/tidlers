@@ -1,4 +1,5 @@
 use clap::Parser;
+use tidlers::client::models::playback::AudioQuality;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -31,6 +32,9 @@ pub enum Commands {
 
     /// Show details of a specific track
     Track {
+        #[clap(short, long, default_value_t = ArgAudioQuality::High, value_enum)]
+        quality: ArgAudioQuality,
+
         /// Track ID
         track_id: String,
     },
@@ -99,7 +103,7 @@ pub enum PlaylistCommands {
         folder_id: Option<String>,
         /// Sharing level (PUBLIC or PRIVATE)
         #[clap(short, long)]
-        sharing_level: Option<SharingLevel>,
+        sharing_level: Option<ArgSharingLevel>,
     },
     /// List playlists
     List,
@@ -108,10 +112,34 @@ pub enum PlaylistCommands {
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
-pub enum SharingLevel {
+pub enum ArgSharingLevel {
     #[clap(name = "PUBLIC")]
     Public,
     #[clap(name = "PRIVATE")]
     #[default]
     Private,
+}
+
+#[derive(clap::ValueEnum, Clone, Default, Debug)]
+pub enum ArgAudioQuality {
+    #[clap(name = "low")]
+    Low,
+    #[clap(name = "high")]
+    #[default]
+    High,
+    #[clap(name = "lossless")]
+    Lossless,
+    #[clap(name = "hires")]
+    HiRes,
+}
+
+impl ArgAudioQuality {
+    pub fn to_api_quality(&self) -> AudioQuality {
+        match self {
+            ArgAudioQuality::Low => AudioQuality::Low,
+            ArgAudioQuality::High => AudioQuality::High,
+            ArgAudioQuality::Lossless => AudioQuality::Lossless,
+            ArgAudioQuality::HiRes => AudioQuality::HiRes,
+        }
+    }
 }

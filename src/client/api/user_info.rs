@@ -4,21 +4,16 @@ use crate::{
         models::user::{User, UserData},
     },
     error::TidalError,
-    requests::TidalRequest,
     responses::TidalGenericResponse,
 };
 
 impl TidalClient {
     pub async fn refresh_user_info(&mut self) -> Result<(), TidalError> {
-        let url = "/users/me".to_string();
-
-        let mut req = TidalRequest::new(reqwest::Method::GET, url.clone());
-        req.access_token = self.session.auth.access_token.clone();
-        req.base_url = Some(Self::OPEN_API_V2_LOCATION.to_string());
-        let resp = self.rq.request(req).await?;
-        let body = resp.text().await?;
-
-        let json: TidalGenericResponse<UserData> = serde_json::from_str(&body)?;
+        let json: TidalGenericResponse<UserData> = self
+            .request(reqwest::Method::GET, "/users/me")
+            .with_base_url(Self::OPEN_API_V2_LOCATION)
+            .send()
+            .await?;
 
         self.user_info = Some(User {
             user_id: json.data.id.parse()?,

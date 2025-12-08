@@ -1,4 +1,4 @@
-use crate::{args::SharingLevel, save::remove_session_data};
+use crate::{args::ArgSharingLevel, save::remove_session_data};
 use clap::Parser;
 use color_eyre::eyre::Result;
 use tidlers::client::{TidalClient, models::playback::AudioQuality};
@@ -78,11 +78,11 @@ async fn main() -> Result<()> {
                     name,
                     sharing_level,
                 } => {
-                    let sharing_level = match sharing_level.unwrap_or(SharingLevel::Private) {
-                        SharingLevel::Private => {
+                    let sharing_level = match sharing_level.unwrap_or(ArgSharingLevel::Private) {
+                        ArgSharingLevel::Private => {
                             tidlers::client::models::collection::SharingLevel::Private
                         }
-                        SharingLevel::Public => {
+                        ArgSharingLevel::Public => {
                             tidlers::client::models::collection::SharingLevel::Public
                         }
                     };
@@ -155,7 +155,7 @@ async fn main() -> Result<()> {
             }
         }
 
-        args::Commands::Track { track_id } => {
+        args::Commands::Track { track_id, quality } => {
             println!(
                 "getting track info and track mix for track id: {}..",
                 track_id
@@ -166,7 +166,7 @@ async fn main() -> Result<()> {
             println!("track mix: {:?}", track_mix);
 
             println!("getting playback info for track id..");
-            tidal.set_audio_quality(AudioQuality::HiRes);
+            tidal.set_audio_quality(quality.to_api_quality());
             let playback_info = tidal.get_track_postpaywall_playback_info(track_id).await?;
             println!("playback info: {:#?}", playback_info);
         }
