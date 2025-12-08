@@ -20,7 +20,7 @@ pub struct Downloader {
 struct DownloadSummary {
     downloaded: usize,
     skipped: usize,
-    failed: usize,
+    failed: Vec<String>,
 }
 
 // Rate limiting state shared across all downloads
@@ -39,11 +39,12 @@ impl RateLimitState {
         })
     }
 
-    async fn on_error(&self) {
+    async fn on_error(&self, multi_progress: &MultiProgress) {
         let errors = self.consecutive_errors.fetch_add(1, Ordering::SeqCst) + 1;
         
         // If we hit 3 consecutive errors, trigger rate limit backoff
         if errors >= 3 && !self.is_rate_limited.swap(true, Ordering::SeqCst) {
+            multi_progress.clear().ok();
             println!("\nrate limit detected! pausing all downloads for 5 seconds...");
             let mut last_time = self.last_backoff_time.lock().await;
             *last_time = Some(std::time::Instant::now());
@@ -71,7 +72,7 @@ impl RateLimitState {
                 *last_time = None;
                 self.is_rate_limited.store(false, Ordering::SeqCst);
                 self.consecutive_errors.store(0, Ordering::SeqCst);
-                println!("resuming downloads...\n");
+                println!("resuming downloads...");
             }
         }
     }
@@ -82,17 +83,17 @@ impl DownloadSummary {
         Self {
             downloaded: 0,
             skipped: 0,
-            failed: 0,
+            failed: Vec::new(),
         }
     }
 
-    fn from_results(results: Vec<Result<bool>>) -> Self {
+    fn from_results(results: Vec<(String, Result<bool>)>) -> Self {
         let mut summary = Self::new();
-        for result in results {
+        for (track_name, result) in results {
             match result {
                 Ok(true) => summary.downloaded += 1,
                 Ok(false) => summary.skipped += 1,
-                Err(_) => summary.failed += 1,
+                Err(_) => summary.failed.push(track_name),
             }
         }
         summary
@@ -104,8 +105,11 @@ impl DownloadSummary {
         if self.skipped > 0 {
             println!("  skipped: {} (already exist)", self.skipped);
         }
-        if self.failed > 0 {
-            println!("  failed: {}", self.failed);
+        if !self.failed.is_empty() {
+            println!("  failed: {}", self.failed.len());
+            for track in &self.failed {
+                println!("    - {}", track);
+            }
         }
     }
 }
@@ -313,27 +317,18 @@ impl Downloader {
                                 )
                                 .await;
 
-                            let finish_msg = match &result {
-                                Ok(true) => format!(" {}", format_str),
-                                Ok(false) => format!(" {} (skipped - already exists)", format_str),
-                                Err(e) => format!(" {} (failed: {})", format_str, e),
-                            };
-
-                            pb.finish_with_message(finish_msg);
-                            result
+                            pb.finish_and_clear();
+                            (format_str, result)
                         }
                         Err(e) => {
                             // Check if this is a rate limit error (empty response)
                             let error_str = e.to_string();
                             if error_str.contains("EOF while parsing") || error_str.contains("expected value") {
-                                rate_limit_state.on_error().await;
+                                rate_limit_state.on_error(&multi_progress).await;
                             }
                             
-                            pb.finish_with_message(format!(
-                                " {} (failed to get playback info: {})",
-                                format_str, e
-                            ));
-                            Err(e.into())
+                            pb.finish_and_clear();
+                            (format_str, Err(e.into()))
                         }
                     }
                 }
