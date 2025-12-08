@@ -71,8 +71,8 @@ pub enum ArtistCommands {
     Bio,
     /// Show artist's links
     Links,
-    // /// Show artist's albums
-    // Albums,
+    /// Show artist's albums
+    Albums,
     // /// Show artist's related artists
     // Related,
 }

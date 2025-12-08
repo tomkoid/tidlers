@@ -161,8 +161,14 @@ async fn main() -> Result<()> {
             }
             args::ArtistCommands::Links => {
                 println!("getting artist links for artist id: {}..", artist_id);
-                let artist_bio = tidal.get_artist_links(artist_id).await?;
-                println!("artist links: {:#?}", artist_bio);
+                let artist_links = tidal.get_artist_links(artist_id).await?;
+                println!("artist links: {:#?}", artist_links);
+            }
+
+            args::ArtistCommands::Albums => {
+                println!("getting artist albums for artist id: {}..", artist_id);
+                let artist_albums = tidal.get_artist_albums(artist_id, None, None).await?;
+                println!("artist albums: {:#?}", artist_albums);
             }
         },
 

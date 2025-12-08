@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::track::Track;
+use super::{album::ArtistAlbum, track::Track};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -70,4 +70,13 @@ pub struct ArtistLinksResponse {
     pub total_number_of_items: u32,
     pub items: Vec<ArtistLink>,
     pub source: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtistAlbumsResponse {
+    pub limit: u32,
+    pub offset: u32,
+    pub total_number_of_items: u32,
+    pub items: Vec<ArtistAlbum>,
 }
