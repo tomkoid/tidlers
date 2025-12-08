@@ -2,23 +2,25 @@ when:
   - event: [push, pull_request, tag]
 
 steps:
-  check:
+  install-deps:
     image: rust:latest
     commands:
       - apt-get update && apt-get install -y libasound2-dev
+
+  check:
+    image: rust:latest
+    commands:
       - cargo check --workspace --all-targets
 
   clippy:
     image: rust:latest
     commands:
-      - apt-get update && apt-get install -y libasound2-dev
       - rustup component add clippy
       - cargo clippy --workspace --all-targets -- -D warnings
 
   test:
     image: rust:latest
     commands:
-      - apt-get update && apt-get install -y libasound2-dev
       - cargo test --workspace --all-targets
 
   fmt:
@@ -30,5 +32,4 @@ steps:
   build:
     image: rust:latest
     commands:
-      - apt-get update && apt-get install -y libasound2-dev
       - cargo build --workspace --release
