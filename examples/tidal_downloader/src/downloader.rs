@@ -9,11 +9,50 @@ use tidlers::client::{
     models::track::{ManifestType, Track, TrackPlaybackInfoPostPaywallResponse},
 };
 
-/// struct for handling all download operations
+/// Struct for handling all download operations
 pub struct Downloader {
     output_dir: PathBuf,
     http_client: reqwest::Client,
     max_parallel: usize,
+}
+
+struct DownloadSummary {
+    downloaded: usize,
+    skipped: usize,
+    failed: usize,
+}
+
+impl DownloadSummary {
+    fn new() -> Self {
+        Self {
+            downloaded: 0,
+            skipped: 0,
+            failed: 0,
+        }
+    }
+
+    fn from_results(results: Vec<Result<bool>>) -> Self {
+        let mut summary = Self::new();
+        for result in results {
+            match result {
+                Ok(true) => summary.downloaded += 1,
+                Ok(false) => summary.skipped += 1,
+                Err(_) => summary.failed += 1,
+            }
+        }
+        summary
+    }
+
+    fn print(&self) {
+        println!("\nsummary:");
+        println!("  downloaded: {}", self.downloaded);
+        if self.skipped > 0 {
+            println!("  skipped: {} (already exist)", self.skipped);
+        }
+        if self.failed > 0 {
+            println!("  failed: {}", self.failed);
+        }
+    }
 }
 
 impl Downloader {
@@ -90,116 +129,14 @@ impl Downloader {
             offset += limit;
         }
 
-        println!(
-            "\ndownloading {} tracks in parallel (max {})...",
-            all_tracks.len(),
-            self.max_parallel
-        );
-
-        // download all tracks in parallel using streams
-        // buffer_unordered limits concurrent downloads to max_parallel
-        let multi_progress = Arc::new(MultiProgress::new());
-        let downloader = Arc::new(self);
-        let client = Arc::new(tokio::sync::Mutex::new(client));
-
-        let results = stream::iter(all_tracks)
-            .map(|track| {
-                let downloader = Arc::clone(&downloader);
-                let client = Arc::clone(&client);
-                let multi_progress = Arc::clone(&multi_progress);
-                let album_dir = album_dir.clone();
-
-                async move {
-                    let pb = multi_progress.add(ProgressBar::new(100));
-                    pb.set_style(
-                        ProgressStyle::default_bar()
-                            .template("{msg} [{bar:40.cyan/blue}] {percent}%")
-                            .unwrap()
-                            .progress_chars("#>-"),
-                    );
-                    pb.set_message(format!("{:02} - {}", track.track_number, track.title));
-
-                    let track_id = track.id.to_string();
-                    let result = {
-                        let mut client_guard = client.lock().await;
-                        client_guard
-                            .get_track_postpaywall_playback_info(track_id)
-                            .await
-                    };
-
-                    match result {
-                        Ok(playback_info) => {
-                            let result = downloader
-                                .download_track_with_info(
-                                    &track,
-                                    &playback_info,
-                                    Some(pb.clone()),
-                                    &album_dir,
-                                )
-                                .await;
-
-                            match &result {
-                                Ok(true) => {
-                                    pb.finish_with_message(format!(
-                                        " {:02} - {}",
-                                        track.track_number, track.title
-                                    ));
-                                }
-                                Ok(false) => {
-                                    pb.finish_with_message(format!(
-                                        " {:02} - {} (skipped - already exists)",
-                                        track.track_number, track.title
-                                    ));
-                                }
-                                Err(e) => {
-                                    pb.finish_with_message(format!(
-                                        " {:02} - {} (failed: {})",
-                                        track.track_number, track.title, e
-                                    ));
-                                }
-                            }
-
-                            result
-                        }
-                        Err(e) => {
-                            pb.finish_with_message(format!(
-                                " {:02} - {} (failed to get playback info: {})",
-                                track.track_number, track.title, e
-                            ));
-                            Err(e.into())
-                        }
-                    }
-                }
-            })
-            .buffer_unordered(self.max_parallel)
-            .collect::<Vec<_>>()
-            .await;
-
-        // print summary
-        let mut downloaded = 0;
-        let mut skipped = 0;
-        let mut failed = 0;
-
-        for result in results {
-            match result {
-                Ok(true) => downloaded += 1,
-                Ok(false) => skipped += 1,
-                Err(_) => failed += 1,
-            }
-        }
-
-        println!("\n\nsummary:");
-        println!("  downloaded: {}", downloaded);
-        if skipped > 0 {
-            println!("  skipped: {} (already exist)", skipped);
-        }
-        if failed > 0 {
-            println!("  failed: {}", failed);
-        }
-
-        Ok(())
+        self.download_tracks_parallel(
+            client,
+            all_tracks,
+            &album_dir,
+            false, // use original track numbers
+        )
+        .await
     }
-
     pub async fn download_playlist(
         &self,
         client: &mut TidalClient,
@@ -215,7 +152,7 @@ impl Downloader {
         println!("tracks: {}", playlist.number_of_tracks);
 
         let playlist_dir = self.output_dir.join(sanitize_filename::sanitize(format!(
-            "{}-playlist",
+            "{} (playlist)",
             playlist.title
         )));
         std::fs::create_dir_all(&playlist_dir).context("Failed to create playlist directory")?;
@@ -241,24 +178,38 @@ impl Downloader {
             offset += limit;
         }
 
+        self.download_tracks_parallel(
+            client,
+            all_tracks,
+            &playlist_dir,
+            true, // use playlist position as track number
+        )
+        .await
+    }
+
+    async fn download_tracks_parallel(
+        &self,
+        client: &mut TidalClient,
+        tracks: Vec<Track>,
+        output_dir: &PathBuf,
+        use_index_as_track_number: bool,
+    ) -> Result<()> {
         println!(
             "\ndownloading {} tracks in parallel (max {})...",
-            all_tracks.len(),
+            tracks.len(),
             self.max_parallel
         );
 
-        // download all tracks in parallel using streams
-        // buffer_unordered limits concurrent downloads to max_parallel
         let multi_progress = Arc::new(MultiProgress::new());
         let downloader = Arc::new(self);
         let client = Arc::new(tokio::sync::Mutex::new(client));
 
-        let results = stream::iter(all_tracks.into_iter().enumerate())
+        let results = stream::iter(tracks.into_iter().enumerate())
             .map(|(index, track)| {
                 let downloader = Arc::clone(&downloader);
                 let client = Arc::clone(&client);
                 let multi_progress = Arc::clone(&multi_progress);
-                let playlist_dir = playlist_dir.clone();
+                let output_dir = output_dir.clone();
 
                 async move {
                     let pb = multi_progress.add(ProgressBar::new(100));
@@ -268,8 +219,20 @@ impl Downloader {
                             .unwrap()
                             .progress_chars("#>-"),
                     );
-                    // use index+1 for playlist position since playlists dont have track numbers
-                    pb.set_message(format!("{:03} - {}", index + 1, track.title));
+
+                    let track_number = if use_index_as_track_number {
+                        (index + 1) as u32
+                    } else {
+                        track.track_number
+                    };
+
+                    let format_str = if use_index_as_track_number {
+                        format!("{:03} - {}", track_number, track.title)
+                    } else {
+                        format!("{:02} - {}", track_number, track.title)
+                    };
+
+                    pb.set_message(format_str.clone());
 
                     let track_id = track.id.to_string();
                     let result = {
@@ -286,44 +249,24 @@ impl Downloader {
                                     &track,
                                     &playback_info,
                                     Some(pb.clone()),
-                                    &playlist_dir,
-                                    (index + 1) as u32,
+                                    &output_dir,
+                                    track_number,
                                 )
                                 .await;
 
-                            match &result {
-                                Ok(true) => {
-                                    pb.finish_with_message(format!(
-                                        " {:03} - {}",
-                                        index + 1,
-                                        track.title
-                                    ));
-                                }
-                                Ok(false) => {
-                                    pb.finish_with_message(format!(
-                                        " {:03} - {} (skipped - already exists)",
-                                        index + 1,
-                                        track.title
-                                    ));
-                                }
-                                Err(e) => {
-                                    pb.finish_with_message(format!(
-                                        " {:03} - {} (failed: {})",
-                                        index + 1,
-                                        track.title,
-                                        e
-                                    ));
-                                }
-                            }
+                            let finish_msg = match &result {
+                                Ok(true) => format!(" {}", format_str),
+                                Ok(false) => format!(" {} (skipped - already exists)", format_str),
+                                Err(e) => format!(" {} (failed: {})", format_str, e),
+                            };
 
+                            pb.finish_with_message(finish_msg);
                             result
                         }
                         Err(e) => {
                             pb.finish_with_message(format!(
-                                " {:03} - {} (failed to get playback info: {})",
-                                index + 1,
-                                track.title,
-                                e
+                                " {} (failed to get playback info: {})",
+                                format_str, e
                             ));
                             Err(e.into())
                         }
@@ -334,31 +277,9 @@ impl Downloader {
             .collect::<Vec<_>>()
             .await;
 
-        // print summary
-        let mut downloaded = 0;
-        let mut skipped = 0;
-        let mut failed = 0;
-
-        for result in results {
-            match result {
-                Ok(true) => downloaded += 1,
-                Ok(false) => skipped += 1,
-                Err(_) => failed += 1,
-            }
-        }
-
-        println!("\nsummary:");
-        println!("  downloaded: {}", downloaded);
-        if skipped > 0 {
-            println!("  skipped: {} (already exist)", skipped);
-        }
-        if failed > 0 {
-            println!("  failed: {}", failed);
-        }
-
+        DownloadSummary::from_results(results).print();
         Ok(())
     }
-
     async fn download_track_with_info(
         &self,
         track: &Track,
