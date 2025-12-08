@@ -74,6 +74,9 @@ pub enum AlbumCommands {
 
     /// Show album credits
     Credits,
+
+    /// Show album items credits
+    ItemsCredits,
 }
 
 #[derive(Parser, Debug, Clone)]

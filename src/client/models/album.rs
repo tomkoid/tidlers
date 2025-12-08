@@ -134,3 +134,21 @@ pub struct AlbumCredit {
 }
 
 pub type AlbumCreditsResponse = Vec<AlbumCredit>;
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbumItemWithCredits {
+    pub item: Track,
+    #[serde(rename = "type")]
+    pub item_type: String,
+    pub credits: Vec<AlbumCredit>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbumItemsWithCreditsResponse {
+    pub limit: u32,
+    pub offset: u32,
+    pub total_number_of_items: u32,
+    pub items: Vec<AlbumItemWithCredits>,
+}

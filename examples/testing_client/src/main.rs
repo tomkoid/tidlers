@@ -232,6 +232,15 @@ async fn main() -> Result<()> {
                 let album_credits = tidal.get_album_credits(album_id.clone()).await?;
                 println!("album credits: {:#?}", album_credits);
             }
+            args::AlbumCommands::ItemsCredits => {
+                println!(
+                    "getting album items with credits for album id: {}..",
+                    album_id
+                );
+                let album_items_credits =
+                    tidal.get_album_items_credits(album_id, None, None).await?;
+                println!("album items with credits: {:#?}", album_items_credits);
+            }
         },
 
         args::Commands::Logout => {
