@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = [".", "examples/login_save", "examples/testing_client", "examples/hires_streamer"]
+members = [".", "examples/login_save", "examples/testing_client", "examples/hires_streamer", "examples/tidal_downloader"]
 
 [workspace.dependencies]
 tidlers = { path = "." }
