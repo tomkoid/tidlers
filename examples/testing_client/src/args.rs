@@ -5,6 +5,9 @@ use tidlers::client::models::playback::AudioQuality;
 pub struct Args {
     #[clap(subcommand)]
     pub command: Commands,
+
+    #[clap(short, long, default_value_t = false)]
+    pub debug: bool,
 }
 
 #[derive(Parser, Debug)]
@@ -45,8 +48,29 @@ pub enum Commands {
         album_id: String,
     },
 
+    /// Show details of a specific artist
+    Artist {
+        #[clap(subcommand)]
+        command: ArtistCommands,
+
+        /// Artist ID
+        artist_id: String,
+    },
+
     /// Logout the user
     Logout,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum ArtistCommands {
+    /// Show artist's info
+    Info,
+    /// Show artist's top tracks
+    TopTracks,
+    // /// Show artist's albums
+    // Albums,
+    // /// Show artist's related artists
+    // Related,
 }
 
 #[derive(Parser, Debug, Clone)]

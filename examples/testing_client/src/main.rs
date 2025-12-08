@@ -1,7 +1,7 @@
 use crate::{args::ArgSharingLevel, save::remove_session_data};
 use clap::Parser;
 use color_eyre::eyre::Result;
-use tidlers::client::{TidalClient, models::playback::AudioQuality};
+use tidlers::client::TidalClient;
 
 use crate::{args::Args, auth::handle_auth, save::save_session_data};
 
@@ -34,6 +34,8 @@ async fn main() -> Result<()> {
 
         cl
     };
+
+    tidal.set_debug_mode(args.debug);
 
     // if waiting for oauth login, handle oauth flow
     if tidal.waiting_for_oauth_login() {
@@ -140,6 +142,19 @@ async fn main() -> Result<()> {
             let top_artists = tidal.get_activity_top_artists(2025, 11).await?;
             println!("top artists: {:#?}", top_artists);
         }
+
+        args::Commands::Artist { artist_id, command } => match command {
+            args::ArtistCommands::Info => {
+                println!("getting artist info for artist id: {}..", artist_id);
+                let artist_info = tidal.get_artist(artist_id.clone()).await?;
+                println!("artist info: {:#?}", artist_info);
+            }
+            args::ArtistCommands::TopTracks => {
+                println!("getting artist tracks for artist id: {}..", artist_id);
+                let artist_tracks = tidal.get_artist_tracks(artist_id, Some(2), None).await?;
+                println!("artist tracks: {:#?}", artist_tracks);
+            }
+        },
 
         args::Commands::Subscription => {
             println!("getting subscription info..");

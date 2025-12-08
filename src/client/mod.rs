@@ -24,7 +24,10 @@ pub struct TidalClient {
     pub page: TidalPage,
 
     #[serde(skip_serializing, skip_deserializing)]
-    pub rq: requests::RequestClient,
+    pub(crate) rq: requests::RequestClient,
+
+    #[serde(skip_serializing, skip_deserializing)]
+    pub(crate) debug_mode: bool,
 }
 
 impl TidalClient {
@@ -40,6 +43,7 @@ impl TidalClient {
             session,
             page: TidalPage::new(),
             rq,
+            debug_mode: false,
         }
     }
 
@@ -61,6 +65,10 @@ impl TidalClient {
 
     pub fn set_playback_mode(&mut self, playback_mode: PlaybackMode) {
         self.session.playback_mode = playback_mode;
+    }
+
+    pub fn set_debug_mode(&mut self, debug: bool) {
+        self.debug_mode = debug;
     }
 
     pub async fn home(&self) -> Result<(), TidalError> {

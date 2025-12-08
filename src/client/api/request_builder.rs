@@ -2,7 +2,9 @@ use reqwest::Method;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 
-use crate::{client::TidalClient, error::TidalError, requests::TidalRequest};
+use crate::{
+    client::TidalClient, error::TidalError, requests::TidalRequest, utils::debug_json_str,
+};
 
 pub struct ApiRequestBuilder<'a> {
     client: &'a mut TidalClient,
@@ -13,10 +15,16 @@ pub struct ApiRequestBuilder<'a> {
     headers: Option<reqwest::header::HeaderMap>,
     add_country_code: bool,
     add_locale: bool,
+    request_debug: bool,
 }
 
 impl<'a> ApiRequestBuilder<'a> {
-    pub fn new(client: &'a mut TidalClient, method: Method, url: impl Into<String>) -> Self {
+    pub fn new(
+        client: &'a mut TidalClient,
+        method: Method,
+        url: impl Into<String>,
+        request_debug: bool,
+    ) -> Self {
         Self {
             client,
             method,
@@ -26,6 +34,7 @@ impl<'a> ApiRequestBuilder<'a> {
             headers: None,
             add_country_code: false,
             add_locale: false,
+            request_debug,
         }
     }
 
@@ -92,6 +101,10 @@ impl<'a> ApiRequestBuilder<'a> {
         let resp = self.client.rq.request(req).await?;
         let body = resp.text().await?;
 
+        if self.request_debug {
+            debug_json_str(&body);
+        }
+
         Ok(serde_json::from_str(&body)?)
     }
 
@@ -121,6 +134,6 @@ impl<'a> ApiRequestBuilder<'a> {
 
 impl TidalClient {
     pub fn request(&mut self, method: Method, url: impl Into<String>) -> ApiRequestBuilder<'_> {
-        ApiRequestBuilder::new(self, method, url)
+        ApiRequestBuilder::new(self, method, url, self.debug_mode)
     }
 }
