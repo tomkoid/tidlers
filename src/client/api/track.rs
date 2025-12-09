@@ -43,45 +43,38 @@ impl TidalClient {
             match reader.read_event_into(&mut buf) {
                 Ok(Event::Empty(e)) | Ok(Event::Start(e)) => match e.name().as_ref() {
                     b"AdaptationSet" => {
-                        for attr in e.attributes() {
-                            if let Ok(attr) = attr {
-                                if attr.key.as_ref() == b"mimeType" {
-                                    mime_type = String::from_utf8_lossy(&attr.value).to_string();
-                                }
+                        for attr in e.attributes().flatten() {
+                            if attr.key.as_ref() == b"mimeType" {
+                                mime_type = String::from_utf8_lossy(&attr.value).to_string();
                             }
                         }
                     }
                     b"Representation" => {
-                        for attr in e.attributes() {
-                            if let Ok(attr) = attr {
-                                match attr.key.as_ref() {
-                                    b"codecs" => {
-                                        codecs = String::from_utf8_lossy(&attr.value).to_string();
-                                    }
-                                    b"bandwidth" => {
-                                        bitrate = String::from_utf8_lossy(&attr.value)
-                                            .parse::<u32>()
-                                            .ok();
-                                    }
-                                    _ => {}
+                        for attr in e.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"codecs" => {
+                                    codecs = String::from_utf8_lossy(&attr.value).to_string();
                                 }
+                                b"bandwidth" => {
+                                    bitrate =
+                                        String::from_utf8_lossy(&attr.value).parse::<u32>().ok();
+                                }
+                                _ => {}
                             }
                         }
                     }
                     b"SegmentTemplate" => {
-                        for attr in e.attributes() {
-                            if let Ok(attr) = attr {
-                                match attr.key.as_ref() {
-                                    b"initialization" => {
-                                        init_url =
-                                            Some(String::from_utf8_lossy(&attr.value).to_string());
-                                    }
-                                    b"media" => {
-                                        media_url =
-                                            Some(String::from_utf8_lossy(&attr.value).to_string());
-                                    }
-                                    _ => {}
+                        for attr in e.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"initialization" => {
+                                    init_url =
+                                        Some(String::from_utf8_lossy(&attr.value).to_string());
                                 }
+                                b"media" => {
+                                    media_url =
+                                        Some(String::from_utf8_lossy(&attr.value).to_string());
+                                }
+                                _ => {}
                             }
                         }
                     }
