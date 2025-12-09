@@ -4,7 +4,7 @@ use reqwest::Method;
 use tokio::sync::mpsc;
 
 use crate::{
-    client::TidalClient,
+    client::{TidalClient, models::user::User},
     requests::{self, TidalRequest},
     responses::{AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
@@ -134,5 +134,28 @@ impl TidalClient {
         }
 
         Err(requests::RequestClientError::Timeout)
+    }
+
+    /// Manually log in with OAuth tokens
+    /// Use this after obtaining the tokens from the OAuth flow
+    pub async fn oauth_manual_login(
+        &mut self,
+        access_token: String,
+        refresh_token: String,
+        expires_in: u64,
+        user_id: u64,
+        user: User,
+    ) {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        self.session.auth.access_token = Some(access_token);
+        self.session.auth.refresh_token = Some(refresh_token);
+        self.session.auth.refresh_expiry = Some(expires_in);
+        self.session.auth.last_refresh_time = Some(now);
+        self.session.auth.user_id = Some(user_id);
+        self.user_info = Some(user.clone());
     }
 }
