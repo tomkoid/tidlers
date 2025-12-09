@@ -142,6 +142,10 @@ pub enum PlaylistCommands {
         /// Playlist UUID
         playlist_id: String,
     },
+    RecommendationsItems {
+        /// Playlist UUID
+        playlist_id: String,
+    },
     Create {
         /// Playlist name
         name: String,

@@ -1,14 +1,41 @@
 use crate::{
     client::{
         TidalClient,
-        models::playlist::{
-            PlaylistInfo, PlaylistItemsResponse, PlaylistsResponse, PublicUserPlaylistsResponse,
+        models::{
+            collection::{PlaylistCollectionItem, SharingLevel},
+            playlist::{
+                PlaylistInfo, PlaylistItemsResponse, PlaylistsResponse, PublicUserPlaylistsResponse,
+            },
         },
     },
     error::TidalError,
 };
 
 impl TidalClient {
+    pub async fn create_playlist(
+        &mut self,
+        title: impl Into<String>,
+        description: impl Into<String>,
+        sharing_level: Option<SharingLevel>,
+        parent_id: Option<String>,
+    ) -> Result<PlaylistCollectionItem, TidalError> {
+        self.request(
+            reqwest::Method::PUT,
+            "/my-collection/playlists/folders/create-playlist",
+        )
+        .with_country_code()
+        .with_param("name", title.into())
+        .with_param("description", description.into())
+        .with_param("folderId", parent_id.unwrap_or("root".to_string()))
+        .with_param(
+            "isPublic",
+            (sharing_level.unwrap_or(SharingLevel::Private) == SharingLevel::Public).to_string(),
+        )
+        .with_base_url(Self::API_V2_LOCATION)
+        .send()
+        .await
+    }
+
     pub async fn list_playlists(&mut self) -> Result<PlaylistsResponse, TidalError> {
         let url = format!(
             "/users/{}/playlists",
@@ -71,6 +98,32 @@ impl TidalClient {
         self.request(
             reqwest::Method::GET,
             format!("/playlists/{}/items", playlist_uuid),
+        )
+        .with_country_code()
+        .with_param("limit", limit.to_string())
+        .with_param("offset", offset.to_string())
+        .send()
+        .await
+    }
+
+    pub async fn get_playlist_recommendations_items(
+        &mut self,
+        playlist_uuid: String,
+        limit: Option<u64>,
+        offset: Option<u64>,
+    ) -> Result<PlaylistItemsResponse, TidalError> {
+        let limit = limit.unwrap_or(20);
+        let offset = offset.unwrap_or(0);
+
+        if limit > 100 {
+            return Err(TidalError::InvalidArgument(
+                "limit cannot be greater than 100".to_string(),
+            ));
+        }
+
+        self.request(
+            reqwest::Method::GET,
+            format!("/playlists/{}/recommendations/items", playlist_uuid),
         )
         .with_country_code()
         .with_param("limit", limit.to_string())
