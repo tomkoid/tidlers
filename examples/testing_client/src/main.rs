@@ -265,9 +265,9 @@ async fn main() -> Result<()> {
         }
 
         args::Commands::Search { command, query } => match command {
-            args::SearchCommands::Direct => {
+            args::SearchCommands::Direct { search_type } => {
                 println!("searching for query {query}..");
-                let results = tidal.search(query).await?;
+                let results = tidal.search_type(query, search_type).await?;
                 println!("results: {results:?}")
             }
 
