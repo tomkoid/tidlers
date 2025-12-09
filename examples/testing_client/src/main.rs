@@ -135,7 +135,7 @@ async fn main() -> Result<()> {
                     println!(
                         "creating folder with name: {} in parent id: {}..",
                         name,
-                        parent_id.as_ref().map(|s| s.as_str()).unwrap_or("root")
+                        parent_id.as_deref().unwrap_or("root")
                     );
                     let folder = tidal.create_folder(name, None).await?;
                     println!("created folder: {:#?}", folder);

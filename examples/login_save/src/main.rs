@@ -86,18 +86,16 @@ async fn main() -> Result<()> {
 }
 
 async fn handle_auth() -> Result<Option<TidalAuth>> {
-    let auth: TidalAuth;
-
     // check for saved session data
     let saved_session_data = get_session_data();
 
     // if we have saved session data, load it, otherwise do oauth flow
-    if saved_session_data.is_some() {
+    let auth = if saved_session_data.is_some() {
         println!("found saved session data");
         return Ok(None);
     } else {
-        auth = TidalAuth::with_oauth();
-    }
+        TidalAuth::with_oauth()
+    };
 
     Ok(Some(auth))
 }
