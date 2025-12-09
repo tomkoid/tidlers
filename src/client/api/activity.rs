@@ -16,7 +16,8 @@ impl TidalClient {
             .await
     }
 
-    pub async fn get_activity_top_artists(&self,
+    pub async fn get_activity_top_artists(
+        &self,
         year: i32,
         month: u32,
     ) -> Result<TopArtistsResponse, TidalError> {

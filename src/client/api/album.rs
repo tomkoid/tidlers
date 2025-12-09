@@ -11,7 +11,10 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_album(&self, album_id: impl Into<AlbumId>) -> Result<AlbumInfoResponse, TidalError> {
+    pub async fn get_album(
+        &self,
+        album_id: impl Into<AlbumId>,
+    ) -> Result<AlbumInfoResponse, TidalError> {
         let album_id = album_id.into();
         self.request(reqwest::Method::GET, format!("/albums/{}/", album_id))
             .with_country_code()
@@ -19,7 +22,8 @@ impl TidalClient {
             .await
     }
 
-    pub async fn get_album_items(&self,
+    pub async fn get_album_items(
+        &self,
         album_id: impl Into<AlbumId>,
         limit: Option<u64>,
         offset: Option<u64>,
@@ -42,7 +46,8 @@ impl TidalClient {
             .await
     }
 
-    pub async fn get_album_credits(&self,
+    pub async fn get_album_credits(
+        &self,
         album_id: impl Into<AlbumId>,
     ) -> Result<AlbumCreditsResponse, TidalError> {
         let album_id = album_id.into();
@@ -55,7 +60,8 @@ impl TidalClient {
         .await
     }
 
-    pub async fn get_album_items_credits(&self,
+    pub async fn get_album_items_credits(
+        &self,
         album_id: impl Into<AlbumId>,
         limit: Option<u64>,
         offset: Option<u64>,

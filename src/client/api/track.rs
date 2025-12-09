@@ -128,7 +128,8 @@ impl TidalClient {
         })
     }
 
-    pub async fn get_track_postpaywall_playback_info(&self,
+    pub async fn get_track_postpaywall_playback_info(
+        &self,
         track_id: impl Into<TrackId>,
     ) -> Result<TrackPlaybackInfoPostPaywallResponse, TidalError> {
         let track_id = track_id.into();
@@ -178,7 +179,10 @@ impl TidalClient {
         Ok(response)
     }
 
-    pub async fn get_track_mix(&self, track_id: impl Into<TrackId>) -> Result<TrackMixInfo, TidalError> {
+    pub async fn get_track_mix(
+        &self,
+        track_id: impl Into<TrackId>,
+    ) -> Result<TrackMixInfo, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/mix", track_id))
             .with_country_code()

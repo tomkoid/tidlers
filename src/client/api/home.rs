@@ -4,7 +4,8 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_home_feed(&self,
+    pub async fn get_home_feed(
+        &self,
         limit: u32,
         time_offset: Option<String>,
     ) -> Result<HomeFeed, TidalError> {

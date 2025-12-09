@@ -73,13 +73,10 @@ impl TidalClient {
         playlist_id: impl Into<PlaylistId>,
     ) -> Result<PlaylistInfo, TidalError> {
         let playlist_id = playlist_id.into();
-        self.request(
-            reqwest::Method::GET,
-            format!("/playlists/{}/", playlist_id),
-        )
-        .with_country_code()
-        .send()
-        .await
+        self.request(reqwest::Method::GET, format!("/playlists/{}/", playlist_id))
+            .with_country_code()
+            .send()
+            .await
     }
 
     pub async fn get_playlist_items(

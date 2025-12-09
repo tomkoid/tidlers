@@ -5,7 +5,8 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_arrival_mixes(&self,
+    pub async fn get_arrival_mixes(
+        &self,
     ) -> Result<TidalGenericResponse<Vec<ArrivalMixData>>, TidalError> {
         let url = format!(
             "/userRecommendations/{}/relationships/newArrivalMixes",

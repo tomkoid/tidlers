@@ -14,7 +14,10 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_artist(&self, artist_id: impl Into<ArtistId>) -> Result<ArtistResponse, TidalError> {
+    pub async fn get_artist(
+        &self,
+        artist_id: impl Into<ArtistId>,
+    ) -> Result<ArtistResponse, TidalError> {
         let artist_id = artist_id.into();
         self.request(reqwest::Method::GET, format!("/artists/{}", artist_id))
             .with_country_code()
@@ -22,7 +25,8 @@ impl TidalClient {
             .await
     }
 
-    pub async fn get_artist_bio(&self,
+    pub async fn get_artist_bio(
+        &self,
         artist_id: impl Into<ArtistId>,
     ) -> Result<ArtistBioResponse, TidalError> {
         let artist_id = artist_id.into();
@@ -32,7 +36,8 @@ impl TidalClient {
             .await
     }
 
-    pub async fn get_artist_links(&self,
+    pub async fn get_artist_links(
+        &self,
         artist_id: impl Into<ArtistId>,
     ) -> Result<ArtistLinksResponse, TidalError> {
         let artist_id = artist_id.into();
@@ -45,7 +50,8 @@ impl TidalClient {
         .await
     }
 
-    pub async fn get_artist_tracks(&self,
+    pub async fn get_artist_tracks(
+        &self,
         artist_id: impl Into<ArtistId>,
         limit: Option<u64>,
         offset: Option<u64>,
@@ -71,7 +77,8 @@ impl TidalClient {
         .await
     }
 
-    pub async fn get_artist_albums(&self,
+    pub async fn get_artist_albums(
+        &self,
         artist_id: impl Into<ArtistId>,
         limit: Option<u64>,
         offset: Option<u64>,
@@ -97,7 +104,8 @@ impl TidalClient {
         .await
     }
 
-    pub async fn get_artist_videos(&self,
+    pub async fn get_artist_videos(
+        &self,
         artist_id: impl Into<ArtistId>,
         limit: Option<u64>,
         offset: Option<u64>,
@@ -123,7 +131,10 @@ impl TidalClient {
         .await
     }
 
-    pub async fn get_artist_mix(&self, artist_id: impl Into<ArtistId>) -> Result<TrackMixInfo, TidalError> {
+    pub async fn get_artist_mix(
+        &self,
+        artist_id: impl Into<ArtistId>,
+    ) -> Result<TrackMixInfo, TidalError> {
         let artist_id = artist_id.into();
         self.request(reqwest::Method::GET, format!("/artists/{}/mix", artist_id))
             .with_country_code()
