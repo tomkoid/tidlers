@@ -1,7 +1,7 @@
 use color_eyre::eyre::Result;
 use tidlers::{
-    auth::{init::TidalAuth, oauth::OAuthStatus},
-    client::tidal::TidalClient,
+    auth::init::TidalAuth,
+    client::{TidalClient, oauth::OAuthStatus},
 };
 
 use crate::save::{get_session_data, save_session_data};
@@ -13,18 +13,25 @@ async fn main() -> Result<()> {
     // better error reporting
     color_eyre::install()?;
 
-    // check for saved session data
-    let saved_session_data = get_session_data();
-
-    let mut auth: TidalAuth;
-
-    // if we have saved session data, load it, otherwise do oauth flow
-    if saved_session_data.is_some() {
-        println!("found saved session data, loading...");
-        auth = TidalAuth::from_serialized(&saved_session_data.unwrap())?;
+    // handle authentication and create Tidal client
+    let mut tidal = if let Some(auth) = handle_auth().await? {
+        TidalClient::new(&auth)
     } else {
-        auth = TidalAuth::new();
-        let oauth = auth.get_oauth_link().await?;
+        let saved_session_data = save::get_session_data().unwrap();
+        let mut cl = TidalClient::from_json(&saved_session_data)?;
+
+        let refreshed = cl.refresh_access_token(false).await?;
+        if refreshed {
+            println!("token refreshed from saved session data");
+        } else {
+            println!("using saved session data");
+        }
+
+        cl
+    };
+
+    if !tidal.session.auth.is_logged_in() {
+        let oauth = tidal.get_oauth_link().await?;
 
         println!(
             "visit this link to login: https://{}",
@@ -48,7 +55,7 @@ async fn main() -> Result<()> {
         });
 
         // wait for the user to authorize the app
-        let auth_res = auth
+        let auth_res = tidal
             .wait_for_oauth(
                 &oauth.device_code,
                 oauth.expires_in,
@@ -60,12 +67,9 @@ async fn main() -> Result<()> {
         println!("auth response: {auth_res:?}");
 
         // serialize and save session data
-        let session_data = auth.get_auth_json();
+        let session_data = serde_json::to_string(&tidal.session.auth)?;
         save_session_data(&session_data);
     }
-
-    // create tidal client
-    let mut tidal = TidalClient::new(&auth);
 
     println!("logged in");
     println!("checking login..");
@@ -74,9 +78,26 @@ async fn main() -> Result<()> {
         tidal.session.auth.check_login().await.is_ok()
     );
     println!("getting user info..");
-    tidal.fetch_user_info().await?;
+    tidal.refresh_user_info().await?;
 
     println!("user info: {:#?}", tidal.user_info);
 
     Ok(())
+}
+
+async fn handle_auth() -> Result<Option<TidalAuth>> {
+    let auth: TidalAuth;
+
+    // check for saved session data
+    let saved_session_data = get_session_data();
+
+    // if we have saved session data, load it, otherwise do oauth flow
+    if saved_session_data.is_some() {
+        println!("found saved session data");
+        return Ok(None);
+    } else {
+        auth = TidalAuth::with_oauth();
+    }
+
+    Ok(Some(auth))
 }

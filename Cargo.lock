@@ -1030,6 +1030,7 @@ version = "0.1.0"
 dependencies = [
  "color-eyre",
  "eyre",
+ "serde_json",
  "tidlers",
  "tokio",
 ]
