@@ -43,11 +43,11 @@ pub struct Track {
     #[serde(rename = "audioModes")]
     pub audio_modes: Vec<String>,
     #[serde(rename = "mediaMetadata")]
-    pub media_metadata: MediaMetadata,
+    pub media_metadata: Option<MediaMetadata>,
     pub upload: bool,
     #[serde(rename = "accessType")]
-    pub access_type: String,
-    pub spotlighted: bool,
+    pub access_type: Option<String>,
+    pub spotlighted: Option<bool>,
     #[serde(rename = "dateAdded")]
     pub date_added: Option<String>,
     pub index: Option<u64>,
