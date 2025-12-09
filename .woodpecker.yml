@@ -10,29 +10,10 @@ steps:
     image: rust:latest
     commands:
       - *rust-deps
-      - cargo check --workspace --all-targets
-
-  clippy:
-    image: rust:latest
-    commands:
-      - *rust-deps
       - rustup component add clippy
-      - cargo clippy --workspace --all-targets -- -D warnings
-
-  test:
-    image: rust:latest
-    commands:
-      - *rust-deps
-      - cargo test --workspace --all-targets
-
-  fmt:
-    image: rust:latest
-    commands:
       - rustup component add rustfmt
+      - cargo check --workspace --all-targets
+      - cargo clippy --workspace --all-targets -- -D warnings
+      - cargo test --workspace --all-targets
       - cargo fmt --all -- --check
-
-  build:
-    image: rust:latest
-    commands:
-      - *rust-deps
       - cargo build --workspace --release
