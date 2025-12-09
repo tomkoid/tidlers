@@ -5,7 +5,7 @@ use crate::{
 
 impl TidalClient {
     pub async fn get_collection_artists(
-        &mut self,
+        &self,
         limit: u32,
     ) -> Result<CollectionArtistsResponse, TidalError> {
         self.request(reqwest::Method::GET, "/my-collection/artists/folders")

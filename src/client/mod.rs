@@ -11,7 +11,6 @@ use crate::{
         user::User,
     },
     error::TidalError,
-    page::TidalPage,
     requests::{self, RequestClient},
     session::TidalSession,
 };
@@ -21,7 +20,6 @@ pub struct TidalClient {
     pub user_info: Option<User>,
 
     pub session: TidalSession,
-    pub page: TidalPage,
 
     #[serde(skip_serializing, skip_deserializing)]
     pub(crate) rq: requests::RequestClient,
@@ -41,7 +39,6 @@ impl TidalClient {
         TidalClient {
             user_info: None,
             session,
-            page: TidalPage::new(),
             rq,
             debug_mode: false,
         }
@@ -52,7 +49,7 @@ impl TidalClient {
     }
 
     fn check_auth(&self) -> Result<bool, TidalError> {
-        if self.session.auth.access_token.is_none() || !self.page.is_access_token_set() {
+        if self.session.auth.access_token.is_none() {
             Err(TidalError::NotAuthenticated)
         } else {
             Ok(true)
@@ -75,7 +72,7 @@ impl TidalClient {
         self.check_auth()?;
 
         println!("home");
-        self.page.r_get("pages/home");
+        // self.page.r_get("pages/home");
         Ok(())
         // Ok(self.page.get("pages/home").await?)
     }

@@ -4,7 +4,7 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn subscription(&mut self) -> Result<SubscriptionInfo, TidalError> {
+    pub async fn subscription(&self) -> Result<SubscriptionInfo, TidalError> {
         let url = format!(
             "/users/{}/subscription",
             self.user_info.as_ref().unwrap().user_id

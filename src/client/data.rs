@@ -7,7 +7,6 @@ impl TidalClient {
         Ok(TidalClient {
             user_info: client_json.user_info,
             session: client_json.session,
-            page: client_json.page,
             ..Self::default()
         })
     }

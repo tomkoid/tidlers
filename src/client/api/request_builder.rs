@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub struct ApiRequestBuilder<'a> {
-    client: &'a mut TidalClient,
+    client: &'a TidalClient,
     method: Method,
     url: String,
     params: HashMap<String, String>,
@@ -20,7 +20,7 @@ pub struct ApiRequestBuilder<'a> {
 
 impl<'a> ApiRequestBuilder<'a> {
     pub fn new(
-        client: &'a mut TidalClient,
+        client: &'a TidalClient,
         method: Method,
         url: impl Into<String>,
         request_debug: bool,
@@ -138,7 +138,7 @@ impl<'a> ApiRequestBuilder<'a> {
 }
 
 impl TidalClient {
-    pub fn request(&mut self, method: Method, url: impl Into<String>) -> ApiRequestBuilder<'_> {
+    pub fn request(&self, method: Method, url: impl Into<String>) -> ApiRequestBuilder<'_> {
         ApiRequestBuilder::new(self, method, url, self.debug_mode)
     }
 }

@@ -19,7 +19,7 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_track(&mut self, track_id: impl Into<TrackId>) -> Result<Track, TidalError> {
+    pub async fn get_track(&self, track_id: impl Into<TrackId>) -> Result<Track, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/", track_id))
             .with_country_code()
@@ -128,8 +128,7 @@ impl TidalClient {
         })
     }
 
-    pub async fn get_track_postpaywall_playback_info(
-        &mut self,
+    pub async fn get_track_postpaywall_playback_info(&self,
         track_id: impl Into<TrackId>,
     ) -> Result<TrackPlaybackInfoPostPaywallResponse, TidalError> {
         let track_id = track_id.into();
@@ -179,7 +178,7 @@ impl TidalClient {
         Ok(response)
     }
 
-    pub async fn get_track_mix(&mut self, track_id: impl Into<TrackId>) -> Result<TrackMixInfo, TidalError> {
+    pub async fn get_track_mix(&self, track_id: impl Into<TrackId>) -> Result<TrackMixInfo, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/mix", track_id))
             .with_country_code()

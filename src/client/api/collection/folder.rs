@@ -5,7 +5,7 @@ use crate::{
 
 impl TidalClient {
     pub async fn create_folder(
-        &mut self,
+        &self,
         title: impl Into<String>,
         parent_id: Option<String>,
     ) -> Result<FolderCollectionItem, TidalError> {

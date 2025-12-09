@@ -1,7 +1,7 @@
 use crate::{client::TidalClient, error::TidalError, requests::TidalRequest};
 
 impl TidalClient {
-    pub async fn logout(&mut self) -> Result<(), TidalError> {
+    pub async fn logout(&self) -> Result<(), TidalError> {
         let url = "/logout".to_string();
 
         let mut req = TidalRequest::new(reqwest::Method::POST, url.clone());

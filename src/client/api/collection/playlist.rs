@@ -14,7 +14,7 @@ use crate::{
 
 impl TidalClient {
     pub async fn create_playlist(
-        &mut self,
+        &self,
         title: impl Into<String>,
         description: impl Into<String>,
         sharing_level: Option<SharingLevel>,
@@ -37,7 +37,7 @@ impl TidalClient {
         .await
     }
 
-    pub async fn list_playlists(&mut self) -> Result<PlaylistsResponse, TidalError> {
+    pub async fn list_playlists(&self) -> Result<PlaylistsResponse, TidalError> {
         let url = format!(
             "/users/{}/playlists",
             self.user_info.as_ref().unwrap().user_id
@@ -50,7 +50,7 @@ impl TidalClient {
     }
 
     pub async fn list_public_playlists(
-        &mut self,
+        &self,
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<PublicUserPlaylistsResponse, TidalError> {
@@ -69,7 +69,7 @@ impl TidalClient {
     }
 
     pub async fn get_playlist(
-        &mut self,
+        &self,
         playlist_id: impl Into<PlaylistId>,
     ) -> Result<PlaylistInfo, TidalError> {
         let playlist_id = playlist_id.into();
@@ -83,7 +83,7 @@ impl TidalClient {
     }
 
     pub async fn get_playlist_items(
-        &mut self,
+        &self,
         playlist_id: impl Into<PlaylistId>,
         limit: Option<u64>,
         offset: Option<u64>,
@@ -110,7 +110,7 @@ impl TidalClient {
     }
 
     pub async fn get_playlist_recommendations_items(
-        &mut self,
+        &self,
         playlist_id: impl Into<PlaylistId>,
         limit: Option<u64>,
         offset: Option<u64>,

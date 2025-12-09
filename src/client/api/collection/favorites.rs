@@ -5,7 +5,7 @@ use crate::{
 
 impl TidalClient {
     pub async fn get_collection_favorites(
-        &mut self,
+        &self,
         limit: Option<u32>,
     ) -> Result<CollectionTracksResponse, TidalError> {
         let url = format!(

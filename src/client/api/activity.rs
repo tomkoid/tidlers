@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_activity_timeline(&mut self) -> Result<ActivityTimeline, TidalError> {
+    pub async fn get_activity_timeline(&self) -> Result<ActivityTimeline, TidalError> {
         self.request(reqwest::Method::GET, "/my-activity/timeline")
             .with_country_code()
             .with_locale()
@@ -16,8 +16,7 @@ impl TidalClient {
             .await
     }
 
-    pub async fn get_activity_top_artists(
-        &mut self,
+    pub async fn get_activity_top_artists(&self,
         year: i32,
         month: u32,
     ) -> Result<TopArtistsResponse, TidalError> {
