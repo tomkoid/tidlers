@@ -81,10 +81,14 @@ impl<'a> ApiRequestBuilder<'a> {
 
     pub async fn send<T: DeserializeOwned>(mut self) -> Result<T, TidalError> {
         if self.add_country_code {
-            self.params.insert(
-                "countryCode".to_string(),
-                self.client.user_info.as_ref().unwrap().country_code.clone(),
-            );
+            if let Some(user_info) = &self.client.user_info {
+                self.params.insert(
+                    "countryCode".to_string(),
+                    user_info.country_code.clone(),
+                );
+            } else {
+                return Err(TidalError::NotAuthenticated);
+            }
         }
 
         if self.add_locale {
@@ -115,10 +119,14 @@ impl<'a> ApiRequestBuilder<'a> {
 
     pub async fn send_raw(mut self) -> Result<String, TidalError> {
         if self.add_country_code {
-            self.params.insert(
-                "countryCode".to_string(),
-                self.client.user_info.as_ref().unwrap().country_code.clone(),
-            );
+            if let Some(user_info) = &self.client.user_info {
+                self.params.insert(
+                    "countryCode".to_string(),
+                    user_info.country_code.clone(),
+                );
+            } else {
+                return Err(TidalError::NotAuthenticated);
+            }
         }
 
         if self.add_locale {
