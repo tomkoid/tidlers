@@ -15,10 +15,12 @@ use crate::{
         },
     },
     error::TidalError,
+    ids::TrackId,
 };
 
 impl TidalClient {
-    pub async fn get_track(&mut self, track_id: String) -> Result<Track, TidalError> {
+    pub async fn get_track(&mut self, track_id: impl Into<TrackId>) -> Result<Track, TidalError> {
+        let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/", track_id))
             .with_country_code()
             .send()
@@ -128,8 +130,9 @@ impl TidalClient {
 
     pub async fn get_track_postpaywall_playback_info(
         &mut self,
-        track_id: String,
+        track_id: impl Into<TrackId>,
     ) -> Result<TrackPlaybackInfoPostPaywallResponse, TidalError> {
+        let track_id = track_id.into();
         let audio_quality = self.session.audio_quality.to_string();
         let playback_mode = self.session.playback_mode.to_string();
 
@@ -176,7 +179,8 @@ impl TidalClient {
         Ok(response)
     }
 
-    pub async fn get_track_mix(&mut self, track_id: String) -> Result<TrackMixInfo, TidalError> {
+    pub async fn get_track_mix(&mut self, track_id: impl Into<TrackId>) -> Result<TrackMixInfo, TidalError> {
+        let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/mix", track_id))
             .with_country_code()
             .send()

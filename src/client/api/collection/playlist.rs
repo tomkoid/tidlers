@@ -9,6 +9,7 @@ use crate::{
         },
     },
     error::TidalError,
+    ids::PlaylistId,
 };
 
 impl TidalClient {
@@ -69,11 +70,12 @@ impl TidalClient {
 
     pub async fn get_playlist(
         &mut self,
-        playlist_uuid: String,
+        playlist_id: impl Into<PlaylistId>,
     ) -> Result<PlaylistInfo, TidalError> {
+        let playlist_id = playlist_id.into();
         self.request(
             reqwest::Method::GET,
-            format!("/playlists/{}/", playlist_uuid),
+            format!("/playlists/{}/", playlist_id),
         )
         .with_country_code()
         .send()
@@ -82,10 +84,11 @@ impl TidalClient {
 
     pub async fn get_playlist_items(
         &mut self,
-        playlist_uuid: String,
+        playlist_id: impl Into<PlaylistId>,
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<PlaylistItemsResponse, TidalError> {
+        let playlist_id = playlist_id.into();
         let limit = limit.unwrap_or(20);
         let offset = offset.unwrap_or(0);
 
@@ -97,7 +100,7 @@ impl TidalClient {
 
         self.request(
             reqwest::Method::GET,
-            format!("/playlists/{}/items", playlist_uuid),
+            format!("/playlists/{}/items", playlist_id),
         )
         .with_country_code()
         .with_param("limit", limit.to_string())
@@ -108,10 +111,11 @@ impl TidalClient {
 
     pub async fn get_playlist_recommendations_items(
         &mut self,
-        playlist_uuid: String,
+        playlist_id: impl Into<PlaylistId>,
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<PlaylistItemsResponse, TidalError> {
+        let playlist_id = playlist_id.into();
         let limit = limit.unwrap_or(20);
         let offset = offset.unwrap_or(0);
 
@@ -123,7 +127,7 @@ impl TidalClient {
 
         self.request(
             reqwest::Method::GET,
-            format!("/playlists/{}/recommendations/items", playlist_uuid),
+            format!("/playlists/{}/recommendations/items", playlist_id),
         )
         .with_country_code()
         .with_param("limit", limit.to_string())

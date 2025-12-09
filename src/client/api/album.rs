@@ -7,10 +7,12 @@ use crate::{
         },
     },
     error::TidalError,
+    ids::AlbumId,
 };
 
 impl TidalClient {
-    pub async fn get_album(&mut self, album_id: String) -> Result<AlbumInfoResponse, TidalError> {
+    pub async fn get_album(&mut self, album_id: impl Into<AlbumId>) -> Result<AlbumInfoResponse, TidalError> {
+        let album_id = album_id.into();
         self.request(reqwest::Method::GET, format!("/albums/{}/", album_id))
             .with_country_code()
             .send()
@@ -19,10 +21,11 @@ impl TidalClient {
 
     pub async fn get_album_items(
         &mut self,
-        album_id: String,
+        album_id: impl Into<AlbumId>,
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<AlbumItemsResponse, TidalError> {
+        let album_id = album_id.into();
         let limit = limit.unwrap_or(20);
         let offset = offset.unwrap_or(0);
 
@@ -42,8 +45,9 @@ impl TidalClient {
 
     pub async fn get_album_credits(
         &mut self,
-        album_id: String,
+        album_id: impl Into<AlbumId>,
     ) -> Result<AlbumCreditsResponse, TidalError> {
+        let album_id = album_id.into();
         self.request(
             reqwest::Method::GET,
             format!("/albums/{}/credits", album_id),
@@ -55,10 +59,11 @@ impl TidalClient {
 
     pub async fn get_album_items_credits(
         &mut self,
-        album_id: String,
+        album_id: impl Into<AlbumId>,
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<AlbumItemsWithCreditsResponse, TidalError> {
+        let album_id = album_id.into();
         let limit = limit.unwrap_or(20);
         let offset = offset.unwrap_or(0);
 

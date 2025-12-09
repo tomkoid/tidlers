@@ -2,6 +2,7 @@ pub mod auth;
 pub mod client;
 pub mod config;
 pub mod error;
+pub mod ids;
 pub mod page;
 pub mod requests;
 pub mod responses;
