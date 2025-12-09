@@ -27,7 +27,6 @@ pub struct TidalRequest {
     pub headers: Option<HeaderMap<HeaderValue>>,
     pub base_url: Option<String>,
     pub send_params_as_form: bool,
-    pub enable_useful_params: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -54,7 +53,6 @@ impl TidalRequest {
             data: None,
             headers: None,
             base_url: None,
-            enable_useful_params: false,
             send_params_as_form: false,
         }
     }
@@ -97,12 +95,6 @@ impl RequestClient {
     ) -> Result<reqwest::Response, RequestClientError> {
         let mut req_form: HashMap<String, String> = HashMap::new();
         let mut req_params: HashMap<String, String> = HashMap::new();
-
-        if request.enable_useful_params {
-            req_form.insert("session_id".to_string(), "d".to_string());
-            req_form.insert("countryCode".to_string(), "cz".to_string());
-            req_form.insert("limit".to_string(), "10".to_string());
-        }
 
         if let Some(ref form) = request.form {
             for map in form {

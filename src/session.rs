@@ -1,12 +1,10 @@
 use crate::{
     auth::init::TidalAuth,
     client::models::playback::{AudioQuality, PlaybackMode},
-    config::TidalConfig,
 };
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TidalSession {
-    pub config: TidalConfig,
     pub auth: TidalAuth,
 
     #[serde(default = "default_locale")]
@@ -34,7 +32,6 @@ fn default_playback_mode() -> PlaybackMode {
 impl TidalSession {
     pub fn new(credentials: &TidalAuth) -> TidalSession {
         TidalSession {
-            config: TidalConfig::new(),
             auth: credentials.clone(),
             locale: default_locale(),
 
