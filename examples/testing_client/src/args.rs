@@ -60,8 +60,26 @@ pub enum Commands {
         artist_id: String,
     },
 
+    /// Search
+    Search {
+        #[clap(subcommand)]
+        command: SearchCommands,
+
+        /// Query
+        query: String,
+    },
+
     /// Logout the user
     Logout,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum SearchCommands {
+    /// Show search results
+    Direct,
+
+    /// Show search suggestions for query
+    Suggestions,
 }
 
 #[derive(Parser, Debug, Clone)]

@@ -7,6 +7,7 @@ pub mod media;
 pub mod mixes;
 pub mod playback;
 pub mod playlist;
+pub mod search;
 pub mod subscription;
 pub mod track;
 pub mod user;

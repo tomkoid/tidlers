@@ -263,6 +263,20 @@ async fn main() -> Result<()> {
                 println!("failed to logout: {:?}", logout.err());
             }
         }
+
+        args::Commands::Search { command, query } => match command {
+            args::SearchCommands::Direct => {
+                println!("searching for query {query}..");
+                let results = tidal.search(query).await?;
+                println!("results: {results:?}")
+            }
+
+            args::SearchCommands::Suggestions => {
+                println!("getting search suggestions for query {query}..");
+                let results = tidal.search_suggestion(query).await?;
+                println!("results: {results:?}")
+            }
+        },
     }
 
     Ok(())

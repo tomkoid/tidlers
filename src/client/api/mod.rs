@@ -7,6 +7,7 @@ pub mod collection;
 pub mod home;
 pub mod logout;
 pub mod mixes;
+pub mod search;
 pub mod subscription;
 pub mod track;
 pub mod user_info;
