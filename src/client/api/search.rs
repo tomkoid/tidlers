@@ -33,7 +33,7 @@ impl TidalClient {
             format!(
                 "/searchResults/{}/relationships/{}",
                 query.into(),
-                search_type.to_string()
+                search_type
             ),
         )
         .with_country_code()

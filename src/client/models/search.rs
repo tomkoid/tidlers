@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
@@ -156,16 +156,16 @@ impl FromStr for SearchType {
     }
 }
 
-impl ToString for SearchType {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for SearchType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
             SearchType::Albums => "albums",
             SearchType::Artists => "artists",
             SearchType::Playlists => "playlists",
             SearchType::TopHits => "topHits",
             SearchType::Tracks => "tracks",
             SearchType::Videos => "videos",
-        }
-        .to_string()
+        };
+        write!(f, "{}", s)
     }
 }
