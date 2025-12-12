@@ -5,6 +5,7 @@ use tokio::sync::mpsc;
 
 use crate::{
     client::{TidalClient, models::user::User},
+    error::TidalError,
     requests::{self, TidalRequest},
     responses::{AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
@@ -17,24 +18,23 @@ pub enum OAuthStatus {
 }
 
 impl TidalClient {
-    pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, requests::RequestClientError> {
+    pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, TidalError> {
         if self.session.auth.is_token_auth() {
-            eprintln!(
-                "Client secret provided, you should probably use get_access_token instead.\nIf you want to login with OAuth2, use TidalAuth::with_oauth()"
-            );
-            return Err(requests::RequestClientError::InvalidCredentials);
+            return Err(TidalError::InvalidArgument(
+                "Client secret provided, you should probably use get_access_token instead.\nIf you want to login with OAuth2, use TidalAuth::with_oauth()".to_string()
+            ));
         }
 
         if self.session.auth.client_id.is_empty() {
-            eprintln!("No client ID provided, cannot get OAuth link.");
-            return Err(requests::RequestClientError::InvalidCredentials);
+            return Err(TidalError::InvalidArgument(
+                "No client ID provided, cannot get OAuth link.".to_string(),
+            ));
         }
 
         if !self.session.auth.oauth_login {
-            eprintln!(
-                "OAuth login not enabled in TidalAuth, cannot get OAuth link. Use TidalAuth::with_oauth() to enable it."
-            );
-            return Err(requests::RequestClientError::InvalidCredentials);
+            return Err(TidalError::InvalidArgument(
+                "OAuth login not enabled in TidalAuth, cannot get OAuth link. Use TidalAuth::with_oauth() to enable it.".to_string()
+            ));
         }
 
         let mut form = HashMap::new();
@@ -49,10 +49,8 @@ impl TidalClient {
         let res = self.rq.request(req).await?;
         let body = res.text().await?;
 
-        let json: OAuthLinkResponse = serde_json::from_str(&body).map_err(|e| {
-            eprintln!("Error parsing OAuth link response: {e}\nResponse body: {body}");
-            requests::RequestClientError::ParseError(e.to_string())
-        })?;
+        let json: OAuthLinkResponse =
+            serde_json::from_str(&body).map_err(|e| TidalError::InvalidResponse(e.to_string()))?;
 
         Ok(json)
     }
@@ -63,10 +61,11 @@ impl TidalClient {
         expires_in: u64,
         interval: u64,
         status_tx: Option<mpsc::UnboundedSender<OAuthStatus>>,
-    ) -> Result<AuthResponse, requests::RequestClientError> {
+    ) -> Result<AuthResponse, TidalError> {
         if self.session.auth.is_token_auth() {
-            eprintln!("Client secret provided, cannot use this function.");
-            return Err(requests::RequestClientError::InvalidCredentials);
+            return Err(TidalError::InvalidArgument(
+                "Client secret provided, cannot use this function.".to_string(),
+            ));
         }
 
         let mut form = HashMap::new();
@@ -133,7 +132,9 @@ impl TidalClient {
             expiry -= interval;
         }
 
-        Err(requests::RequestClientError::Timeout)
+        Err(TidalError::RequestClient(
+            requests::RequestClientError::Timeout,
+        ))
     }
 
     /// Manually log in with OAuth tokens

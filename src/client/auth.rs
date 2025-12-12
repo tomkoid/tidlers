@@ -14,8 +14,8 @@ impl TidalClient {
     pub async fn refresh_access_token(&mut self, force: bool) -> Result<bool, TidalError> {
         if self.session.auth.refresh_token.is_none() {
             eprintln!("No refresh token available, cannot refresh access token.");
-            return Err(TidalError::RequestClient(
-                requests::RequestClientError::InvalidCredentials,
+            return Err(TidalError::Other(
+                "No refresh token available, cannot refresh access token.".to_string(),
             ));
         }
 

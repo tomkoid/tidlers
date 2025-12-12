@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     auth::client_credentials::get_client_credentials,
+    error::TidalError,
     requests::{self, TidalRequest},
     responses::AccessTokenResponse,
 };
@@ -86,14 +87,11 @@ impl TidalAuth {
         }
     }
 
-    pub async fn get_access_token(
-        &self,
-    ) -> Result<AccessTokenResponse, requests::RequestClientError> {
+    pub async fn get_access_token(&self) -> Result<AccessTokenResponse, TidalError> {
         if !self.is_token_auth() {
-            eprintln!(
-                "No client secret provided, can't use get_access_token, use TidalCredentials::with_token to use this.\nIf you want to login with OAuth2, use TidalCredentials::new()"
-            );
-            return Err(requests::RequestClientError::InvalidCredentials);
+            return Err(TidalError::InvalidArgument(
+                "No client secret provided, can't use get_access_token, use TidalCredentials::with_token to use this.\nIf you want to login with OAuth2, use TidalCredentials::new()".to_string()
+            ));
         }
 
         let mut form = HashMap::new();
