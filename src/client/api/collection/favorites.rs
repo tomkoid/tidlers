@@ -8,10 +8,7 @@ impl TidalClient {
         &self,
         limit: Option<u32>,
     ) -> Result<CollectionTracksResponse, TidalError> {
-        let url = format!(
-            "/users/{}/favorites/tracks",
-            self.user_info.as_ref().unwrap().user_id
-        );
+        let url = format!("/users/{}/favorites/tracks", self.user_id()?);
 
         let body: String = self
             .request(reqwest::Method::GET, url)

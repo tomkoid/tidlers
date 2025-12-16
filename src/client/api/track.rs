@@ -38,6 +38,9 @@ impl TidalClient {
         let mut buf = Vec::new();
         let mut init_url = None;
         let mut media_url = None;
+        let mut timescale = None;
+        let mut duration = None;
+        let mut start_number = None;
 
         loop {
             match reader.read_event_into(&mut buf) {
@@ -73,6 +76,18 @@ impl TidalClient {
                                 b"media" => {
                                     media_url =
                                         Some(String::from_utf8_lossy(&attr.value).to_string());
+                                }
+                                b"timescale" => {
+                                    timescale =
+                                        String::from_utf8_lossy(&attr.value).parse::<u32>().ok();
+                                }
+                                b"duration" => {
+                                    duration =
+                                        String::from_utf8_lossy(&attr.value).parse::<u32>().ok();
+                                }
+                                b"startNumber" => {
+                                    start_number =
+                                        String::from_utf8_lossy(&attr.value).parse::<u32>().ok();
                                 }
                                 _ => {}
                             }
@@ -118,6 +133,9 @@ impl TidalClient {
             bitrate,
             initialization_url,
             media_url_template,
+            timescale,
+            duration,
+            start_number,
         })
     }
 

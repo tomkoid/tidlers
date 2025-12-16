@@ -114,6 +114,12 @@ impl RequestClient {
 
         let base_url = request.base_url.unwrap_or(self.base_url.clone());
 
+        if request.send_params_as_form {
+            for (key, value) in req_params.drain() {
+                req_form.insert(key, value);
+            }
+        }
+
         let url = format!("{base_url}{}", request.path);
         let url_w_params = reqwest::Url::parse_with_params(&url, &req_params)?.to_string();
 
@@ -135,7 +141,7 @@ impl RequestClient {
             req
         };
 
-        let req = if request.form.is_some() {
+        let req = if request.form.is_some() || request.send_params_as_form {
             req.form(&req_form)
         } else {
             req

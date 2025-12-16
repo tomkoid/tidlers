@@ -10,7 +10,7 @@ impl TidalClient {
     ) -> Result<TidalGenericResponse<Vec<ArrivalMixData>>, TidalError> {
         let url = format!(
             "/userRecommendations/{}/relationships/newArrivalMixes",
-            self.user_info.as_ref().unwrap().user_id
+            self.user_id()?
         );
 
         self.request(reqwest::Method::GET, url)

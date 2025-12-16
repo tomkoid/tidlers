@@ -129,6 +129,12 @@ pub struct DashManifest {
     pub bitrate: Option<u32>,
     pub initialization_url: Option<String>,
     pub media_url_template: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub timescale: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub duration: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none", default, rename = "startNumber")]
+    pub start_number: Option<u32>,
 }
 
 impl DashManifest {

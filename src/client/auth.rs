@@ -40,6 +40,13 @@ impl TidalClient {
 
             // update the access token and refresh token
             self.session.auth.access_token = Some(json.access_token.clone());
+            self.session.auth.refresh_expiry = Some(json.expires_in as u64);
+            self.session.auth.last_refresh_time = Some(
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            );
 
             return Ok(true);
         }

@@ -38,10 +38,7 @@ impl TidalClient {
     }
 
     pub async fn list_playlists(&self) -> Result<PlaylistsResponse, TidalError> {
-        let url = format!(
-            "/users/{}/playlists",
-            self.user_info.as_ref().unwrap().user_id
-        );
+        let url = format!("/users/{}/playlists", self.user_id()?);
 
         self.request(reqwest::Method::GET, url)
             .with_country_code()
@@ -54,10 +51,7 @@ impl TidalClient {
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<PublicUserPlaylistsResponse, TidalError> {
-        let url = format!(
-            "/user-playlists/{}/public",
-            self.user_info.as_ref().unwrap().user_id
-        );
+        let url = format!("/user-playlists/{}/public", self.user_id()?);
 
         self.request(reqwest::Method::GET, url)
             .with_country_code()

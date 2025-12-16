@@ -5,10 +5,7 @@ use crate::{
 
 impl TidalClient {
     pub async fn subscription(&self) -> Result<SubscriptionInfo, TidalError> {
-        let url = format!(
-            "/users/{}/subscription",
-            self.user_info.as_ref().unwrap().user_id
-        );
+        let url = format!("/users/{}/subscription", self.user_id()?);
 
         self.request(reqwest::Method::GET, url)
             .with_country_code()

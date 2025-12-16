@@ -56,6 +56,13 @@ impl TidalClient {
         }
     }
 
+    pub(crate) fn user_id(&self) -> Result<u64, TidalError> {
+        self.user_info
+            .as_ref()
+            .map(|u| u.user_id)
+            .ok_or(TidalError::NotAuthenticated)
+    }
+
     pub fn set_audio_quality(&mut self, quality: AudioQuality) {
         self.session.audio_quality = quality;
     }
