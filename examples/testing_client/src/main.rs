@@ -1,7 +1,10 @@
 use crate::{args::ArgSharingLevel, save::remove_session_data};
 use clap::Parser;
 use color_eyre::eyre::Result;
-use tidlers::client::TidalClient;
+use tidlers::client::{
+    TidalClient,
+    models::search::config::{SearchConfig, SearchSuggestionsConfig},
+};
 
 use crate::{args::Args, auth::handle_auth, save::save_session_data};
 
@@ -265,15 +268,26 @@ async fn main() -> Result<()> {
         }
 
         args::Commands::Search { command, query } => match command {
-            args::SearchCommands::Direct { search_type } => {
+            args::SearchCommands::Direct => {
                 println!("searching for query {query}..");
-                let results = tidal.search_type(query, search_type).await?;
+                let results = tidal
+                    .search(SearchConfig {
+                        query: query.clone(),
+                        limit: 10,
+                        ..Default::default()
+                    })
+                    .await?;
                 println!("results: {results:?}")
             }
 
             args::SearchCommands::Suggestions => {
                 println!("getting search suggestions for query {query}..");
-                let results = tidal.search_suggestion(query).await?;
+                let results = tidal
+                    .search_suggestion(SearchSuggestionsConfig {
+                        query: query.clone(),
+                        ..Default::default()
+                    })
+                    .await?;
                 println!("results: {results:?}")
             }
         },
