@@ -1,3 +1,5 @@
+pub mod config;
+
 use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
