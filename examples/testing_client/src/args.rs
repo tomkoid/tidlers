@@ -1,5 +1,5 @@
 use clap::Parser;
-use tidlers::client::models::{playback::AudioQuality, search::SearchType};
+use tidlers::client::models::playback::AudioQuality;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -214,8 +214,4 @@ impl ArgAudioQuality {
             ArgAudioQuality::HiRes => AudioQuality::HiRes,
         }
     }
-}
-
-fn parse_search_type(input: &str) -> Result<SearchType, String> {
-    input.parse()
 }
