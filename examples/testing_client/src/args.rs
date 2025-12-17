@@ -76,10 +76,7 @@ pub enum Commands {
 #[derive(Parser, Debug, Clone)]
 pub enum SearchCommands {
     /// Show search results
-    Direct {
-        #[clap(short, long, value_parser = parse_search_type)]
-        search_type: SearchType,
-    },
+    Direct,
 
     /// Show search suggestions for query
     Suggestions,
