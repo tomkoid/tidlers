@@ -1,7 +1,10 @@
 use crate::{
     client::{
         TidalClient,
-        models::search::{SearchResultsFull, SearchSuggestionsFull, config::SearchConfig},
+        models::search::{
+            SearchResultsFull, SearchSuggestionsFull,
+            config::{SearchConfig, SearchSuggestionsConfig},
+        },
     },
     error::TidalError,
 };
@@ -42,14 +45,13 @@ impl TidalClient {
 
     pub async fn search_suggestion(
         &self,
-        query: impl Into<String>,
+        config: SearchSuggestionsConfig,
     ) -> Result<SearchSuggestionsFull, TidalError> {
         self.request(reqwest::Method::GET, "/suggestions")
             .with_country_code()
-            .with_param("query", query.into())
-            .with_param("explicit", "true")
-            .with_param("hybrid", "true")
-            .with_param("limit", "20")
+            .with_param("query", config.query)
+            .with_param("explicit", config.explicit.to_string())
+            .with_param("hybrid", config.hybrid.to_string())
             .with_base_url(TidalClient::WEB_API_V2_LOCATION)
             .send()
             .await

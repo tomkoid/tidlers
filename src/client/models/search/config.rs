@@ -17,6 +17,12 @@ pub struct SearchConfig {
     pub limit: u32,
 }
 
+pub struct SearchSuggestionsConfig {
+    pub query: String,
+    pub explicit: bool,
+    pub hybrid: bool,
+}
+
 impl Default for SearchConfig {
     fn default() -> Self {
         SearchConfig {
@@ -34,6 +40,16 @@ impl Default for SearchConfig {
                 SearchType::Playlists,
             ],
             limit: 20,
+        }
+    }
+}
+
+impl Default for SearchSuggestionsConfig {
+    fn default() -> Self {
+        SearchSuggestionsConfig {
+            query: String::new(),
+            explicit: true,
+            hybrid: true,
         }
     }
 }
