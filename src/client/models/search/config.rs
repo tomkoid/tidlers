@@ -15,6 +15,7 @@ pub struct SearchConfig {
     pub supports_user_data: bool,
     pub types: Vec<SearchType>,
     pub limit: u32,
+    pub offset: u32,
 }
 
 pub struct SearchSuggestionsConfig {
@@ -40,6 +41,7 @@ impl Default for SearchConfig {
                 SearchType::Playlists,
             ],
             limit: 20,
+            offset: 0,
         }
     }
 }
