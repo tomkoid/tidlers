@@ -14,13 +14,20 @@ pub struct SearchResultsFull {
     pub playlists: Option<SearchSection<SearchPlaylistHit>>,
     pub videos: Option<SearchSection<SearchVideoHit>>,
     pub artists: Option<SearchSection<SearchArtistHit>>,
-    pub genres: Option<Vec<String>>,
+    pub genres: Option<Vec<SearchGenre>>,
     #[serde(rename = "contentTypeFilters")]
     pub content_type_filters: Option<Vec<String>>,
     #[serde(rename = "topHits")]
     pub top_hits: Option<Vec<SearchTopHit>>,
     #[serde(rename = "queryId")]
     pub query_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchGenre {
+    pub api_path: String,
+    pub title: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
