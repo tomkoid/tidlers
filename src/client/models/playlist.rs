@@ -54,7 +54,7 @@ pub struct PlaylistInfo {
     #[serde(rename = "promotedArtists")]
     pub promoted_artists: Vec<String>,
     #[serde(rename = "lastItemAddedAt")]
-    pub last_item_added_at: String,
+    pub last_item_added_at: Option<String>,
 }
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct PlaylistCreator {
