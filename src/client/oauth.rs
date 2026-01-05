@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::SystemTimeError};
 
 use reqwest::Method;
 use tokio::sync::mpsc;
@@ -146,10 +146,9 @@ impl TidalClient {
         expires_in: u64,
         user_id: u64,
         user: User,
-    ) {
+    ) -> Result<(), SystemTimeError> {
         let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
+            .duration_since(std::time::UNIX_EPOCH)?
             .as_secs();
 
         self.session.auth.access_token = Some(access_token);
@@ -158,5 +157,7 @@ impl TidalClient {
         self.session.auth.last_refresh_time = Some(now);
         self.session.auth.user_id = Some(user_id);
         self.user_info = Some(user.clone());
+
+        Ok(())
     }
 }
