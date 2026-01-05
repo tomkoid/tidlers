@@ -1,3 +1,5 @@
+use std::time::SystemTimeError;
+
 use serde::Serialize;
 use thiserror::Error;
 
@@ -44,6 +46,10 @@ pub enum TidalError {
     #[error("string from utf8 error: {0}")]
     #[serde(serialize_with = "serialize_generic")]
     StringFromUTF8Error(#[from] std::string::FromUtf8Error),
+
+    #[error("system time error: {0}")]
+    #[serde(serialize_with = "serialize_generic")]
+    SystemTimeError(#[from] SystemTimeError),
 
     #[error("{0}")]
     Other(String),
