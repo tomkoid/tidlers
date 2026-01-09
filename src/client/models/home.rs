@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct HomeFeed {
+pub struct HomeFeedPhone {
     pub uuid: String,
     pub page: Page,
     pub header: Header,

@@ -270,7 +270,7 @@ async fn main() -> Result<()> {
 
         args::Commands::Home => {
             println!("getting home feed..");
-            let hf = tidal.get_home_feed(20).await;
+            let hf = tidal.get_home_feed_phone(20).await;
             println!("home feed: {hf:#?}");
         }
 
