@@ -10,6 +10,9 @@ pub struct TidalSession {
     #[serde(default = "default_locale")]
     pub locale: String,
 
+    #[serde(default = "default_time_offset")]
+    pub time_offset: String,
+
     #[serde(default = "default_audio_quality")]
     pub audio_quality: AudioQuality,
 
@@ -19,6 +22,10 @@ pub struct TidalSession {
 
 fn default_locale() -> String {
     "en_US".to_string()
+}
+
+fn default_time_offset() -> String {
+    "+00:00".to_string()
 }
 
 fn default_audio_quality() -> AudioQuality {
@@ -34,6 +41,7 @@ impl TidalSession {
         TidalSession {
             auth: credentials.clone(),
             locale: default_locale(),
+            time_offset: default_time_offset(),
 
             audio_quality: AudioQuality::High,
             playback_mode: PlaybackMode::Stream,

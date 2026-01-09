@@ -68,6 +68,10 @@ impl TidalClient {
         self.session.audio_quality = quality;
     }
 
+    pub fn set_time_offset(&mut self, time_offset: String) {
+        self.session.time_offset = time_offset;
+    }
+
     pub fn set_playback_mode(&mut self, playback_mode: PlaybackMode) {
         self.session.playback_mode = playback_mode;
     }

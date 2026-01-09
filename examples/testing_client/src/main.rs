@@ -39,6 +39,7 @@ async fn main() -> Result<()> {
     };
 
     tidal.set_debug_mode(args.debug);
+    tidal.set_time_offset("+01:00".to_string()); // TODO: change this based on timezone
 
     // if waiting for oauth login, handle oauth flow
     if tidal.waiting_for_oauth_login() {
@@ -269,7 +270,7 @@ async fn main() -> Result<()> {
 
         args::Commands::Home => {
             println!("getting home feed..");
-            let hf = tidal.get_home_feed(20, None).await;
+            let hf = tidal.get_home_feed(20).await;
             println!("home feed: {hf:#?}");
         }
 

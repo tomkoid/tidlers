@@ -4,11 +4,7 @@ use crate::{
 };
 
 impl TidalClient {
-    pub async fn get_home_feed(
-        &self,
-        limit: u32,
-        time_offset: Option<String>,
-    ) -> Result<HomeFeed, TidalError> {
+    pub async fn get_home_feed(&self, limit: u32) -> Result<HomeFeed, TidalError> {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
             "x-tidal-client-version",
@@ -21,7 +17,7 @@ impl TidalClient {
             .with_param("limit", limit.to_string())
             .with_param("deviceType", "PHONE")
             .with_param("platform", "ANDROID")
-            .with_optional_param("timeOffset", time_offset)
+            .with_param("timeOffset", self.session.time_offset.clone())
             .with_headers(headers)
             .with_base_url(Self::API_V2_LOCATION)
             .send()
