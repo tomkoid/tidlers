@@ -42,6 +42,11 @@ pub enum HomeItem {
         inner: HorizontalList,
     },
     #[serde(rename_all = "camelCase")]
+    HorizontalListWithContext {
+        #[serde(flatten)]
+        inner: HorizontalListWithContext,
+    },
+    #[serde(rename_all = "camelCase")]
     VerticalListCard {
         #[serde(flatten)]
         inner: VerticalListCard,
@@ -111,6 +116,20 @@ pub struct HorizontalList {
     pub icons: Vec<String>,
     pub show_quick_play: bool,
     pub view_all: Option<String>,
+    pub items: Vec<ListItem>,
+    #[serde(default)]
+    pub subtitle: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct HorizontalListWithContext {
+    pub module_id: String,
+    pub title: String,
+    pub icons: Vec<String>,
+    pub show_quick_play: bool,
+    pub view_all: Option<String>,
+    pub header: ListItem,
     pub items: Vec<ListItem>,
     #[serde(default)]
     pub subtitle: Option<String>,
