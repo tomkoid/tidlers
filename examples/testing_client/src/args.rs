@@ -33,6 +33,9 @@ pub enum Commands {
     /// Show user's arrival mixes
     ArrivalMixes,
 
+    /// Show user's home feed
+    Home,
+
     /// Show details of a specific track
     Track {
         #[clap(short, long, default_value_t = ArgAudioQuality::High, value_enum)]

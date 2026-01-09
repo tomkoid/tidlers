@@ -267,6 +267,12 @@ async fn main() -> Result<()> {
             }
         }
 
+        args::Commands::Home => {
+            println!("getting home feed..");
+            let hf = tidal.get_home_feed(20, None).await;
+            println!("home feed: {hf:#?}");
+        }
+
         args::Commands::Search { command, query } => match command {
             args::SearchCommands::Direct => {
                 println!("searching for query {query}..");
