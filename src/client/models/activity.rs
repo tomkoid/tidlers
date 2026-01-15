@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TopArtistsResponse {
-    pub activity: Activity,
-    pub artists: Vec<ArtistWithStreams>,
-    pub disclaimers: Vec<Disclaimer>,
+    pub activity: Option<Activity>,
+    pub artists: Option<Vec<ArtistWithStreams>>,
+    pub disclaimers: Option<Vec<Disclaimer>>,
     pub metadata: Metadata,
 }
 
