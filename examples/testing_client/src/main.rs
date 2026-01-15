@@ -153,7 +153,7 @@ async fn main() -> Result<()> {
             let year = year.unwrap_or(now.year());
             let month = month.unwrap_or(now.month());
 
-            if month < 1 || month > 12 {
+            if !(1..=12).contains(&month) {
                 eprintln!("invalid month: {}. must be between 1 and 12", month);
                 return Ok(());
             }
