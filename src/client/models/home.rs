@@ -12,8 +12,23 @@ pub struct HomeFeedPhone {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct HomeFeedWeb {
+    pub uuid: String,
+    pub page: PageWeb,
+    pub header: Header,
+    pub items: Vec<HomeItem>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Page {
     pub cursor: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PageWeb {
+    pub cursor: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -50,6 +65,11 @@ pub enum HomeItem {
     VerticalListCard {
         #[serde(flatten)]
         inner: Box<VerticalListCard>,
+    },
+    #[serde(rename_all = "camelCase")]
+    TrackList {
+        #[serde(flatten)]
+        inner: Box<TrackList>,
     },
 }
 
@@ -156,6 +176,19 @@ pub struct VerticalListCard {
     #[serde(default)]
     pub subtitle: Option<String>,
     pub view_all: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackList {
+    pub module_id: String,
+    pub title: String,
+    pub icons: Vec<String>,
+    pub items: Vec<ListItem>,
+    #[serde(default)]
+    pub subtitle: Option<String>,
+    #[serde(default)]
+    pub view_all: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
