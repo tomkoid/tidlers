@@ -1,6 +1,6 @@
 [package]
 name = "tidlers"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["Tomkoid"]
 description = "A Rust library for interacting with the TIDAL music streaming API"
