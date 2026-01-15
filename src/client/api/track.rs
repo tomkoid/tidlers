@@ -20,6 +20,20 @@ use crate::{
 
 impl TidalClient {
     /// Retrieves track information by track ID
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let track = client.get_track("123456789").await?;
+    /// println!("Track: {} by {}", track.title, track.artist.name);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn get_track(&self, track_id: impl Into<TrackId>) -> Result<Track, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/", track_id))
@@ -141,6 +155,23 @@ impl TidalClient {
         })
     }
 
+    /// Gets track playback information including streaming URLs and manifest
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let playback = client.get_track_postpaywall_playback_info("123456789").await?;
+    /// if let Some(url) = playback.get_primary_url() {
+    ///     println!("Stream URL: {}", url);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn get_track_postpaywall_playback_info(
         &self,
         track_id: impl Into<TrackId>,

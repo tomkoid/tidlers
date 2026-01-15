@@ -82,6 +82,24 @@ pub struct TrackPlaybackInfoPostPaywallResponse {
 
 impl TrackPlaybackInfoPostPaywallResponse {
     /// Extracts all streaming URLs from the manifest
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let playback = client.get_track_postpaywall_playback_info("123456789").await?;
+    /// if let Some(urls) = playback.get_stream_urls() {
+    ///     for url in urls {
+    ///         println!("URL: {}", url);
+    ///     }
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn get_stream_urls(&self) -> Option<Vec<String>> {
         self.manifest_parsed.as_ref().map(|m| match m {
             ManifestType::Json(json_manifest) => json_manifest.urls.clone(),
@@ -162,6 +180,26 @@ impl DashManifest {
     }
 
     /// Get a specific segment URL by replacing $Number$ with the segment number
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use tidlers::client::models::track::DashManifest;
+    /// # let manifest = DashManifest {
+    /// #     mime_type: "audio/mp4".to_string(),
+    /// #     codecs: "mp4a.40.2".to_string(),
+    /// #     urls: vec![],
+    /// #     bitrate: None,
+    /// #     initialization_url: None,
+    /// #     media_url_template: Some("segment_$Number$.m4s".to_string()),
+    /// #     timescale: None,
+    /// #     duration: None,
+    /// #     start_number: None,
+    /// # };
+    /// if let Some(url) = manifest.get_segment_url(1) {
+    ///     println!("Segment 1: {}", url); // "segment_1.m4s"
+    /// }
+    /// ```
     pub fn get_segment_url(&self, segment_number: u32) -> Option<String> {
         self.get_media_template()
             .map(|template| template.replace("$Number$", &segment_number.to_string()))

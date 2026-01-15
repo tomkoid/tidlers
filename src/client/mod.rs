@@ -36,6 +36,15 @@ impl TidalClient {
     pub const WEB_API_V2_LOCATION: &'static str = "https://tidal.com/v2";
 
     /// Creates a new TidalClient with the provided authentication credentials
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tidlers::{TidalClient, auth::init::TidalAuth};
+    ///
+    /// let auth = TidalAuth::with_oauth();
+    /// let client = TidalClient::new(&auth);
+    /// ```
     pub fn new(credentials: &TidalAuth) -> TidalClient {
         let session = TidalSession::new(credentials);
         let rq = RequestClient::new(Self::API_V1_LOCATION.to_string());
@@ -68,6 +77,17 @@ impl TidalClient {
     }
 
     /// Sets the audio quality preference for playback
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// use tidlers::client::models::playback::AudioQuality;
+    ///
+    /// let auth = TidalAuth::with_oauth();
+    /// let mut client = TidalClient::new(&auth);
+    /// client.set_audio_quality(AudioQuality::HiRes);
+    /// ```
     pub fn set_audio_quality(&mut self, quality: AudioQuality) {
         self.session.audio_quality = quality;
     }

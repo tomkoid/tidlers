@@ -20,6 +20,22 @@ pub enum OAuthStatus {
 
 impl TidalClient {
     /// Initiates the OAuth device authorization flow and returns the verification link
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let auth = TidalAuth::with_oauth();
+    /// let client = TidalClient::new(&auth);
+    ///
+    /// let oauth = client.get_oauth_link().await?;
+    /// println!("Please visit: {}", oauth.verification_uri_complete);
+    /// println!("User code: {}", oauth.user_code);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, TidalError> {
         if self.session.auth.is_token_auth() {
             return Err(TidalError::InvalidArgument(
@@ -58,6 +74,37 @@ impl TidalClient {
     }
 
     /// Polls the OAuth endpoint until the user completes authentication or the request times out
+    ///
+    /// # Arguments
+    ///
+    /// * `device_code` - Device code from `get_oauth_link()`
+    /// * `expires_in` - Expiration time in seconds
+    /// * `interval` - Polling interval in seconds
+    /// * `status_tx` - Optional channel to receive status updates
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let auth = TidalAuth::with_oauth();
+    /// let mut client = TidalClient::new(&auth);
+    ///
+    /// let oauth = client.get_oauth_link().await?;
+    /// println!("Visit: {}", oauth.verification_uri_complete);
+    ///
+    /// let auth_response = client.wait_for_oauth(
+    ///     &oauth.device_code,
+    ///     oauth.expires_in,
+    ///     oauth.interval,
+    ///     None
+    /// ).await?;
+    ///
+    /// println!("Logged in as: {}", auth_response.user.username);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn wait_for_oauth(
         &mut self,
         device_code: &str,

@@ -11,6 +11,31 @@ use crate::{
 
 impl TidalClient {
     /// Refreshes the access token using the refresh token
+    ///
+    /// Returns `true` if the token was refreshed, `false` if it was still valid.
+    ///
+    /// # Arguments
+    ///
+    /// * `force` - If true, refreshes even if the current token hasn't expired
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let mut client = TidalClient::new(&auth);
+    /// // Refresh if expired
+    /// if client.refresh_access_token(false).await? {
+    ///     println!("Token refreshed");
+    /// }
+    ///
+    /// // Force refresh
+    /// client.refresh_access_token(true).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn refresh_access_token(&mut self, force: bool) -> Result<bool, TidalError> {
         if self.session.auth.refresh_token.is_none() {
             eprintln!("No refresh token available, cannot refresh access token.");

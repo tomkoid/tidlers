@@ -12,6 +12,21 @@ use crate::{
 
 impl TidalClient {
     /// Retrieves album information by album ID
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let album = client.get_album("123456789").await?;
+    /// println!("Album: {} by {}", album.title, album.artist.name);
+    /// println!("Tracks: {}", album.number_of_tracks);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn get_album(
         &self,
         album_id: impl Into<AlbumId>,
@@ -24,6 +39,23 @@ impl TidalClient {
     }
 
     /// Retrieves tracks from an album with pagination support
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// // Get first 50 tracks
+    /// let items = client.get_album_items("123456789", Some(50), Some(0)).await?;
+    /// for track in items.items {
+    ///     println!("{}", track.title);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn get_album_items(
         &self,
         album_id: impl Into<AlbumId>,

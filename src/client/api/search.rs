@@ -11,6 +11,33 @@ use crate::{
 
 impl TidalClient {
     /// Searches for content on Tidal with configurable options
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::client::models::search::config::{SearchConfig, SearchType};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let config = SearchConfig {
+    ///     query: "Daft Punk".to_string(),
+    ///     types: vec![SearchType::Artists, SearchType::Tracks],
+    ///     limit: 10,
+    ///     offset: 0,
+    ///     ..Default::default()
+    /// };
+    ///
+    /// let results = client.search(config).await?;
+    /// if let Some(artists) = results.artists {
+    ///     for artist in artists.items {
+    ///         println!("Artist: {}", artist.name);
+    ///     }
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn search(&self, config: SearchConfig) -> Result<SearchResultsFull, TidalError> {
         let types_string = config
             .types
