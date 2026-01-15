@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 authors = ["Tomkoid"]
 description = "A Rust library for interacting with the TIDAL music streaming API"
-documentation = "https://docs.rs/tidlers"
 homepage = "https://codeberg.org/tomkoid/tidlers"
 repository = "https://codeberg.org/tomkoid/tidlers"
 license = "MIT"
