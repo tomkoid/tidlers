@@ -39,13 +39,13 @@ pub struct BasicAuth {
 }
 
 impl BasicAuth {
-    pub fn new(name: String, pass: String) -> BasicAuth {
+    pub(crate) fn new(name: String, pass: String) -> BasicAuth {
         BasicAuth { name, pass }
     }
 }
 
 impl TidalRequest {
-    pub fn new(method: reqwest::Method, path: String) -> TidalRequest {
+    pub(crate) fn new(method: reqwest::Method, path: String) -> TidalRequest {
         TidalRequest {
             method,
             path,
@@ -85,7 +85,7 @@ pub enum RequestClientError {
 
 impl RequestClient {
     /// Creates a new RequestClient with the specified base URL
-    pub fn new(base_url: String) -> RequestClient {
+    pub(crate) fn new(base_url: String) -> RequestClient {
         let client = reqwest::Client::new();
         RequestClient {
             base_url,

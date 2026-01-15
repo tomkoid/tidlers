@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breaking:** Changed internal functions to `pub(crate)` visibility to prevent usage in external code:
+  - `BasicAuth::new()`
+  - `TidalRequest::new()`
+  - `RequestClient::new()`
+  - `TidalSession::new()`
+  - `TidalAuth::is_token_auth()`
+  - `TidalAuth::is_token_expired()`
+  - `auth_default_request_client()`
+  - `get_client_credentials()`
+  - `debug_json()`
+  - `debug_json_str()`
+  - `SearchType::to_api_params()`
+  - `ApiRequestBuilder` and all its methods (new, with_country_code, with_locale, with_base_url, with_param, with_params, with_optional_param, with_headers, send, send_raw)
+  - `TidalClient::request()`
+
 ### Fixed
 - **Breaking:** Changed `activity`, `artists` and `disclaimers` fields to be optional in TopArtistsResponse to prevent crashes
 

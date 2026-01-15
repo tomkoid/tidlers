@@ -149,11 +149,11 @@ impl TidalAuth {
         }
     }
 
-    pub fn is_token_auth(&self) -> bool {
+    pub(crate) fn is_token_auth(&self) -> bool {
         self.api_token_auth
     }
 
-    pub fn is_token_expired(&self) -> bool {
+    pub(crate) fn is_token_expired(&self) -> bool {
         if let (Some(expiry), Some(last_refresh)) = (self.refresh_expiry, self.last_refresh_time) {
             let now = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
@@ -232,6 +232,6 @@ impl Default for TidalAuth {
     }
 }
 
-pub fn auth_default_request_client() -> requests::RequestClient {
+pub(crate) fn auth_default_request_client() -> requests::RequestClient {
     requests::RequestClient::new("https://api.tidal.com/v1/".to_string())
 }

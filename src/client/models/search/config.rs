@@ -57,7 +57,7 @@ impl Default for SearchSuggestionsConfig {
 }
 
 impl SearchType {
-    pub fn to_api_params(&self) -> &str {
+    pub(crate) fn to_api_params(&self) -> &str {
         match self {
             SearchType::Artists => "ARTISTS",
             SearchType::Albums => "ALBUMS",

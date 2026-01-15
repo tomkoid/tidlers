@@ -39,7 +39,7 @@ fn default_playback_mode() -> PlaybackMode {
 
 impl TidalSession {
     /// Creates a new session with the provided authentication credentials
-    pub fn new(credentials: &TidalAuth) -> TidalSession {
+    pub(crate) fn new(credentials: &TidalAuth) -> TidalSession {
         TidalSession {
             auth: credentials.clone(),
             locale: default_locale(),

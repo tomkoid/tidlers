@@ -20,7 +20,7 @@ pub struct ApiRequestBuilder<'a> {
 }
 
 impl<'a> ApiRequestBuilder<'a> {
-    pub fn new(
+    pub(crate) fn new(
         client: &'a TidalClient,
         method: Method,
         url: impl Into<String>,
@@ -40,37 +40,37 @@ impl<'a> ApiRequestBuilder<'a> {
     }
 
     /// Adds the country code parameter to the request
-    pub fn with_country_code(mut self) -> Self {
+    pub(crate) fn with_country_code(mut self) -> Self {
         self.add_country_code = true;
         self
     }
 
     /// Adds the locale parameter to the request
-    pub fn with_locale(mut self) -> Self {
+    pub(crate) fn with_locale(mut self) -> Self {
         self.add_locale = true;
         self
     }
 
     /// Sets a custom base URL for this request
-    pub fn with_base_url(mut self, base_url: impl Into<String>) -> Self {
+    pub(crate) fn with_base_url(mut self, base_url: impl Into<String>) -> Self {
         self.base_url = Some(base_url.into());
         self
     }
 
     /// Adds a query parameter to the request
-    pub fn with_param(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+    pub(crate) fn with_param(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.params.insert(key.into(), value.into());
         self
     }
 
     /// Adds multiple query parameters from a HashMap
-    pub fn with_params(mut self, params: HashMap<String, String>) -> Self {
+    pub(crate) fn _with_params(mut self, params: HashMap<String, String>) -> Self {
         self.params.extend(params);
         self
     }
 
     /// Adds a query parameter only if the value is Some
-    pub fn with_optional_param(
+    pub(crate) fn _with_optional_param(
         mut self,
         key: impl Into<String>,
         value: Option<impl Into<String>>,
@@ -82,13 +82,13 @@ impl<'a> ApiRequestBuilder<'a> {
     }
 
     /// Sets custom headers for the request
-    pub fn with_headers(mut self, headers: reqwest::header::HeaderMap) -> Self {
+    pub(crate) fn with_headers(mut self, headers: reqwest::header::HeaderMap) -> Self {
         self.headers = Some(headers);
         self
     }
 
     /// Executes the request and deserializes the response into type T
-    pub async fn send<T: DeserializeOwned>(mut self) -> Result<T, TidalError> {
+    pub(crate) async fn send<T: DeserializeOwned>(mut self) -> Result<T, TidalError> {
         if self.add_country_code {
             if let Some(user_info) = &self.client.user_info {
                 self.params
@@ -125,7 +125,7 @@ impl<'a> ApiRequestBuilder<'a> {
     }
 
     /// Executes the request and returns the raw response as a String
-    pub async fn send_raw(mut self) -> Result<String, TidalError> {
+    pub(crate) async fn send_raw(mut self) -> Result<String, TidalError> {
         if self.add_country_code {
             if let Some(user_info) = &self.client.user_info {
                 self.params
@@ -152,7 +152,7 @@ impl<'a> ApiRequestBuilder<'a> {
 }
 
 impl TidalClient {
-    pub fn request(&self, method: Method, url: impl Into<String>) -> ApiRequestBuilder<'_> {
+    pub(crate) fn request(&self, method: Method, url: impl Into<String>) -> ApiRequestBuilder<'_> {
         ApiRequestBuilder::new(self, method, url, self.debug_mode)
     }
 }
