@@ -1,4 +1,5 @@
 use crate::{args::ArgSharingLevel, save::remove_session_data};
+use chrono::Datelike;
 use clap::Parser;
 use color_eyre::eyre::Result;
 use tidlers::client::{
@@ -147,13 +148,22 @@ async fn main() -> Result<()> {
             },
         },
 
-        args::Commands::Activity => {
+        args::Commands::Activity { year, month } => {
+            let now = chrono::Utc::now();
+            let year = year.unwrap_or(now.year());
+            let month = month.unwrap_or(now.month());
+
+            if month < 1 || month > 12 {
+                eprintln!("invalid month: {}. must be between 1 and 12", month);
+                return Ok(());
+            }
+
             println!("getting timeline..");
             let timeline = tidal.get_activity_timeline().await?;
             println!("timeline: {:#?}", timeline);
 
             println!("getting top artists..");
-            let top_artists = tidal.get_activity_top_artists(2025, 11).await?;
+            let top_artists = tidal.get_activity_top_artists(year, month).await?;
             println!("top artists: {:#?}", top_artists);
         }
 

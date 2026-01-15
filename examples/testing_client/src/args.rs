@@ -25,7 +25,15 @@ pub enum Commands {
     },
 
     /// Show user's activity
-    Activity,
+    Activity {
+        /// Year of activity to show
+        #[clap(short, long, default_value = None)]
+        year: Option<i32>,
+
+        /// Month of activity to show
+        #[clap(short, long, default_value = None)]
+        month: Option<u32>,
+    },
 
     /// Show user's subscription details
     Subscription,
