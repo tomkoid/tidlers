@@ -3,6 +3,7 @@ use crate::{
     client::models::playback::{AudioQuality, PlaybackMode},
 };
 
+/// Contains session configuration for a Tidal client
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TidalSession {
     pub auth: TidalAuth,
@@ -37,6 +38,7 @@ fn default_playback_mode() -> PlaybackMode {
 }
 
 impl TidalSession {
+    /// Creates a new session with the provided authentication credentials
     pub fn new(credentials: &TidalAuth) -> TidalSession {
         TidalSession {
             auth: credentials.clone(),

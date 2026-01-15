@@ -1,5 +1,6 @@
 use std::fmt;
 
+/// Audio quality levels available for streaming
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum AudioQuality {
     Low,
@@ -8,12 +9,14 @@ pub enum AudioQuality {
     HiRes,
 }
 
+/// Playback mode for tracks
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum PlaybackMode {
     Stream,
     Offline,
 }
 
+/// Asset presentation type for media
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum AssetPresentation {
     Full,

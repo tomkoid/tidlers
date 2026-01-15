@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::client::models::track::Track;
 
+/// Response containing playlist items with pagination
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaylistItemsResponse {
@@ -11,6 +12,7 @@ pub struct PlaylistItemsResponse {
     pub items: Vec<PlaylistItem>,
 }
 
+/// Represents a single item in a playlist
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaylistItem {
@@ -20,12 +22,14 @@ pub struct PlaylistItem {
     pub cut: Option<serde_json::Value>,
 }
 
+/// Response containing a list of playlists
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaylistsResponse {
     pub items: Vec<PlaylistInfo>,
 }
 
+/// Detailed information about a playlist
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct PlaylistInfo {
     pub uuid: String,

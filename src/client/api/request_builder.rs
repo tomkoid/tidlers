@@ -6,6 +6,7 @@ use crate::{
     client::TidalClient, error::TidalError, requests::TidalRequest, utils::debug_json_str,
 };
 
+/// Builder for constructing API requests with fluent interface
 pub struct ApiRequestBuilder<'a> {
     client: &'a TidalClient,
     method: Method,
@@ -38,31 +39,37 @@ impl<'a> ApiRequestBuilder<'a> {
         }
     }
 
+    /// Adds the country code parameter to the request
     pub fn with_country_code(mut self) -> Self {
         self.add_country_code = true;
         self
     }
 
+    /// Adds the locale parameter to the request
     pub fn with_locale(mut self) -> Self {
         self.add_locale = true;
         self
     }
 
+    /// Sets a custom base URL for this request
     pub fn with_base_url(mut self, base_url: impl Into<String>) -> Self {
         self.base_url = Some(base_url.into());
         self
     }
 
+    /// Adds a query parameter to the request
     pub fn with_param(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.params.insert(key.into(), value.into());
         self
     }
 
+    /// Adds multiple query parameters from a HashMap
     pub fn with_params(mut self, params: HashMap<String, String>) -> Self {
         self.params.extend(params);
         self
     }
 
+    /// Adds a query parameter only if the value is Some
     pub fn with_optional_param(
         mut self,
         key: impl Into<String>,
@@ -74,11 +81,13 @@ impl<'a> ApiRequestBuilder<'a> {
         self
     }
 
+    /// Sets custom headers for the request
     pub fn with_headers(mut self, headers: reqwest::header::HeaderMap) -> Self {
         self.headers = Some(headers);
         self
     }
 
+    /// Executes the request and deserializes the response into type T
     pub async fn send<T: DeserializeOwned>(mut self) -> Result<T, TidalError> {
         if self.add_country_code {
             if let Some(user_info) = &self.client.user_info {
@@ -115,6 +124,7 @@ impl<'a> ApiRequestBuilder<'a> {
         Ok(serde_json::from_str(&body)?)
     }
 
+    /// Executes the request and returns the raw response as a String
     pub async fn send_raw(mut self) -> Result<String, TidalError> {
         if self.add_country_code {
             if let Some(user_info) = &self.client.user_info {

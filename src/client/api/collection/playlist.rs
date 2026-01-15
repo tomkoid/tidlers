@@ -13,6 +13,27 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Creates a new playlist in the user's collection
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::client::models::collection::SharingLevel;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let playlist = client.create_playlist(
+    ///     "My Playlist",
+    ///     "A cool playlist",
+    ///     Some(SharingLevel::Private),
+    ///     None
+    /// ).await?;
+    /// println!("Created playlist: {}", playlist.title);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn create_playlist(
         &self,
         title: impl Into<String>,
@@ -37,6 +58,23 @@ impl TidalClient {
         .await
     }
 
+    /// Lists all playlists for the authenticated user
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let playlists = client.list_playlists().await?;
+    /// for playlist in playlists.items {
+    ///     println!("{}: {} tracks", playlist.title, playlist.number_of_tracks);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn list_playlists(&self) -> Result<PlaylistsResponse, TidalError> {
         let url = format!("/users/{}/playlists", self.user_id()?);
 
@@ -46,6 +84,7 @@ impl TidalClient {
             .await
     }
 
+    /// Lists public playlists for a specific user
     pub async fn list_public_playlists(
         &self,
         limit: Option<u64>,

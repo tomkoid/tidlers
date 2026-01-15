@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::client::models::{album::Album, artist::Artist, media::MediaMetadata};
 
+/// Represents a music track
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Track {
     pub id: u64,
@@ -59,6 +60,7 @@ pub struct Track {
     pub item_uuid: Option<String>,
 }
 
+/// Response containing track playback information including manifest data
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackPlaybackInfoPostPaywallResponse {
@@ -79,6 +81,25 @@ pub struct TrackPlaybackInfoPostPaywallResponse {
 }
 
 impl TrackPlaybackInfoPostPaywallResponse {
+    /// Extracts all streaming URLs from the manifest
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
+    /// let playback = client.get_track_postpaywall_playback_info("123456789").await?;
+    /// if let Some(urls) = playback.get_stream_urls() {
+    ///     for url in urls {
+    ///         println!("URL: {}", url);
+    ///     }
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn get_stream_urls(&self) -> Option<Vec<String>> {
         self.manifest_parsed.as_ref().map(|m| match m {
             ManifestType::Json(json_manifest) => json_manifest.urls.clone(),
@@ -86,11 +107,13 @@ impl TrackPlaybackInfoPostPaywallResponse {
         })
     }
 
+    /// Gets the primary/first streaming URL
     pub fn get_primary_url(&self) -> Option<String> {
         self.get_stream_urls()
             .and_then(|urls| urls.into_iter().next())
     }
 
+    /// Gets the MIME type from the manifest
     pub fn get_mime_type(&self) -> Option<String> {
         self.manifest_parsed.as_ref().map(|m| match m {
             ManifestType::Json(json_manifest) => json_manifest.mime_type.clone(),
@@ -98,6 +121,7 @@ impl TrackPlaybackInfoPostPaywallResponse {
         })
     }
 
+    /// Gets the codec information from the manifest
     pub fn get_codecs(&self) -> Option<String> {
         self.manifest_parsed.as_ref().map(|m| match m {
             ManifestType::Json(json_manifest) => json_manifest.codecs.clone(),
@@ -106,6 +130,7 @@ impl TrackPlaybackInfoPostPaywallResponse {
     }
 }
 
+/// JSON manifest containing track streaming information
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackManifest {
@@ -115,12 +140,14 @@ pub struct TrackManifest {
     pub urls: Vec<String>,
 }
 
+/// Represents different types of streaming manifests
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum ManifestType {
     Json(TrackManifest),
     Dash(DashManifest),
 }
 
+/// DASH (Dynamic Adaptive Streaming over HTTP) manifest for adaptive streaming
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct DashManifest {
     pub mime_type: String,
@@ -153,6 +180,26 @@ impl DashManifest {
     }
 
     /// Get a specific segment URL by replacing $Number$ with the segment number
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use tidlers::client::models::track::DashManifest;
+    /// # let manifest = DashManifest {
+    /// #     mime_type: "audio/mp4".to_string(),
+    /// #     codecs: "mp4a.40.2".to_string(),
+    /// #     urls: vec![],
+    /// #     bitrate: None,
+    /// #     initialization_url: None,
+    /// #     media_url_template: Some("segment_$Number$.m4s".to_string()),
+    /// #     timescale: None,
+    /// #     duration: None,
+    /// #     start_number: None,
+    /// # };
+    /// if let Some(url) = manifest.get_segment_url(1) {
+    ///     println!("Segment 1: {}", url); // "segment_1.m4s"
+    /// }
+    /// ```
     pub fn get_segment_url(&self, segment_number: u32) -> Option<String> {
         self.get_media_template()
             .map(|template| template.replace("$Number$", &segment_number.to_string()))
