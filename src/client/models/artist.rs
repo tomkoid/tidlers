@@ -5,6 +5,7 @@ use crate::client::models::album::Album;
 
 use super::{album::ArtistAlbum, track::Track};
 
+/// Represents an artist's role category
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtistRole {
@@ -12,6 +13,7 @@ pub struct ArtistRole {
     pub category_id: i32,
 }
 
+/// Represents a music artist
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Artist {
     pub id: u64,
@@ -22,6 +24,7 @@ pub struct Artist {
     pub picture: Option<String>,
 }
 
+/// Detailed artist information response
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtistResponse {
