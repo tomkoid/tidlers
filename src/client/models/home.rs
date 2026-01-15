@@ -34,22 +34,22 @@ pub enum HomeItem {
     #[serde(rename_all = "camelCase")]
     ShortcutList {
         #[serde(flatten)]
-        inner: ShortcutList,
+        inner: Box<ShortcutList>,
     },
     #[serde(rename_all = "camelCase")]
     HorizontalList {
         #[serde(flatten)]
-        inner: HorizontalList,
+        inner: Box<HorizontalList>,
     },
     #[serde(rename_all = "camelCase")]
     HorizontalListWithContext {
         #[serde(flatten)]
-        inner: HorizontalListWithContext,
+        inner: Box<HorizontalListWithContext>,
     },
     #[serde(rename_all = "camelCase")]
     VerticalListCard {
         #[serde(flatten)]
-        inner: VerticalListCard,
+        inner: Box<VerticalListCard>,
     },
 }
 
