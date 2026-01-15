@@ -65,9 +65,11 @@ pub struct ShortcutList {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum ShortcutItem {
+    Mix(ShortcutMix),
     DeepLink(ShortcutDeepLink),
     Playlist(ShortcutPlaylist),
     Album(ShortcutAlbum),
+    Unknown(serde_json::Value),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -97,6 +99,15 @@ pub struct ShortcutAlbum {
     pub item_type: String, // "ALBUM"
     pub following: bool,
     pub data: AlbumData,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShortcutMix {
+    #[serde(rename = "type")]
+    pub item_type: String, // "MIX"
+    pub following: bool,
+    pub data: MixData,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
