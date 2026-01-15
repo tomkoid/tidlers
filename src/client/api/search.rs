@@ -15,17 +15,16 @@ impl TidalClient {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::TidalClient;
+    /// # use tidlers::auth::init::TidalAuth;
     /// # use tidlers::client::models::search::config::{SearchConfig, SearchType};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
     /// let config = SearchConfig {
     ///     query: "Daft Punk".to_string(),
     ///     types: vec![SearchType::Artists, SearchType::Tracks],
     ///     limit: 10,
-    ///     offset: 0,
     ///     ..Default::default()
     /// };
     ///

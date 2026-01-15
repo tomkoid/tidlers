@@ -25,8 +25,7 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
     /// let track = client.get_track("123456789").await?;
@@ -161,8 +160,7 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
     /// let playback = client.get_track_postpaywall_playback_info("123456789").await?;

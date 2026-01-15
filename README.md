@@ -29,6 +29,13 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
+tidlers = "0.1.0"
+```
+
+Or use the git version for the latest features:
+
+```toml
+[dependencies]
 tidlers = { git = "https://codeberg.org/tomkoid/tidlers.git" }
 ```
 
@@ -36,8 +43,8 @@ tidlers = { git = "https://codeberg.org/tomkoid/tidlers.git" }
 
 ```rust
 use tidlers::{
+    TidalClient,
     auth::init::TidalAuth,
-    client::tidal::TidalClient,
     client::models::playback::AudioQuality,
 };
 

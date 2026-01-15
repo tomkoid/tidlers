@@ -22,23 +22,18 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let mut client = TidalClient::new(&auth);
     /// // Refresh if expired
     /// if client.refresh_access_token(false).await? {
     ///     println!("Token refreshed");
     /// }
-    ///
-    /// // Force refresh
-    /// client.refresh_access_token(true).await?;
     /// # Ok(())
     /// # }
     /// ```
     pub async fn refresh_access_token(&mut self, force: bool) -> Result<bool, TidalError> {
         if self.session.auth.refresh_token.is_none() {
-            eprintln!("No refresh token available, cannot refresh access token.");
             return Err(TidalError::Other(
                 "No refresh token available, cannot refresh access token.".to_string(),
             ));

@@ -2,6 +2,22 @@
 name = "tidlers"
 version = "0.1.0"
 edition = "2024"
+authors = ["Tomkoid"]
+description = "A Rust library for interacting with the TIDAL music streaming API"
+documentation = "https://docs.rs/tidlers"
+homepage = "https://codeberg.org/tomkoid/tidlers"
+repository = "https://codeberg.org/tomkoid/tidlers"
+license = "MIT"
+keywords = ["tidal", "music", "streaming", "api", "audio"]
+categories = ["api-bindings", "multimedia::audio"]
+readme = "README.md"
+exclude = [
+    "examples/*/target",
+    ".git*",
+    "*.mp4",
+    "*.json",
+    "downloads/",
+]
 
 [workspace]
 members = [".", "examples/login_save", "examples/testing_client", "examples/hires_streamer"]

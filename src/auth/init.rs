@@ -21,8 +21,7 @@ use crate::{
 /// # Examples
 ///
 /// ```no_run
-/// use tidlers::auth::init::TidalAuth;
-///
+/// # use tidlers::auth::init::TidalAuth;
 /// // For OAuth2 login (recommended)
 /// let auth = TidalAuth::with_oauth();
 ///
@@ -63,8 +62,7 @@ impl TidalAuth {
     /// # Example
     ///
     /// ```
-    /// use tidlers::auth::init::TidalAuth;
-    ///
+    /// # use tidlers::auth::init::TidalAuth;
     /// let auth = TidalAuth::new();
     /// ```
     pub fn new() -> Self {
@@ -81,21 +79,21 @@ impl TidalAuth {
     /// ```no_run
     /// use tidlers::{TidalClient, auth::init::TidalAuth};
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let auth = TidalAuth::with_oauth();
-    ///     let mut client = TidalClient::new(&auth);
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let auth = TidalAuth::with_oauth();
+    /// let mut client = TidalClient::new(&auth);
     ///     
-    ///     let oauth = client.get_oauth_link().await.unwrap();
-    ///     println!("Visit: {}", oauth.verification_uri_complete);
+    /// let oauth = client.get_oauth_link().await?;
+    /// println!("Visit: {}", oauth.verification_uri_complete);
     ///     
-    ///     client.wait_for_oauth(
-    ///         &oauth.device_code,
-    ///         oauth.expires_in,
-    ///         oauth.interval,
-    ///         None
-    ///     ).await.unwrap();
-    /// }
+    /// client.wait_for_oauth(
+    ///     &oauth.device_code,
+    ///     oauth.expires_in,
+    ///     oauth.interval,
+    ///     None
+    /// ).await?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn with_oauth() -> Self {
         Self {
@@ -110,8 +108,7 @@ impl TidalAuth {
     /// # Example
     ///
     /// ```
-    /// use tidlers::auth::init::TidalAuth;
-    ///
+    /// # use tidlers::auth::init::TidalAuth;
     /// let auth = TidalAuth::with_access_token("your_access_token".to_string());
     /// ```
     pub fn with_access_token(access_token: String) -> Self {
@@ -129,18 +126,18 @@ impl TidalAuth {
     /// ```no_run
     /// use tidlers::{TidalClient, auth::init::TidalAuth};
     ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let auth = TidalAuth::with_api_token(
-    ///         "client_id".to_string(),
-    ///         "client_secret".to_string()
-    ///     );
-    ///     let client = TidalClient::new(&auth);
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let auth = TidalAuth::with_api_token(
+    ///     "client_id".to_string(),
+    ///     "client_secret".to_string()
+    /// );
+    /// let client = TidalClient::new(&auth);
     ///     
-    ///     // Get access token
-    ///     let token = client.session.auth.get_access_token().await.unwrap();
-    ///     println!("Access token: {}", token.access_token);
-    /// }
+    /// // Get access token
+    /// let token = client.session.auth.get_access_token().await?;
+    /// println!("Access token: {}", token.access_token);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn with_api_token(client_id: String, client_secret: String) -> Self {
         Self {

@@ -17,8 +17,7 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
     /// let album = client.get_album("123456789").await?;
@@ -44,14 +43,13 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
     /// // Get first 50 tracks
     /// let items = client.get_album_items("123456789", Some(50), Some(0)).await?;
-    /// for track in items.items {
-    ///     println!("{}", track.title);
+    /// for album_item in items.items {
+    ///     println!("{}", album_item.item.title);
     /// }
     /// # Ok(())
     /// # }

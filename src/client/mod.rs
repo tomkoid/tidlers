@@ -40,8 +40,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```
-    /// use tidlers::{TidalClient, auth::init::TidalAuth};
-    ///
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
     /// let auth = TidalAuth::with_oauth();
     /// let client = TidalClient::new(&auth);
     /// ```
@@ -81,9 +80,8 @@ impl TidalClient {
     /// # Example
     ///
     /// ```
-    /// use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// use tidlers::client::models::playback::AudioQuality;
-    ///
+    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::client::models::playback::AudioQuality;
     /// let auth = TidalAuth::with_oauth();
     /// let mut client = TidalClient::new(&auth);
     /// client.set_audio_quality(AudioQuality::HiRes);
@@ -110,7 +108,7 @@ impl TidalClient {
     pub async fn home(&self) -> Result<(), TidalError> {
         self.check_auth()?;
 
-        println!("home");
+        // TODO: Implement home page functionality
         // self.page.r_get("pages/home");
         Ok(())
         // Ok(self.page.get("pages/home").await?)

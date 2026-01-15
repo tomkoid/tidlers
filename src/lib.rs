@@ -15,22 +15,22 @@
 //! ```no_run
 //! use tidlers::{TidalClient, auth::init::TidalAuth};
 //!
-//! #[tokio::main]
-//! async fn main() {
-//!     let auth = TidalAuth::with_oauth();
-//!     let mut client = TidalClient::new(&auth);
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let auth = TidalAuth::with_oauth();
+//! let mut client = TidalClient::new(&auth);
 //!     
-//!     // Get OAuth link and wait for user authentication
-//!     let oauth_link = client.get_oauth_link().await.unwrap();
-//!     println!("Visit: {}", oauth_link.verification_uri_complete);
+//! // Get OAuth link and wait for user authentication
+//! let oauth_link = client.get_oauth_link().await?;
+//! println!("Visit: {}", oauth_link.verification_uri_complete);
 //!     
-//!     client.wait_for_oauth(
-//!         &oauth_link.device_code,
-//!         oauth_link.expires_in,
-//!         oauth_link.interval,
-//!         None
-//!     ).await.unwrap();
-//! }
+//! client.wait_for_oauth(
+//!     &oauth_link.device_code,
+//!     oauth_link.expires_in,
+//!     oauth_link.interval,
+//!     None
+//! ).await?;
+//! # Ok(())
+//! # }
 //! ```
 
 pub mod auth;

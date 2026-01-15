@@ -25,11 +25,9 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let auth = TidalAuth::with_oauth();
-    /// let client = TidalClient::new(&auth);
-    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let client = TidalClient::new(&auth);
     /// let oauth = client.get_oauth_link().await?;
     /// println!("Please visit: {}", oauth.verification_uri_complete);
     /// println!("User code: {}", oauth.user_code);
@@ -86,11 +84,9 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let auth = TidalAuth::with_oauth();
-    /// let mut client = TidalClient::new(&auth);
-    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let auth = TidalAuth::with_oauth();
+    /// # let mut client = TidalClient::new(&auth);
     /// let oauth = client.get_oauth_link().await?;
     /// println!("Visit: {}", oauth.verification_uri_complete);
     ///

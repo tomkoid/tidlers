@@ -18,10 +18,10 @@ impl TidalClient {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::TidalClient;
+    /// # use tidlers::auth::init::TidalAuth;
     /// # use tidlers::client::models::collection::SharingLevel;
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
     /// let playlist = client.create_playlist(
@@ -30,7 +30,7 @@ impl TidalClient {
     ///     Some(SharingLevel::Private),
     ///     None
     /// ).await?;
-    /// println!("Created playlist: {}", playlist.title);
+    /// println!("Created playlist: {}", playlist.data.title);
     /// # Ok(())
     /// # }
     /// ```
@@ -64,8 +64,7 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::{TidalClient, auth::init::TidalAuth};
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
     /// let playlists = client.list_playlists().await?;
