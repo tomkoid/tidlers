@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::client::models::{album::Album, artist::Artist, media::MediaMetadata};
 
+/// Represents a music track
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Track {
     pub id: u64,
@@ -59,6 +60,7 @@ pub struct Track {
     pub item_uuid: Option<String>,
 }
 
+/// Response containing track playback information including manifest data
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackPlaybackInfoPostPaywallResponse {
@@ -79,6 +81,7 @@ pub struct TrackPlaybackInfoPostPaywallResponse {
 }
 
 impl TrackPlaybackInfoPostPaywallResponse {
+    /// Extracts all streaming URLs from the manifest
     pub fn get_stream_urls(&self) -> Option<Vec<String>> {
         self.manifest_parsed.as_ref().map(|m| match m {
             ManifestType::Json(json_manifest) => json_manifest.urls.clone(),
@@ -86,11 +89,13 @@ impl TrackPlaybackInfoPostPaywallResponse {
         })
     }
 
+    /// Gets the primary/first streaming URL
     pub fn get_primary_url(&self) -> Option<String> {
         self.get_stream_urls()
             .and_then(|urls| urls.into_iter().next())
     }
 
+    /// Gets the MIME type from the manifest
     pub fn get_mime_type(&self) -> Option<String> {
         self.manifest_parsed.as_ref().map(|m| match m {
             ManifestType::Json(json_manifest) => json_manifest.mime_type.clone(),
@@ -98,6 +103,7 @@ impl TrackPlaybackInfoPostPaywallResponse {
         })
     }
 
+    /// Gets the codec information from the manifest
     pub fn get_codecs(&self) -> Option<String> {
         self.manifest_parsed.as_ref().map(|m| match m {
             ManifestType::Json(json_manifest) => json_manifest.codecs.clone(),
@@ -106,6 +112,7 @@ impl TrackPlaybackInfoPostPaywallResponse {
     }
 }
 
+/// JSON manifest containing track streaming information
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackManifest {
@@ -115,12 +122,14 @@ pub struct TrackManifest {
     pub urls: Vec<String>,
 }
 
+/// Represents different types of streaming manifests
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum ManifestType {
     Json(TrackManifest),
     Dash(DashManifest),
 }
 
+/// DASH (Dynamic Adaptive Streaming over HTTP) manifest for adaptive streaming
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct DashManifest {
     pub mime_type: String,

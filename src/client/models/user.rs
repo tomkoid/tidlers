@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// Represents a Tidal user account
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct User {
     #[serde(rename = "userId")]
@@ -54,6 +55,7 @@ pub struct User {
     pub new_user: bool,
 }
 
+/// Basic user information
 #[derive(Debug, Clone)]
 pub struct UserInfo {
     pub user_id: String,

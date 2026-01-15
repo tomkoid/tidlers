@@ -10,6 +10,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Searches for content on Tidal with configurable options
     pub async fn search(&self, config: SearchConfig) -> Result<SearchResultsFull, TidalError> {
         let types_string = config
             .types
@@ -44,6 +45,7 @@ impl TidalClient {
             .await
     }
 
+    /// Gets search suggestions for a query
     pub async fn search_suggestion(
         &self,
         config: SearchSuggestionsConfig,

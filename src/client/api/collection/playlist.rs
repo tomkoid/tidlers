@@ -13,6 +13,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Creates a new playlist in the user's collection
     pub async fn create_playlist(
         &self,
         title: impl Into<String>,
@@ -37,6 +38,7 @@ impl TidalClient {
         .await
     }
 
+    /// Lists all playlists for the authenticated user
     pub async fn list_playlists(&self) -> Result<PlaylistsResponse, TidalError> {
         let url = format!("/users/{}/playlists", self.user_id()?);
 
@@ -46,6 +48,7 @@ impl TidalClient {
             .await
     }
 
+    /// Lists public playlists for a specific user
     pub async fn list_public_playlists(
         &self,
         limit: Option<u64>,

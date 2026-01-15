@@ -11,6 +11,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Retrieves album information by album ID
     pub async fn get_album(
         &self,
         album_id: impl Into<AlbumId>,
@@ -22,6 +23,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves tracks from an album with pagination support
     pub async fn get_album_items(
         &self,
         album_id: impl Into<AlbumId>,
@@ -46,6 +48,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves album credits information
     pub async fn get_album_credits(
         &self,
         album_id: impl Into<AlbumId>,

@@ -19,6 +19,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Retrieves track information by track ID
     pub async fn get_track(&self, track_id: impl Into<TrackId>) -> Result<Track, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/", track_id))
@@ -27,6 +28,7 @@ impl TidalClient {
             .await
     }
 
+    /// Parses a DASH XML manifest into a structured format
     fn parse_dash_manifest(xml: &str) -> Result<DashManifest, TidalError> {
         let mut reader = Reader::from_str(xml);
         reader.config_mut().trim_text(true);

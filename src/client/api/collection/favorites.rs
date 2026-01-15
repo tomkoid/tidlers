@@ -4,6 +4,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Retrieves the user's favorite tracks with optional limit
     pub async fn get_collection_favorites(
         &self,
         limit: Option<u32>,
