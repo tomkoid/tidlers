@@ -15,6 +15,7 @@ use crate::{
     session::TidalSession,
 };
 
+/// Main client for interacting with the Tidal API
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TidalClient {
     pub user_info: Option<User>,
@@ -34,6 +35,7 @@ impl TidalClient {
     pub const OPEN_API_V2_LOCATION: &'static str = "https://openapi.tidal.com/v2";
     pub const WEB_API_V2_LOCATION: &'static str = "https://tidal.com/v2";
 
+    /// Creates a new TidalClient with the provided authentication credentials
     pub fn new(credentials: &TidalAuth) -> TidalClient {
         let session = TidalSession::new(credentials);
         let rq = RequestClient::new(Self::API_V1_LOCATION.to_string());
@@ -45,6 +47,7 @@ impl TidalClient {
         }
     }
 
+    /// Checks if the client is waiting for OAuth login completion
     pub fn waiting_for_oauth_login(&self) -> bool {
         self.session.auth.oauth_login && self.session.auth.access_token.is_none()
     }
@@ -64,18 +67,22 @@ impl TidalClient {
             .ok_or(TidalError::NotAuthenticated)
     }
 
+    /// Sets the audio quality preference for playback
     pub fn set_audio_quality(&mut self, quality: AudioQuality) {
         self.session.audio_quality = quality;
     }
 
+    /// Sets the time offset for the session
     pub fn set_time_offset(&mut self, time_offset: String) {
         self.session.time_offset = time_offset;
     }
 
+    /// Sets the playback mode (stream or offline)
     pub fn set_playback_mode(&mut self, playback_mode: PlaybackMode) {
         self.session.playback_mode = playback_mode;
     }
 
+    /// Enables or disables debug mode for verbose logging
     pub fn set_debug_mode(&mut self, debug: bool) {
         self.debug_mode = debug;
     }

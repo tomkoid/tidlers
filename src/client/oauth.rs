@@ -10,6 +10,7 @@ use crate::{
     responses::{AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
 
+/// Status updates during the OAuth flow
 #[derive(Debug, Clone, PartialEq)]
 pub enum OAuthStatus {
     Waiting,
@@ -18,6 +19,7 @@ pub enum OAuthStatus {
 }
 
 impl TidalClient {
+    /// Initiates the OAuth device authorization flow and returns the verification link
     pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, TidalError> {
         if self.session.auth.is_token_auth() {
             return Err(TidalError::InvalidArgument(
@@ -55,6 +57,7 @@ impl TidalClient {
         Ok(json)
     }
 
+    /// Polls the OAuth endpoint until the user completes authentication or the request times out
     pub async fn wait_for_oauth(
         &mut self,
         device_code: &str,

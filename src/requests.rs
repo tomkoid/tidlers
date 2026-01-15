@@ -6,6 +6,7 @@ use reqwest::{
 };
 use serde::{Deserialize, Serialize};
 
+/// HTTP client wrapper for making API requests
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct RequestClient {
     base_url: String,
@@ -15,6 +16,7 @@ pub struct RequestClient {
     client: reqwest::Client,
 }
 
+/// Represents an HTTP request to the Tidal API
 #[derive(Clone, Debug)]
 pub struct TidalRequest {
     pub method: reqwest::Method,
@@ -29,6 +31,7 @@ pub struct TidalRequest {
     pub send_params_as_form: bool,
 }
 
+/// HTTP Basic authentication credentials
 #[derive(Clone, Debug)]
 pub struct BasicAuth {
     pub name: String,
@@ -58,6 +61,7 @@ impl TidalRequest {
     }
 }
 
+/// Errors that can occur during HTTP requests
 #[derive(thiserror::Error, Debug)]
 pub enum RequestClientError {
     #[error("failed to parse url with params error")]
@@ -80,6 +84,7 @@ pub enum RequestClientError {
 }
 
 impl RequestClient {
+    /// Creates a new RequestClient with the specified base URL
     pub fn new(base_url: String) -> RequestClient {
         let client = reqwest::Client::new();
         RequestClient {
@@ -89,6 +94,7 @@ impl RequestClient {
         }
     }
 
+    /// Internal method to execute HTTP requests with all configured options
     async fn requests_basic(
         &self,
         request: TidalRequest,
@@ -181,6 +187,7 @@ impl RequestClient {
         // Ok(())
     }
 
+    /// Executes an HTTP request and returns the response
     pub async fn request(
         &self,
         request: TidalRequest,

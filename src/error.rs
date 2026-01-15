@@ -3,6 +3,7 @@ use std::time::SystemTimeError;
 use serde::Serialize;
 use thiserror::Error;
 
+/// Main error type for the Tidal API client
 #[derive(Error, Debug, Serialize)]
 pub enum TidalError {
     #[error("resource not found")]
@@ -55,6 +56,7 @@ pub enum TidalError {
     Other(String),
 }
 
+/// Custom serializer for generic errors
 fn serialize_generic<S>(error: &dyn std::error::Error, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,

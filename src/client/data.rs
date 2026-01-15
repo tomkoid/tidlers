@@ -1,6 +1,7 @@
 use crate::client::TidalClient;
 
 impl TidalClient {
+    /// Deserializes a TidalClient from a JSON string
     pub fn from_json(client_json: &str) -> Result<TidalClient, serde_json::Error> {
         let client_json: TidalClient = serde_json::from_str(client_json)?;
 
@@ -11,6 +12,7 @@ impl TidalClient {
         })
     }
 
+    /// Serializes the TidalClient to a JSON string
     pub fn get_json(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
