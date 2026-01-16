@@ -231,4 +231,27 @@ impl TidalClient {
             .send()
             .await
     }
+
+    pub async fn get_user_uploads(
+        &self,
+        next_cursor: Option<String>,
+    ) -> Result<TrackMixInfo, TidalError> {
+        if self.session.auth.user_id.is_none() {
+            return Err(TidalError::NotAuthenticated);
+        }
+
+        let user_id = self.session.auth.user_id.unwrap();
+        self.request(reqwest::Method::GET, "/tracks")
+            .with_country_code()
+            .with_param("filter[owners.id]", user_id.to_string())
+            // .with_param("limit", 1.to_string())
+            .with_param(
+                "include",
+                "albums,albums.coverArt,artists,owners,shares,sourceFile,trackStatistics",
+            )
+            .with_optional_param("page_cursor", next_cursor)
+            .with_base_url(TidalClient::OPEN_API_V2_LOCATION)
+            .send()
+            .await
+    }
 }

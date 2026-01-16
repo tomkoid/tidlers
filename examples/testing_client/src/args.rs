@@ -44,6 +44,9 @@ pub enum Commands {
     /// Show user's home feed
     Home,
 
+    /// Show user's uploads
+    Uploads,
+
     /// Show details of a specific track
     Track {
         #[clap(short, long, default_value_t = ArgAudioQuality::High, value_enum)]

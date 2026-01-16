@@ -70,7 +70,7 @@ impl<'a> ApiRequestBuilder<'a> {
     }
 
     /// Adds a query parameter only if the value is Some
-    pub(crate) fn _with_optional_param(
+    pub(crate) fn with_optional_param(
         mut self,
         key: impl Into<String>,
         value: Option<impl Into<String>>,

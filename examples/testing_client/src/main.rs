@@ -222,6 +222,12 @@ async fn main() -> Result<()> {
             }
         }
 
+        args::Commands::Uploads => {
+            println!("getting user uploads..");
+            let uu = tidal.get_user_uploads(None).await?;
+            println!("user uploads: {uu:#?}");
+        }
+
         args::Commands::Track { track_id, quality } => {
             println!(
                 "getting track info and track mix for track id: {}..",
