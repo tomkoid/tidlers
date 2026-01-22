@@ -6,8 +6,7 @@ publish = false
 
 [dependencies]
 tidlers.workspace = true
-color-eyre = "0.6.5"
-eyre = "0.6.12"
+eyre = { version = "0.6.5", package = "color-eyre" }
 tokio = { version = "1.46.1", features = ["full", "rt"] }
 clap = { version = "4.5.53", features = ["derive"] }
 chrono = "0.4.43"
