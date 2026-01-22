@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Implement TidalClient::get_user_uploads()
+
 ### Changed
 - **Breaking:** Changed internal functions to `pub(crate)` visibility to prevent usage in external code:
   - `BasicAuth::new()`

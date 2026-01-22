@@ -11,47 +11,64 @@ mod save;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    // better error reporting
     eyre::install()?;
 
-    // parse command line arguments
     let args = Args::parse();
+    let mut tidal = initialize_client().await?;
 
-    // handle authentication and create Tidal client
-    let mut tidal = if let Some(auth) = handle_auth().await {
-        TidalClient::new(&auth)
-    } else {
-        let saved_session_data = save::get_session_data().unwrap();
-        let mut cl = TidalClient::from_json(&saved_session_data)?;
+    configure_client(&mut tidal, args.debug);
+    complete_oauth_if_needed(&mut tidal).await?;
+    finalize_authentication(&mut tidal).await?;
 
-        let refreshed = cl.refresh_access_token(false).await?;
-        if refreshed {
-            println!("token refreshed from saved session data");
-        } else {
-            println!("using saved session data");
-        }
-
-        cl
-    };
-
-    tidal.set_debug_mode(args.debug);
-    tidal.set_time_offset("+01:00".to_string()); // TODO: change this based on timezone
-
-    // if waiting for oauth login, handle oauth flow
-    if tidal.waiting_for_oauth_login() {
-        println!("handling oauth flow..");
-        auth::handle_oauth_flow(&mut tidal).await?;
-        println!("oauth flow complete");
-    }
-
-    println!("logged in");
-
-    // refresh user info for all commands
-    tidal.refresh_user_info().await?;
-    save_session_data(&tidal.get_json());
-
-    // execute command
     execute_command(tidal, args.command).await?;
 
+    Ok(())
+}
+
+async fn initialize_client() -> eyre::Result<TidalClient> {
+    if let Some(auth) = handle_auth().await {
+        Ok(TidalClient::new(&auth))
+    } else {
+        load_saved_session().await
+    }
+}
+
+async fn load_saved_session() -> eyre::Result<TidalClient> {
+    let saved_session_data = save::get_session_data()
+        .ok_or_else(|| eyre::Report::msg("No saved session data found"))?;
+    
+    let mut client = TidalClient::from_json(&saved_session_data)?;
+    
+    if client.refresh_access_token(false).await? {
+        println!("Token refreshed");
+    } else {
+        println!("Using saved session");
+    }
+    
+    Ok(client)
+}
+
+fn configure_client(client: &mut TidalClient, debug: bool) {
+    client.set_debug_mode(debug);
+    client.set_time_offset("+01:00".to_string()); // TODO: auto-detect timezone
+}
+
+async fn complete_oauth_if_needed(client: &mut TidalClient) -> eyre::Result<()> {
+    if !client.waiting_for_oauth_login() {
+        return Ok(());
+    }
+
+    println!("Completing OAuth login...");
+    auth::handle_oauth_flow(client).await?;
+    println!("OAuth complete");
+    
+    Ok(())
+}
+
+async fn finalize_authentication(client: &mut TidalClient) -> eyre::Result<()> {
+    client.refresh_user_info().await?;
+    save_session_data(&client.get_json());
+    println!("Logged in\n");
+    
     Ok(())
 }
