@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Implement TidalClient::get_user_uploads()
+- TidalClient::get_user_uploads() now accepts optional UserUploadsInclude and next_cursor parameters
 
 ### Changed
 - **Breaking:** Changed internal functions to `pub(crate)` visibility to prevent usage in external code:
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SearchType::to_api_params()`
   - `ApiRequestBuilder` and all its methods (new, with_country_code, with_locale, with_base_url, with_param, with_params, with_optional_param, with_headers, send, send_raw)
   - `TidalClient::request()`
+- Organized track models more
 
 ### Fixed
 - **Breaking:** Changed `activity`, `artists` and `disclaimers` fields to be optional in TopArtistsResponse to prevent crashes

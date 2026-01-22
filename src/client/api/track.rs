@@ -10,13 +10,16 @@ use crate::{
             playback::AssetPresentation,
             track::{
                 DashManifest, ManifestType, Track, TrackManifest,
-                TrackPlaybackInfoPostPaywallResponse, UserUploads,
+                TrackPlaybackInfoPostPaywallResponse,
             },
         },
     },
     error::TidalError,
     ids::TrackId,
 };
+
+use crate::client::models::track::config::UserUploadsInclude;
+use crate::client::models::track::user_uploads::UserUploads;
 
 impl TidalClient {
     /// Retrieves track information by track ID
@@ -234,21 +237,21 @@ impl TidalClient {
 
     pub async fn get_user_uploads(
         &self,
+        include: UserUploadsInclude,
         next_cursor: Option<String>,
     ) -> Result<UserUploads, TidalError> {
         if self.session.auth.user_id.is_none() {
             return Err(TidalError::NotAuthenticated);
         }
 
+        let includes = include.to_api_params();
+
         let user_id = self.session.auth.user_id.unwrap();
         self.request(reqwest::Method::GET, "/tracks")
             .with_country_code()
             .with_param("filter[owners.id]", user_id.to_string())
             // .with_param("limit", 1.to_string())
-            .with_param(
-                "include",
-                "albums,albums.coverArt,artists,owners,shares,sourceFile,trackStatistics",
-            )
+            .with_param("include", includes)
             .with_optional_param("page_cursor", next_cursor)
             .with_base_url(TidalClient::OPEN_API_V2_LOCATION)
             .send()
