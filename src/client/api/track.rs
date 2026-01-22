@@ -10,7 +10,7 @@ use crate::{
             playback::AssetPresentation,
             track::{
                 DashManifest, ManifestType, Track, TrackManifest,
-                TrackPlaybackInfoPostPaywallResponse,
+                TrackPlaybackInfoPostPaywallResponse, UserUploads,
             },
         },
     },
@@ -235,7 +235,7 @@ impl TidalClient {
     pub async fn get_user_uploads(
         &self,
         next_cursor: Option<String>,
-    ) -> Result<TrackMixInfo, TidalError> {
+    ) -> Result<UserUploads, TidalError> {
         if self.session.auth.user_id.is_none() {
             return Err(TidalError::NotAuthenticated);
         }
