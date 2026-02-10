@@ -27,7 +27,7 @@ pub struct Track {
     #[serde(rename = "stemReady")]
     pub stem_ready: bool,
     #[serde(rename = "streamStartDate")]
-    pub stream_start_date: String,
+    pub stream_start_date: Option<String>,
     #[serde(rename = "premiumStreamingOnly")]
     pub premium_streaming_only: bool,
     #[serde(rename = "trackNumber")]
