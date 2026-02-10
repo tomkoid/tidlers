@@ -10,20 +10,21 @@ pub(crate) fn _debug_json<T: serde::Serialize>(data: &T) {
 pub(crate) fn debug_json_str(json_str: &str) {
     match serde_json::from_str::<serde_json::Value>(json_str) {
         Ok(value) => match serde_json::to_string_pretty(&value) {
-            Ok(pretty) => println!("{}", pretty),
+            Ok(pretty) => save_json_to_file(&pretty, DEFAULT_DEBUG_PRETTY_FILE),
             Err(e) => eprintln!("Failed to format JSON: {}", e),
         },
         Err(e) => eprintln!("Failed to parse JSON string: {}", e),
     }
 
     // save the json to a debug file
-    save_json_to_file(json_str);
+    save_json_to_file(json_str, DEFAULT_DEBUG_FILE);
 }
 
-const DEFAULT_DEBUG_FILE: &str = "debug_output.json";
+const DEFAULT_DEBUG_FILE: &str = ".debug_output.json";
+const DEFAULT_DEBUG_PRETTY_FILE: &str = ".debug_output_pretty.json";
 
-fn save_json_to_file(data: &str) {
-    if let Err(e) = std::fs::write(DEFAULT_DEBUG_FILE, data) {
+fn save_json_to_file(data: &str, path: &str) {
+    if let Err(e) = std::fs::write(path, data) {
         eprintln!("Failed to write JSON to file {}: {}", DEFAULT_DEBUG_FILE, e);
     }
 }
