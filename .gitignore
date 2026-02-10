@@ -4,6 +4,7 @@
 
 session.json
 debug_output.json
+.debug*.json
 
 # downloads
 downloads/
