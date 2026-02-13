@@ -115,13 +115,25 @@ impl<'a> ApiRequestBuilder<'a> {
             return Err(TidalError::NotFound);
         }
 
+        let status = resp.status();
+        let response_url = resp.url().to_string();
         let body = resp.text().await?;
 
         if self.request_debug {
             debug_json_str(&body);
         }
 
-        Ok(serde_json::from_str(&body)?)
+        serde_json::from_str(&body).map_err(|error| {
+            let response_body = if body.trim().is_empty() {
+                "<empty response body>"
+            } else {
+                body.as_str()
+            };
+
+            TidalError::InvalidResponse(format!(
+                "failed to parse JSON response from {response_url} (status {status}): {error}\nresponse body: {response_body}"
+            ))
+        })
     }
 
     /// Executes the request and returns the raw response as a String

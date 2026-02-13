@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Breaking:** Changed `activity`, `artists` and `disclaimers` fields to be optional in TopArtistsResponse to prevent crashes
+- Improved JSON parse failures to include response URL, HTTP status, and raw response body in the error message for easier debugging
 
 ## [0.1.0] - 2025-01-15
 
