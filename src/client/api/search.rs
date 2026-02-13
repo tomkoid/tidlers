@@ -45,6 +45,12 @@ impl TidalClient {
             .collect::<Vec<&str>>()
             .join(",");
 
+        if config.limit > 300 {
+            return Err(TidalError::InvalidArgument(
+                "search limit cannot be greater than 300".to_string(),
+            ));
+        }
+
         self.request(reqwest::Method::GET, "/search")
             .with_country_code()
             .with_locale()
