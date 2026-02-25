@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Implement TidalClient::get_user_uploads()
 - TidalClient::get_user_uploads() now accepts optional UserUploadsInclude and next_cursor parameters
+- Added OpenAPI v2 endpoint coverage methods (`openapi_get_path` plus 100+ `openapi_get_*` wrappers) for albums, artists, tracks, playlists, videos, lyrics, credits, search results, and user-collection resources
 
 ### Changed
 - **Breaking:** Changed internal functions to `pub(crate)` visibility to prevent usage in external code:
