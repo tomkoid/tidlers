@@ -123,7 +123,7 @@ pub struct PlaylistCreatorInfo {
 pub struct Curator {
     pub id: i64,
     pub name: String,
-    pub handle: String,
+    pub handle: Option<String>,
     pub picture: Option<String>,
 }
 

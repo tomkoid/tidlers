@@ -36,10 +36,13 @@ pub struct Track {
     pub volume_number: u32,
     pub version: Option<String>,
     pub popularity: u32,
-    pub copyright: String,
+    pub copyright: Option<String>,
     pub bpm: Option<f32>,
+    pub key: Option<String>,
+    #[serde(rename = "keyScale")]
+    pub key_scale: Option<String>,
     pub url: String,
-    pub isrc: String,
+    pub isrc: Option<String>,
     pub editable: bool,
     pub explicit: bool,
     #[serde(rename = "audioQuality")]
