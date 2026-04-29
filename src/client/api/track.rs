@@ -28,7 +28,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
@@ -163,7 +163,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
@@ -262,5 +262,68 @@ impl TidalClient {
             .with_base_url(OPEN_API_V2_LOCATION)
             .send()
             .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::TidalClient;
+
+    #[test]
+    fn parse_dash_manifest_extracts_expected_fields() {
+        let xml = r#"
+            <MPD>
+              <Period>
+                <AdaptationSet mimeType="audio/mp4">
+                  <Representation codecs="flac" bandwidth="9216000">
+                    <BaseURL>https://audio.example.com/</BaseURL>
+                    <SegmentTemplate
+                      initialization="init.mp4"
+                      media="chunk-$Number$.m4s"
+                      timescale="48000"
+                      duration="96000"
+                      startNumber="1"
+                    />
+                  </Representation>
+                </AdaptationSet>
+              </Period>
+            </MPD>
+        "#;
+
+        let parsed = TidalClient::parse_dash_manifest(xml).expect("manifest should parse");
+        assert_eq!(parsed.mime_type, "audio/mp4");
+        assert_eq!(parsed.codecs, "flac");
+        assert_eq!(parsed.bitrate, Some(9_216_000));
+        assert_eq!(parsed.initialization_url.as_deref(), Some("init.mp4"));
+        assert_eq!(
+            parsed.media_url_template.as_deref(),
+            Some("chunk-$Number$.m4s")
+        );
+        assert_eq!(parsed.timescale, Some(48_000));
+        assert_eq!(parsed.duration, Some(96_000));
+        assert_eq!(parsed.start_number, Some(1));
+        assert!(
+            parsed
+                .urls
+                .contains(&"https://audio.example.com/".to_string())
+        );
+        assert!(parsed.urls.contains(&"init.mp4".to_string()));
+        assert!(parsed.urls.contains(&"chunk-$Number$.m4s".to_string()));
+    }
+
+    #[test]
+    fn parse_dash_manifest_errors_when_no_urls_found() {
+        let xml = r#"
+            <MPD>
+              <Period>
+                <AdaptationSet mimeType="audio/mp4">
+                  <Representation codecs="flac" bandwidth="9216000" />
+                </AdaptationSet>
+              </Period>
+            </MPD>
+        "#;
+
+        let result = TidalClient::parse_dash_manifest(xml);
+        assert!(result.is_err());
     }
 }

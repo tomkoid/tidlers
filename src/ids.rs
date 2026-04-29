@@ -57,3 +57,24 @@ define_id!(PlaylistId);
 define_id!(VideoId);
 define_id!(MixId);
 define_id!(UserId);
+
+#[cfg(test)]
+mod tests {
+    use super::TrackId;
+
+    #[test]
+    fn id_wrapper_conversions_are_lossless() {
+        let id = TrackId::new("12345");
+        assert_eq!(id.as_str(), "12345");
+        assert_eq!(id.to_string(), "12345");
+
+        let from_str: TrackId = "abc".into();
+        let from_string: TrackId = String::from("xyz").into();
+
+        assert_eq!(from_str.as_ref(), "abc");
+        assert_eq!(from_string.as_ref(), "xyz");
+
+        let back_to_string: String = from_string.into();
+        assert_eq!(back_to_string, "xyz");
+    }
+}

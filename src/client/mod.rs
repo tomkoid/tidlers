@@ -36,7 +36,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// let auth = TidalAuth::with_oauth();
     /// let client = TidalClient::new(&auth);
     /// ```
@@ -76,7 +76,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// # use tidlers::client::models::playback::AudioQuality;
     /// let auth = TidalAuth::with_oauth();
     /// let mut client = TidalClient::new(&auth);

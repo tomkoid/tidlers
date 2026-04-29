@@ -75,3 +75,42 @@ impl TidalAuth {
         self.access_token.is_some()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::auth::TidalAuth;
+
+    #[test]
+    fn token_is_expired_when_no_refresh_metadata_exists() {
+        let auth = TidalAuth::with_access_token("access_token".to_string());
+        assert!(auth.is_token_expired().expect("time check should succeed"));
+    }
+
+    #[test]
+    fn token_is_not_expired_before_expiry_window() {
+        let mut auth = TidalAuth::with_access_token("access_token".to_string());
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time should be after UNIX_EPOCH")
+            .as_secs();
+
+        auth.last_refresh_time = Some(now - 5);
+        auth.refresh_expiry = Some(60);
+
+        assert!(!auth.is_token_expired().expect("time check should succeed"));
+    }
+
+    #[test]
+    fn token_is_expired_after_expiry_window() {
+        let mut auth = TidalAuth::with_access_token("access_token".to_string());
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time should be after UNIX_EPOCH")
+            .as_secs();
+
+        auth.last_refresh_time = Some(now - 120);
+        auth.refresh_expiry = Some(60);
+
+        assert!(auth.is_token_expired().expect("time check should succeed"));
+    }
+}

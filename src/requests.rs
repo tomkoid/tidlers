@@ -229,3 +229,108 @@ impl RequestClient {
         Ok(req)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        io::{Read, Write},
+        net::TcpListener,
+        thread,
+    };
+
+    use reqwest::Method;
+
+    use super::{RequestClient, RequestClientError, TidalRequest};
+
+    fn spawn_one_shot_http_server(raw_response: &'static str) -> (String, thread::JoinHandle<()>) {
+        let listener = TcpListener::bind("127.0.0.1:0").expect("failed to bind test listener");
+        let addr = listener.local_addr().expect("failed to get listener addr");
+
+        let handle = thread::spawn(move || {
+            let (mut stream, _) = listener.accept().expect("failed to accept connection");
+            let mut buffer = [0_u8; 2048];
+            let _ = stream.read(&mut buffer);
+            stream
+                .write_all(raw_response.as_bytes())
+                .expect("failed to write test response");
+            stream.flush().expect("failed to flush test response");
+        });
+
+        (format!("http://{}", addr), handle)
+    }
+
+    #[test]
+    fn error_body_snippet_handles_empty_body() {
+        assert_eq!(
+            RequestClient::error_body_snippet("  \n\t "),
+            "<empty response body>"
+        );
+    }
+
+    #[test]
+    fn error_body_snippet_truncates_long_body() {
+        let long_body = "a".repeat(RequestClient::ERROR_BODY_SNIPPET_MAX_CHARS + 1);
+        let snippet = RequestClient::error_body_snippet(&long_body);
+
+        assert_eq!(
+            snippet.len(),
+            RequestClient::ERROR_BODY_SNIPPET_MAX_CHARS + "...(truncated)".len()
+        );
+        assert!(snippet.ends_with("...(truncated)"));
+    }
+
+    #[tokio::test]
+    async fn request_returns_unauthorized_on_401() {
+        let (base_url, handle) = spawn_one_shot_http_server(
+            "HTTP/1.1 401 Unauthorized\r\nContent-Length: 12\r\nConnection: close\r\n\r\nunauthorized",
+        );
+        let client = RequestClient::new(base_url);
+        let request = TidalRequest::new(Method::GET, "/test".to_string());
+
+        let result = client.request(request).await;
+        handle.join().expect("test server thread failed");
+
+        assert!(matches!(result, Err(RequestClientError::Unauthorized)));
+    }
+
+    #[tokio::test]
+    async fn request_returns_status_error_with_context_on_non_401_error() {
+        let (base_url, handle) = spawn_one_shot_http_server(
+            "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 18\r\nConnection: close\r\n\r\ninternal failure!!",
+        );
+        let client = RequestClient::new(base_url);
+        let request = TidalRequest::new(Method::GET, "/boom".to_string());
+
+        let result = client.request(request).await;
+        handle.join().expect("test server thread failed");
+
+        let err = result.expect_err("request should fail");
+        match err {
+            RequestClientError::StatusCode {
+                status,
+                url,
+                body_snippet,
+            } => {
+                assert_eq!(status, reqwest::StatusCode::INTERNAL_SERVER_ERROR);
+                assert!(url.contains("/boom"));
+                assert_eq!(body_snippet, "internal failure!!");
+            }
+            other => panic!("expected StatusCode error, got: {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn request_accepts_non_200_success_status() {
+        let (base_url, handle) = spawn_one_shot_http_server(
+            "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        );
+        let client = RequestClient::new(base_url);
+        let request = TidalRequest::new(Method::GET, "/ok".to_string());
+
+        let result = client.request(request).await;
+        handle.join().expect("test server thread failed");
+
+        let response = result.expect("request should succeed");
+        assert_eq!(response.status(), reqwest::StatusCode::NO_CONTENT);
+    }
+}

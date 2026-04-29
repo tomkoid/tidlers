@@ -24,7 +24,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
@@ -83,7 +83,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let mut client = TidalClient::new(&auth);

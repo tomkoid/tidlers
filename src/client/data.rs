@@ -32,7 +32,7 @@ impl TidalClient {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
@@ -45,5 +45,48 @@ impl TidalClient {
         serde_json::to_string(&self).unwrap_or_else(|_| {
             panic!("failed to serialize TidalClient to JSON, something is seriously wrong here.")
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        TidalClient,
+        auth::TidalAuth,
+        client::models::playback::{AudioQuality, PlaybackMode},
+    };
+
+    #[test]
+    fn json_roundtrip_preserves_session_state() {
+        let auth = TidalAuth::with_access_token("token_123".to_string());
+        let mut client = TidalClient::new(&auth);
+        client.session.locale = "cs_CZ".to_string();
+        client.set_time_offset("+02:00".to_string());
+        client.set_audio_quality(AudioQuality::HiRes);
+        client.set_playback_mode(PlaybackMode::Offline);
+
+        let json = client.get_json();
+        let restored = TidalClient::from_json(&json).expect("client json should deserialize");
+
+        assert_eq!(
+            restored.session.auth.access_token.as_deref(),
+            Some("token_123")
+        );
+        assert_eq!(restored.session.locale, "cs_CZ");
+        assert_eq!(restored.session.time_offset, "+02:00");
+        assert!(matches!(
+            restored.session.audio_quality,
+            AudioQuality::HiRes
+        ));
+        assert!(matches!(
+            restored.session.playback_mode,
+            PlaybackMode::Offline
+        ));
+    }
+
+    #[test]
+    fn from_json_rejects_invalid_json() {
+        let result = TidalClient::from_json("{this is invalid json");
+        assert!(result.is_err());
     }
 }

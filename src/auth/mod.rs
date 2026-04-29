@@ -57,7 +57,7 @@ impl TidalAuth {
     /// # Example
     ///
     /// ```
-    /// # use tidlers::auth::init::TidalAuth;
+    /// # use tidlers::auth::TidalAuth;
     /// let auth = TidalAuth::new();
     /// ```
     pub fn new() -> Self {
@@ -72,7 +72,7 @@ impl TidalAuth {
     /// # Example
     ///
     /// ```no_run
-    /// use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// use tidlers::{TidalClient, auth::TidalAuth};
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let auth = TidalAuth::with_oauth();
@@ -103,7 +103,7 @@ impl TidalAuth {
     /// # Example
     ///
     /// ```
-    /// # use tidlers::auth::init::TidalAuth;
+    /// # use tidlers::auth::TidalAuth;
     /// let auth = TidalAuth::with_access_token("your_access_token".to_string());
     /// ```
     pub fn with_access_token(access_token: String) -> Self {
@@ -119,7 +119,7 @@ impl TidalAuth {
     /// # Example
     ///
     /// ```no_run
-    /// use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// use tidlers::{TidalClient, auth::TidalAuth};
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let auth = TidalAuth::with_api_token(

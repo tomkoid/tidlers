@@ -17,7 +17,7 @@ impl TidalClient {
     ///
     /// ```no_run
     /// # use tidlers::TidalClient;
-    /// # use tidlers::auth::init::TidalAuth;
+    /// # use tidlers::auth::TidalAuth;
     /// # use tidlers::client::models::search::config::{SearchConfig, SearchType};
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();

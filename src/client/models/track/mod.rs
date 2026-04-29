@@ -92,7 +92,7 @@ impl TrackPlaybackInfoPostPaywallResponse {
     /// # Example
     ///
     /// ```no_run
-    /// # use tidlers::{TidalClient, auth::init::TidalAuth};
+    /// # use tidlers::{TidalClient, auth::TidalAuth};
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
@@ -212,6 +212,62 @@ impl DashManifest {
     pub fn get_segment_url(&self, segment_number: u32) -> Option<String> {
         self.get_media_template()
             .map(|template| template.replace("$Number$", &segment_number.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::client::models::track::{
+        DashManifest, ManifestType, TrackManifest, TrackPlaybackInfoPostPaywallResponse,
+    };
+
+    #[test]
+    fn playback_info_helpers_work_for_json_manifest() {
+        let manifest = TrackManifest {
+            mime_type: "audio/flac".to_string(),
+            codecs: "flac".to_string(),
+            encryption_type: "NONE".to_string(),
+            urls: vec!["https://example.com/a.flac".to_string()],
+        };
+
+        let playback = TrackPlaybackInfoPostPaywallResponse {
+            track_id: 1,
+            asset_presentation: "FULL".to_string(),
+            audio_mode: "STEREO".to_string(),
+            audio_quality: "LOSSLESS".to_string(),
+            manifest_mime_type: "application/json".to_string(),
+            manifest_hash: "hash".to_string(),
+            manifest: Some(manifest.clone()),
+            manifest_parsed: Some(ManifestType::Json(manifest)),
+            album_replay_gain: 0.0,
+            album_peak_amplitude: 0.0,
+            track_replay_gain: 0.0,
+            track_peak_amplitude: 0.0,
+        };
+
+        assert_eq!(
+            playback.get_primary_url().as_deref(),
+            Some("https://example.com/a.flac")
+        );
+        assert_eq!(playback.get_mime_type().as_deref(), Some("audio/flac"));
+        assert_eq!(playback.get_codecs().as_deref(), Some("flac"));
+    }
+
+    #[test]
+    fn dash_manifest_segment_url_uses_template() {
+        let dash = DashManifest {
+            mime_type: "audio/mp4".to_string(),
+            codecs: "flac".to_string(),
+            urls: vec![],
+            bitrate: Some(1),
+            initialization_url: Some("init.mp4".to_string()),
+            media_url_template: Some("seg-$Number$.m4s".to_string()),
+            timescale: Some(1),
+            duration: Some(1),
+            start_number: Some(1),
+        };
+
+        assert_eq!(dash.get_segment_url(42).as_deref(), Some("seg-42.m4s"));
     }
 }
 
