@@ -34,17 +34,17 @@ async fn initialize_client() -> eyre::Result<TidalClient> {
 }
 
 async fn load_saved_session() -> eyre::Result<TidalClient> {
-    let saved_session_data = save::get_session_data()
-        .ok_or_else(|| eyre::Report::msg("No saved session data found"))?;
-    
+    let saved_session_data =
+        save::get_session_data().ok_or_else(|| eyre::Report::msg("No saved session data found"))?;
+
     let mut client = TidalClient::from_json(&saved_session_data)?;
-    
+
     if client.refresh_access_token(false).await? {
         println!("Token refreshed");
     } else {
         println!("Using saved session");
     }
-    
+
     Ok(client)
 }
 
@@ -61,7 +61,7 @@ async fn complete_oauth_if_needed(client: &mut TidalClient) -> eyre::Result<()> 
     println!("Completing OAuth login...");
     auth::handle_oauth_flow(client).await?;
     println!("OAuth complete");
-    
+
     Ok(())
 }
 
@@ -69,6 +69,6 @@ async fn finalize_authentication(client: &mut TidalClient) -> eyre::Result<()> {
     client.refresh_user_info().await?;
     save_session_data(&client.get_json());
     println!("Logged in\n");
-    
+
     Ok(())
 }
