@@ -272,7 +272,7 @@ cargo run -p hires-streamer
 
 ## License
 
-This project is for educational and personal use. Ensure compliance with TIDAL's Terms of Service.
+This project is for educational and personal use. Ensure compliance with [TIDAL's Terms of Service](https://tidal.com/terms).
 
 ## Disclaimer
 
