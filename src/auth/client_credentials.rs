@@ -1,7 +1,7 @@
 use base64::{Engine, engine::general_purpose};
 
 /// Retrieves the default client credentials by decoding a base64 encoded string
-pub(crate) fn get_client_credentials() -> (String, String) {
+pub(crate) fn get_default_client_credentials() -> (String, String) {
     let encoded = String::from(
         "NE4zbjZRMXg5NUxMNUs3cDtvS09YZkpXMzcxY1g2eGFaMFB5aGdHTkJkTkxsQlpkNEFLS1lvdWdNamlrPQ==",
     );

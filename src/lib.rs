@@ -40,6 +40,7 @@ pub mod ids;
 pub mod requests;
 pub mod responses;
 pub mod session;
+pub mod urls;
 pub mod utils;
 
 // Re-export main types for convenience

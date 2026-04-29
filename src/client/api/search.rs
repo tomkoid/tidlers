@@ -7,6 +7,7 @@ use crate::{
         },
     },
     error::TidalError,
+    urls::WEB_API_V2_LOCATION,
 };
 
 impl TidalClient {
@@ -72,7 +73,7 @@ impl TidalClient {
             .with_param("types", types_string)
             .with_param("limit", config.limit.to_string())
             .with_param("offset", config.offset.to_string())
-            .with_base_url(TidalClient::WEB_API_V2_LOCATION)
+            .with_base_url(WEB_API_V2_LOCATION)
             .send()
             .await
     }
@@ -87,7 +88,7 @@ impl TidalClient {
             .with_param("query", config.query)
             .with_param("explicit", config.explicit.to_string())
             .with_param("hybrid", config.hybrid.to_string())
-            .with_base_url(TidalClient::WEB_API_V2_LOCATION)
+            .with_base_url(WEB_API_V2_LOCATION)
             .send()
             .await
     }

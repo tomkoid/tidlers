@@ -16,6 +16,7 @@ use crate::{
     },
     error::TidalError,
     ids::TrackId,
+    urls::OPEN_API_V2_LOCATION,
 };
 
 use crate::client::models::track::config::UserUploadsInclude;
@@ -258,7 +259,7 @@ impl TidalClient {
             // .with_param("limit", 1.to_string())
             .with_param("include", includes)
             .with_optional_param("page_cursor", next_cursor)
-            .with_base_url(TidalClient::OPEN_API_V2_LOCATION)
+            .with_base_url(OPEN_API_V2_LOCATION)
             .send()
             .await
     }

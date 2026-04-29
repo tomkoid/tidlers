@@ -1,5 +1,5 @@
 use tidlers::client::TidalClient;
-use tidlers::{TidalError, auth::init::TidalAuth};
+use tidlers::{TidalError, auth::TidalAuth};
 
 use crate::{oauth_handler::setup_oauth_status_listener, save::get_session_data};
 

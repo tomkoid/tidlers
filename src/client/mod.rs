@@ -5,7 +5,7 @@ pub mod models;
 pub mod oauth;
 
 use crate::{
-    auth::init::TidalAuth,
+    auth::TidalAuth,
     client::models::{
         playback::{AudioQuality, PlaybackMode},
         user::User,
@@ -13,6 +13,7 @@ use crate::{
     error::TidalError,
     requests::{self, RequestClient},
     session::TidalSession,
+    urls::API_V1_LOCATION,
 };
 
 /// Main client for interacting with the Tidal API
@@ -30,11 +31,6 @@ pub struct TidalClient {
 }
 
 impl TidalClient {
-    pub const API_V1_LOCATION: &'static str = "https://api.tidal.com/v1";
-    pub const API_V2_LOCATION: &'static str = "https://api.tidal.com/v2";
-    pub const OPEN_API_V2_LOCATION: &'static str = "https://openapi.tidal.com/v2";
-    pub const WEB_API_V2_LOCATION: &'static str = "https://tidal.com/v2";
-
     /// Creates a new TidalClient with the provided authentication credentials
     ///
     /// # Example
@@ -46,7 +42,7 @@ impl TidalClient {
     /// ```
     pub fn new(credentials: &TidalAuth) -> TidalClient {
         let session = TidalSession::new(credentials);
-        let rq = RequestClient::new(Self::API_V1_LOCATION.to_string());
+        let rq = RequestClient::new(API_V1_LOCATION.to_string());
         TidalClient {
             user_info: None,
             session,

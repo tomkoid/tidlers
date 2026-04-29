@@ -1,4 +1,4 @@
-use crate::{client::TidalClient, error::TidalError};
+use crate::{client::TidalClient, error::TidalError, urls::OPEN_API_V2_LOCATION};
 use serde_json::Value;
 
 macro_rules! openapi_get_no_id_methods {
@@ -30,7 +30,7 @@ impl TidalClient {
     ) -> Result<Value, TidalError> {
         let mut request = self
             .request(reqwest::Method::GET, path.into())
-            .with_base_url(Self::OPEN_API_V2_LOCATION);
+            .with_base_url(OPEN_API_V2_LOCATION);
 
         for (key, value) in query_params {
             request = request.with_param(*key, *value);

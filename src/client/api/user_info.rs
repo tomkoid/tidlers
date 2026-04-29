@@ -5,6 +5,7 @@ use crate::{
     },
     error::TidalError,
     responses::TidalGenericResponse,
+    urls::OPEN_API_V2_LOCATION,
 };
 
 impl TidalClient {
@@ -12,7 +13,7 @@ impl TidalClient {
     pub async fn get_user_info(&mut self) -> Result<UserData, TidalError> {
         let json: TidalGenericResponse<UserData> = self
             .request(reqwest::Method::GET, "/users/me")
-            .with_base_url(Self::OPEN_API_V2_LOCATION)
+            .with_base_url(OPEN_API_V2_LOCATION)
             .send()
             .await?;
 

@@ -4,6 +4,7 @@ use crate::{
         models::activity::{ActivityTimeline, TopArtistsResponse},
     },
     error::TidalError,
+    urls::API_V2_LOCATION,
 };
 
 impl TidalClient {
@@ -11,7 +12,7 @@ impl TidalClient {
         self.request(reqwest::Method::GET, "/my-activity/timeline")
             .with_country_code()
             .with_locale()
-            .with_base_url(Self::API_V2_LOCATION)
+            .with_base_url(API_V2_LOCATION)
             .send()
             .await
     }
@@ -26,7 +27,7 @@ impl TidalClient {
             .with_locale()
             .with_param("year", year.to_string())
             .with_param("month", month.to_string())
-            .with_base_url(Self::API_V2_LOCATION)
+            .with_base_url(API_V2_LOCATION)
             .send()
             .await
     }

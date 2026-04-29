@@ -10,6 +10,7 @@ use crate::{
     },
     error::TidalError,
     ids::PlaylistId,
+    urls::API_V2_LOCATION,
 };
 
 impl TidalClient {
@@ -53,7 +54,7 @@ impl TidalClient {
             "isPublic",
             (sharing_level.unwrap_or(SharingLevel::Private) == SharingLevel::Public).to_string(),
         )
-        .with_base_url(Self::API_V2_LOCATION)
+        .with_base_url(API_V2_LOCATION)
         .send()
         .await
     }
@@ -95,7 +96,7 @@ impl TidalClient {
             .with_country_code()
             .with_param("limit", limit.unwrap_or(50).to_string())
             .with_param("offset", offset.unwrap_or(0).to_string())
-            .with_base_url(Self::API_V2_LOCATION)
+            .with_base_url(API_V2_LOCATION)
             .send()
             .await
     }

@@ -1,5 +1,5 @@
 use crate::{
-    auth::init::TidalAuth,
+    auth::TidalAuth,
     client::models::playback::{AudioQuality, PlaybackMode},
 };
 

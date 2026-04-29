@@ -1,6 +1,7 @@
 use crate::{
     client::{TidalClient, models::collection::FolderCollectionItem},
     error::TidalError,
+    urls::API_V2_LOCATION,
 };
 
 impl TidalClient {
@@ -16,7 +17,7 @@ impl TidalClient {
         .with_country_code()
         .with_param("name", title.into())
         .with_param("folderId", parent_id.unwrap_or("root".to_string()))
-        .with_base_url(Self::API_V2_LOCATION)
+        .with_base_url(API_V2_LOCATION)
         .send()
         .await
     }

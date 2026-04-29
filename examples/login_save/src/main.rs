@@ -1,6 +1,6 @@
 use color_eyre::eyre::Result;
 use tidlers::{
-    auth::init::TidalAuth,
+    auth::TidalAuth,
     client::{TidalClient, oauth::OAuthStatus},
 };
 

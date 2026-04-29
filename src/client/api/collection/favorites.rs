@@ -1,6 +1,7 @@
 use crate::{
     client::{TidalClient, models::collection::CollectionTracksResponse},
     error::TidalError,
+    urls::API_V1_LOCATION,
 };
 
 impl TidalClient {
@@ -16,7 +17,7 @@ impl TidalClient {
             .with_country_code()
             .with_locale()
             .with_param("limit", limit.unwrap_or(9999).to_string())
-            .with_base_url(Self::API_V1_LOCATION)
+            .with_base_url(API_V1_LOCATION)
             .send_raw()
             .await?;
 

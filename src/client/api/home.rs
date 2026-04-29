@@ -4,6 +4,7 @@ use crate::{
         models::home::{HomeFeedPhone, HomeFeedWeb},
     },
     error::TidalError,
+    urls::WEB_API_V2_LOCATION,
 };
 
 impl TidalClient {
@@ -23,7 +24,7 @@ impl TidalClient {
             .with_param("platform", "WEB")
             .with_param("timeOffset", self.session.time_offset.clone())
             .with_headers(headers)
-            .with_base_url(Self::WEB_API_V2_LOCATION)
+            .with_base_url(WEB_API_V2_LOCATION)
             .send()
             .await
     }
@@ -44,7 +45,7 @@ impl TidalClient {
             .with_param("platform", "ANDROID")
             .with_param("timeOffset", self.session.time_offset.clone())
             .with_headers(headers)
-            .with_base_url(Self::WEB_API_V2_LOCATION)
+            .with_base_url(WEB_API_V2_LOCATION)
             .send()
             .await
     }
