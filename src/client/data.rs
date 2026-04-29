@@ -42,6 +42,8 @@ impl TidalClient {
     /// # }
     /// ```
     pub fn get_json(&self) -> String {
-        serde_json::to_string(&self).unwrap()
+        serde_json::to_string(&self).unwrap_or_else(|_| {
+            panic!("failed to serialize TidalClient to JSON, something is seriously wrong here.")
+        })
     }
 }

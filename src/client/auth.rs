@@ -39,7 +39,7 @@ impl TidalClient {
             ));
         }
 
-        if force || self.session.auth.is_token_expired() {
+        if force || self.session.auth.is_token_expired()? {
             let mut form = HashMap::new();
             form.insert("grant_type".to_string(), "refresh_token".to_string());
             form.insert(

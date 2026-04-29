@@ -1,4 +1,7 @@
-use std::{collections::HashMap, time::SystemTime};
+use std::{
+    collections::HashMap,
+    time::{SystemTime, SystemTimeError},
+};
 
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
@@ -153,15 +156,14 @@ impl TidalAuth {
         self.api_token_auth
     }
 
-    pub(crate) fn is_token_expired(&self) -> bool {
+    pub(crate) fn is_token_expired(&self) -> Result<bool, SystemTimeError> {
         if let (Some(expiry), Some(last_refresh)) = (self.refresh_expiry, self.last_refresh_time) {
             let now = SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
+                .duration_since(SystemTime::UNIX_EPOCH)?
                 .as_secs();
-            now >= last_refresh + expiry
+            Ok(now >= last_refresh + expiry)
         } else {
-            true
+            Ok(true)
         }
     }
 

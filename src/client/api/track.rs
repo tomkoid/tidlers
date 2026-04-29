@@ -246,7 +246,12 @@ impl TidalClient {
 
         let includes = include.to_api_params();
 
-        let user_id = self.session.auth.user_id.unwrap();
+        let user_id = if let Some(id) = self.session.auth.user_id {
+            id
+        } else {
+            return Err(TidalError::NotAuthenticated);
+        };
+
         self.request(reqwest::Method::GET, "/tracks")
             .with_country_code()
             .with_param("filter[owners.id]", user_id.to_string())
