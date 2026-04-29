@@ -43,7 +43,7 @@ tidlers = { git = "https://codeberg.org/tomkoid/tidlers.git" }
 ```rust
 use tidlers::{
     TidalClient,
-    auth::init::TidalAuth,
+    auth::TidalAuth,
     client::models::playback::AudioQuality,
 };
 
