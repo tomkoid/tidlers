@@ -25,14 +25,13 @@ Tidlers is still very WIP, but here is my project that uses it:
 
 ## Installation
 
-Add this to your `Cargo.toml`:
+Using this command, you can add the newest version of Tidlers to your `Cargo.toml`:
 
-```toml
-[dependencies]
-tidlers = "0.1.0"
+```sh
+cargo add tidlers
 ```
 
-Or use the git version for the latest features:
+Or you can add this to your `Cargo.toml` to use the git version for the latest features:
 
 ```toml
 [dependencies]
@@ -66,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None,
     ).await?;
     
-    // Get user information
+    // Get user information (this is very important for some API calls which require sending some part of the user info)
     client.refresh_user_info().await?;
     println!("Logged in as: {}", client.user_info.unwrap().username);
     
