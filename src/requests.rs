@@ -172,19 +172,17 @@ impl RequestClient {
         };
 
         let req = req.send().await?;
+        let req_status = req.status();
 
-        if req.status() == reqwest::StatusCode::UNAUTHORIZED {
-            return Err(RequestClientError::Unauthorized);
-        }
+        if req_status != reqwest::StatusCode::OK {
+            if req_status == reqwest::StatusCode::UNAUTHORIZED {
+                return Err(RequestClientError::Unauthorized);
+            }
 
-        if req.status() == reqwest::StatusCode::NOT_FOUND {
-            return Err(RequestClientError::StatusCode(
-                reqwest::StatusCode::NOT_FOUND,
-            ));
+            return Err(RequestClientError::StatusCode(req_status));
         }
 
         Ok(req)
-        // Ok(())
     }
 
     /// Executes an HTTP request and returns the response
