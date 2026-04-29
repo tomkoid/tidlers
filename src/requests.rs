@@ -79,11 +79,35 @@ pub enum RequestClientError {
     #[error("failed to parse response")]
     ParseError(String),
 
-    #[error("http status code error: {0}")]
-    StatusCode(reqwest::StatusCode),
+    #[error("http {status} for {url}: {body_snippet}")]
+    StatusCode {
+        status: reqwest::StatusCode,
+        url: String,
+        body_snippet: String,
+    },
 }
 
 impl RequestClient {
+    const ERROR_BODY_SNIPPET_MAX_CHARS: usize = 1024;
+
+    fn error_body_snippet(body: &str) -> String {
+        if body.trim().is_empty() {
+            return "<empty response body>".to_string();
+        }
+
+        let body_len = body.chars().count();
+        let mut snippet = body
+            .chars()
+            .take(Self::ERROR_BODY_SNIPPET_MAX_CHARS)
+            .collect::<String>();
+
+        if body_len > Self::ERROR_BODY_SNIPPET_MAX_CHARS {
+            snippet.push_str("...(truncated)");
+        }
+
+        snippet
+    }
+
     /// Creates a new RequestClient with the specified base URL
     pub(crate) fn new(base_url: String) -> RequestClient {
         let client = reqwest::Client::new();
@@ -174,12 +198,22 @@ impl RequestClient {
         let req = req.send().await?;
         let req_status = req.status();
 
-        if req_status != reqwest::StatusCode::OK {
+        if req_status.is_client_error() || req_status.is_server_error() {
             if req_status == reqwest::StatusCode::UNAUTHORIZED {
                 return Err(RequestClientError::Unauthorized);
             }
 
-            return Err(RequestClientError::StatusCode(req_status));
+            let req_url = req.url().to_string();
+            let body = req
+                .text()
+                .await
+                .unwrap_or_else(|_| "<failed to read response body>".to_string());
+
+            return Err(RequestClientError::StatusCode {
+                status: req_status,
+                url: req_url,
+                body_snippet: Self::error_body_snippet(&body),
+            });
         }
 
         Ok(req)
