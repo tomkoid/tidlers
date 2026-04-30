@@ -1,5 +1,5 @@
 use crate::{
-    client::{TidalClient, models::collection::CollectionTracksResponse},
+    client::{TidalClient, models::collection::track::CollectionTracksResponse},
     error::TidalError,
     urls::API_V1_LOCATION,
 };

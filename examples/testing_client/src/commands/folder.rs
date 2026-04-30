@@ -1,7 +1,7 @@
 use crate::args::FolderCommands;
 use tidlers::{
     TidalClient,
-    client::models::folder::{Order, OrderDirection},
+    client::models::collection::folder::{Order, OrderDirection},
 };
 
 pub async fn execute(tidal: &mut TidalClient, command: FolderCommands) -> eyre::Result<()> {

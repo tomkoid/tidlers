@@ -1,7 +1,9 @@
 use crate::{
     client::{
         TidalClient,
-        models::folder::{FolderCollectionItem, FoldersFlattenedResponse, Order, OrderDirection},
+        models::collection::folder::{
+            FolderCollectionItem, FoldersFlattenedResponse, Order, OrderDirection,
+        },
     },
     error::TidalError,
     urls::API_V2_LOCATION,

@@ -2,7 +2,7 @@ use crate::{
     client::{
         TidalClient,
         models::{
-            collection::{PlaylistCollectionItem, SharingLevel},
+            collection::{SharingLevel, playlist::PlaylistCollectionItem},
             playlist::{
                 PlaylistInfo, PlaylistItemsResponse, PlaylistsResponse, PublicUserPlaylistsResponse,
             },
