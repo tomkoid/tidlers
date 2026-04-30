@@ -165,6 +165,7 @@ pub enum FolderCommands {
         #[clap(short, long)]
         parent_id: Option<String>,
     },
+    Flattened,
 }
 
 #[derive(Parser, Debug, Clone)]
