@@ -115,29 +115,6 @@ let mut client = TidalClient::from_json(&session_data)?;
 client.refresh_access_token().await?;
 ```
 
-## Tracing
-
-Tidlers logs through `tracing` around request execution, OAuth/auth flows, and session serialization. To see logs, configure a subscriber in your app:
-
-```rust
-use tracing_subscriber::{EnvFilter, fmt};
-
-fn init_tracing() {
-    let _ = fmt()
-        .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("tidlers=debug")),
-        )
-        .try_init();
-}
-```
-
-Then run with an env filter, for example:
-
-```bash
-RUST_LOG=tidlers=debug cargo run -p testing-client
-```
-
 ## API Examples
 
 ### Get Track Information
@@ -234,6 +211,30 @@ Complete audio streaming example with playback support:
 ```bash
 cargo run -p hires-streamer
 ```
+
+## Tracing
+
+Tidlers logs through `tracing` around request execution, OAuth/auth flows, and session serialization. To see logs, configure a subscriber in your app:
+
+```rust
+use tracing_subscriber::{EnvFilter, fmt};
+
+fn init_tracing() {
+    let _ = fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("tidlers=debug")),
+        )
+        .try_init();
+}
+```
+
+Then run with an env filter, for example:
+
+```bash
+RUST_LOG=tidlers=debug cargo run -p testing-client
+```
+
 
 ## Error Handling
 
