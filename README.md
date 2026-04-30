@@ -16,6 +16,7 @@ A Rust library for interacting with the TIDAL music streaming API.
   - Mixes and recommendations
 - Session persistence for seamless re-authentication
 - Type-safe API with serde-based deserialization
+- Tracing for request/auth/session flows
 
 ## Projects using Tidlers
 
@@ -112,6 +113,29 @@ let mut client = TidalClient::from_json(&session_data)?;
 
 // Refresh token if needed
 client.refresh_access_token().await?;
+```
+
+## Tracing
+
+Tidlers logs through `tracing` around request execution, OAuth/auth flows, and session serialization. To see logs, configure a subscriber in your app:
+
+```rust
+use tracing_subscriber::{EnvFilter, fmt};
+
+fn init_tracing() {
+    let _ = fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("tidlers=debug")),
+        )
+        .try_init();
+}
+```
+
+Then run with an env filter, for example:
+
+```bash
+RUST_LOG=tidlers=debug cargo run -p testing-client
 ```
 
 ## API Examples
@@ -241,6 +265,7 @@ Core dependencies:
 - `base64` - Base64 encoding/decoding
 - `quick-xml` - XML parsing for DASH manifests
 - `thiserror` - Error handling
+- `tracing` - Logging and debugging
 
 ## Development
 

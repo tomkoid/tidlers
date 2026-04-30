@@ -2,6 +2,7 @@ use std::{collections::HashMap, time::SystemTimeError};
 
 use reqwest::Method;
 use tokio::sync::mpsc;
+use tracing::{debug, info, warn};
 
 use crate::{
     client::{TidalClient, models::user::User},
@@ -35,6 +36,7 @@ impl TidalClient {
     /// # }
     /// ```
     pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, TidalError> {
+        debug!("requesting OAuth device authorization link");
         if self.session.auth.is_token_auth() {
             return Err(TidalError::InvalidArgument(
                 "Client secret provided, you should probably use get_access_token instead.\nIf you want to login with OAuth2, use TidalAuth::with_oauth()".to_string()
@@ -68,6 +70,11 @@ impl TidalClient {
         let json: OAuthLinkResponse =
             serde_json::from_str(&body).map_err(|e| TidalError::InvalidResponse(e.to_string()))?;
 
+        debug!(
+            expires_in = json.expires_in,
+            interval = json.interval,
+            "received OAuth device authorization link"
+        );
         Ok(json)
     }
 
@@ -108,6 +115,10 @@ impl TidalClient {
         interval: u64,
         status_tx: Option<mpsc::UnboundedSender<OAuthStatus>>,
     ) -> Result<AuthResponse, TidalError> {
+        debug!(
+            device_code_len = device_code.len(),
+            expires_in, interval, "starting OAuth device polling"
+        );
         if self.session.auth.is_token_auth() {
             return Err(TidalError::InvalidArgument(
                 "Client secret provided, cannot use this function.".to_string(),
@@ -133,7 +144,14 @@ impl TidalClient {
         req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
 
         let mut expiry = expires_in;
+        let mut attempt = 0_u64;
         while expiry > 0 {
+            attempt += 1;
+            debug!(
+                attempt,
+                remaining_seconds = expiry,
+                "polling OAuth token endpoint"
+            );
             let res = self.rq.request(req.clone()).await?;
             let body = res.bytes().await?;
             // println!("oauth check response: {}", res.text().await?);
@@ -153,6 +171,11 @@ impl TidalClient {
                     self.session.auth.last_refresh_time = Some(now);
                     self.session.auth.user_id = Some(json.user_id);
                     self.user_info = Some(json.user.clone());
+                    info!(
+                        attempt,
+                        user_id = json.user_id,
+                        "OAuth flow completed successfully"
+                    );
                     return Ok(json);
                 }
                 Err(_) => {
@@ -164,11 +187,13 @@ impl TidalClient {
                             if let Some(tx) = &status_tx {
                                 let _ = tx.send(OAuthStatus::Waiting);
                             }
+                            debug!(attempt, "OAuth authorization still pending");
                         }
                         Err(e) => {
                             if let Some(tx) = &status_tx {
                                 let _ = tx.send(OAuthStatus::Error(e.to_string()));
                             }
+                            warn!(attempt, error = %e, "unexpected OAuth polling response payload");
                         }
                     }
                 }
@@ -177,6 +202,7 @@ impl TidalClient {
             expiry -= interval;
         }
 
+        warn!("OAuth polling timed out before authorization completed");
         Err(TidalError::RequestClient(
             requests::RequestClientError::Timeout,
         ))
@@ -192,6 +218,13 @@ impl TidalClient {
         user_id: u64,
         user: User,
     ) -> Result<(), SystemTimeError> {
+        debug!(
+            user_id,
+            access_token_len = access_token.len(),
+            refresh_token_len = refresh_token.len(),
+            expires_in,
+            "applying manual OAuth login state"
+        );
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)?
             .as_secs();

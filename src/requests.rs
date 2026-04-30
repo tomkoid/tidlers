@@ -5,6 +5,7 @@ use reqwest::{
     header::{HeaderMap, HeaderValue},
 };
 use serde::{Deserialize, Serialize};
+use tracing::{debug, warn};
 
 /// HTTP client wrapper for making API requests
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -123,6 +124,12 @@ impl RequestClient {
         &self,
         request: TidalRequest,
     ) -> Result<reqwest::Response, RequestClientError> {
+        let method = request.method.clone();
+        let path = request.path.clone();
+        let has_access_token = request.access_token.is_some();
+        let has_basic_auth = request.basic_auth.is_some();
+        let send_params_as_form = request.send_params_as_form;
+
         let mut req_form: HashMap<String, String> = HashMap::new();
         let mut req_params: HashMap<String, String> = HashMap::new();
 
@@ -152,6 +159,17 @@ impl RequestClient {
 
         let url = format!("{base_url}{}", request.path);
         let url_w_params = reqwest::Url::parse_with_params(&url, &req_params)?.to_string();
+        debug!(
+            method = %method,
+            path = %path,
+            url = %url_w_params,
+            params_count = req_params.len(),
+            form_count = req_form.len(),
+            has_access_token,
+            has_basic_auth,
+            send_params_as_form,
+            "sending HTTP request"
+        );
 
         // println!("Request URL: {}", url_w_params.to_string());
 
@@ -195,11 +213,20 @@ impl RequestClient {
             req
         };
 
+        let start = std::time::Instant::now();
         let req = req.send().await?;
         let req_status = req.status();
+        debug!(
+            method = %method,
+            url = %req.url(),
+            status = req_status.as_u16(),
+            elapsed_ms = start.elapsed().as_millis(),
+            "received HTTP response"
+        );
 
         if req_status.is_client_error() || req_status.is_server_error() {
             if req_status == reqwest::StatusCode::UNAUTHORIZED {
+                warn!(method = %method, url = %req.url(), "received unauthorized HTTP response");
                 return Err(RequestClientError::Unauthorized);
             }
 
@@ -208,6 +235,13 @@ impl RequestClient {
                 .text()
                 .await
                 .unwrap_or_else(|_| "<failed to read response body>".to_string());
+            warn!(
+                method = %method,
+                url = %req_url,
+                status = req_status.as_u16(),
+                body_bytes = body.len(),
+                "received HTTP error response"
+            );
 
             return Err(RequestClientError::StatusCode {
                 status: req_status,

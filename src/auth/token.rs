@@ -4,6 +4,7 @@ use std::{
 };
 
 use reqwest::Method;
+use tracing::{debug, warn};
 
 use crate::{
     TidalError,
@@ -29,6 +30,7 @@ impl TidalAuth {
     }
 
     pub async fn get_access_token(&self) -> Result<AccessTokenResponse, TidalError> {
+        debug!("requesting access token via client credentials flow");
         if !self.is_token_auth() {
             return Err(TidalError::InvalidArgument(
                 "No client secret provided, can't use get_access_token, use TidalCredentials::with_token to use this.\nIf you want to login with OAuth2, use TidalCredentials::new()".to_string()
@@ -49,12 +51,18 @@ impl TidalAuth {
         let res = self.rq.request(req).await?;
         let json: AccessTokenResponse = res.json().await?;
 
+        debug!(
+            expires_in = json.expires_in,
+            token_type = %json.token_type,
+            "received access token response"
+        );
         Ok(json)
     }
 
     /// Checks if the access token is still valid
     pub async fn check_login(&self) -> Result<bool, requests::RequestClientError> {
         if !self.is_logged_in() {
+            debug!("check_login: no access token present");
             return Ok(false);
         }
 
@@ -65,8 +73,13 @@ impl TidalAuth {
 
         let res = self.rq.request(req).await?;
         if res.status().is_success() {
+            debug!("check_login: subscription endpoint accepted token");
             Ok(true)
         } else {
+            warn!(
+                status = res.status().as_u16(),
+                "check_login: token validation request failed"
+            );
             Ok(false)
         }
     }

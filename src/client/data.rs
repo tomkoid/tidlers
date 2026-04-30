@@ -1,4 +1,5 @@
 use crate::client::TidalClient;
+use tracing::debug;
 
 impl TidalClient {
     /// Deserializes a TidalClient from a JSON string
@@ -16,6 +17,10 @@ impl TidalClient {
     /// # }
     /// ```
     pub fn from_json(client_json: &str) -> Result<TidalClient, serde_json::Error> {
+        debug!(
+            payload_bytes = client_json.len(),
+            "deserializing client session from JSON"
+        );
         let client_json: TidalClient = serde_json::from_str(client_json)?;
 
         Ok(TidalClient {
@@ -42,6 +47,7 @@ impl TidalClient {
     /// # }
     /// ```
     pub fn get_json(&self) -> String {
+        debug!("serializing client session to JSON");
         serde_json::to_string(&self).unwrap_or_else(|_| {
             panic!("failed to serialize TidalClient to JSON, something is seriously wrong here.")
         })

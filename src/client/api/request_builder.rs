@@ -1,6 +1,7 @@
 use reqwest::Method;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
+use tracing::{debug, warn};
 
 use crate::{
     client::TidalClient, error::TidalError, requests::TidalRequest, utils::debug_json_str,
@@ -103,12 +104,20 @@ impl<'a> ApiRequestBuilder<'a> {
                 .insert("locale".to_string(), self.client.session.locale.clone());
         }
 
-        let mut req = TidalRequest::new(self.method, self.url);
+        let mut req = TidalRequest::new(self.method, self.url.clone());
         req.params = Some(self.params);
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = self.headers;
 
+        debug!(
+            method = %req.method,
+            path = %self.url,
+            params_count = req.params.as_ref().map_or(0, |p| p.len()),
+            has_custom_base_url = req.base_url.is_some(),
+            has_headers = req.headers.is_some(),
+            "sending API request"
+        );
         let resp = self.client.rq.request(req).await?;
 
         if resp.status() == reqwest::StatusCode::NOT_FOUND {
@@ -118,6 +127,13 @@ impl<'a> ApiRequestBuilder<'a> {
         let status = resp.status();
         let response_url = resp.url().to_string();
         let body = resp.text().await?;
+        debug!(
+            path = %self.url,
+            response_url = %response_url,
+            status = status.as_u16(),
+            body_bytes = body.len(),
+            "received API response"
+        );
 
         if self.request_debug {
             debug_json_str(&body);
@@ -129,6 +145,12 @@ impl<'a> ApiRequestBuilder<'a> {
             } else {
                 body.as_str()
             };
+            warn!(
+                path = %self.url,
+                response_url = %response_url,
+                status = status.as_u16(),
+                "failed to deserialize API response body"
+            );
 
             TidalError::InvalidResponse(format!(
                 "failed to parse JSON response from {response_url} (status {status}): {error}\nresponse body: {response_body}"
@@ -158,8 +180,25 @@ impl<'a> ApiRequestBuilder<'a> {
         req.base_url = self.base_url;
         req.headers = self.headers;
 
+        debug!(
+            method = %req.method,
+            path = %req.path,
+            params_count = req.params.as_ref().map_or(0, |p| p.len()),
+            has_custom_base_url = req.base_url.is_some(),
+            has_headers = req.headers.is_some(),
+            "sending raw API request"
+        );
         let resp = self.client.rq.request(req).await?;
-        Ok(resp.text().await?)
+        let status = resp.status();
+        let response_url = resp.url().to_string();
+        let body = resp.text().await?;
+        debug!(
+            response_url = %response_url,
+            status = status.as_u16(),
+            body_bytes = body.len(),
+            "received raw API response"
+        );
+        Ok(body)
     }
 }
 

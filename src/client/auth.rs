@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use reqwest::Method;
+use tracing::{debug, info};
 
 use crate::{
     client::TidalClient,
@@ -33,13 +34,16 @@ impl TidalClient {
     /// # }
     /// ```
     pub async fn refresh_access_token(&mut self, force: bool) -> Result<bool, TidalError> {
+        debug!(force, "refresh_access_token called");
         if self.session.auth.refresh_token.is_none() {
             return Err(TidalError::Other(
                 "No refresh token available, cannot refresh access token.".to_string(),
             ));
         }
 
-        if force || self.session.auth.is_token_expired()? {
+        let is_expired = self.session.auth.is_token_expired()?;
+        if force || is_expired {
+            debug!(force, is_expired, "refreshing access token");
             let mut form = HashMap::new();
             form.insert("grant_type".to_string(), "refresh_token".to_string());
             form.insert(
@@ -66,10 +70,12 @@ impl TidalClient {
                     .duration_since(std::time::UNIX_EPOCH)?
                     .as_secs(),
             );
+            info!("access token refreshed successfully");
 
             return Ok(true);
         }
 
+        debug!("access token refresh skipped because token is still valid");
         Ok(false)
     }
 }

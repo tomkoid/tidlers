@@ -1,13 +1,17 @@
 use clap::Parser;
 use tidlers::client::TidalClient;
 
-use crate::{args::Args, auth::handle_auth, commands::execute_command, save::save_session_data};
+use crate::{
+    args::Args, auth::handle_auth, commands::execute_command, save::save_session_data,
+    tracing::configure_tidlers_tracing,
+};
 
 mod args;
 mod auth;
 mod commands;
 mod oauth_handler;
 mod save;
+mod tracing;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -15,6 +19,10 @@ async fn main() -> eyre::Result<()> {
 
     let args = Args::parse();
     let mut tidal = initialize_client().await?;
+
+    if args.trace {
+        configure_tidlers_tracing();
+    }
 
     configure_client(&mut tidal, args.debug);
     complete_oauth_if_needed(&mut tidal).await?;

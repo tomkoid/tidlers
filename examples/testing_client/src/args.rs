@@ -6,8 +6,13 @@ pub struct Args {
     #[clap(subcommand)]
     pub command: Commands,
 
+    /// Enable TidalClient debug mode for more verbose output
     #[clap(short, long, default_value_t = false)]
     pub debug: bool,
+
+    /// Trace requests and responses for the command being executed
+    #[clap(short, long, default_value_t = false)]
+    pub trace: bool,
 }
 
 #[derive(Parser, Debug)]

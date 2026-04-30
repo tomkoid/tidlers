@@ -97,8 +97,9 @@ impl TidalClient {
     }
 
     /// Enables or disables debug mode for verbose logging
-    pub fn set_debug_mode(&mut self, debug: bool) {
-        self.debug_mode = debug;
+    pub fn set_debug_mode(&mut self, debug_mode: bool) {
+        tracing::debug!(enabled = debug_mode, "setting client debug mode");
+        self.debug_mode = debug_mode;
     }
 
     pub async fn home(&self) -> Result<(), TidalError> {
