@@ -165,6 +165,10 @@ pub enum FolderCommands {
         #[clap(short, long)]
         parent_id: Option<String>,
     },
+    Remove {
+        /// Folder ID (without the trn:folder prefix)
+        id: String,
+    },
     Flattened,
 }
 

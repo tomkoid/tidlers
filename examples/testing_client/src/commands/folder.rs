@@ -12,6 +12,11 @@ pub async fn execute(tidal: &mut TidalClient, command: FolderCommands) -> eyre::
             println!("Created folder '{}' in '{}':\n{:#?}", name, parent, folder);
         }
 
+        FolderCommands::Remove { id } => {
+            tidal.remove_folder(&id).await?;
+            println!("Removed folder '{}'", id);
+        }
+
         FolderCommands::Flattened => {
             let flattened_folders = tidal
                 .flattened_folders(

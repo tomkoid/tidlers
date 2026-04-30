@@ -1,3 +1,5 @@
+use tracing::debug;
+
 use crate::{
     client::{
         TidalClient,
@@ -25,6 +27,23 @@ impl TidalClient {
         .with_base_url(API_V2_LOCATION)
         .send()
         .await
+    }
+
+    pub async fn remove_folder(&self, id: impl Into<String>) -> Result<(), TidalError> {
+        let res = self
+            .request(
+                reqwest::Method::PUT,
+                "/my-collection/playlists/folders/remove",
+            )
+            .with_country_code()
+            .with_param("trns", format!("trn:folder:{}", id.into()))
+            .with_base_url(API_V2_LOCATION)
+            .send_raw()
+            .await?;
+
+        debug!("remove folder response: {}", res);
+
+        return Ok(());
     }
 
     pub async fn flattened_folders(
