@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  package:
+    name: Package crate
+    runs-on: codeberg-medium
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: https://github.com/dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-release-
+
+      - name: Install Linux audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+
+      - name: Run release checks
+        run: |
+          cargo check --workspace --all-targets
+          cargo clippy --workspace --all-targets -- -D warnings
+          cargo test --workspace --all-targets
+
+      - name: Package crate
+        run: cargo package
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          CRATE_FILE="$(find target/package -maxdepth 1 -type f -name '*.crate' | head -n 1)"
+          if [ -z "$CRATE_FILE" ]; then
+            echo "No .crate package found"
+            exit 1
+          fi
+          cp "$CRATE_FILE" release-assets/
+          (cd release-assets && sha256sum "$(basename "$CRATE_FILE")" > "$(basename "$CRATE_FILE").sha256")
+
+      - name: Upload package artifacts
+        uses: https://code.forgejo.org/forgejo/upload-artifact@v5
+        with:
+          name: crate-package
+          path: release-assets/*
+          retention-days: 30
+
+  release:
+    name: Create Release
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: codeberg-medium
+    permissions:
+      contents: write
+
+    steps:
+      - name: Get tag name
+        id: tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Download package artifacts
+        uses: actions/download-artifact
+        with:
+          name: crate-package
+          path: release-assets
+
+      - name: Create Release
+        uses: akkuman/gitea-release-action@v1
+        with:
+          files: |
+            release-assets/*.crate
+            release-assets/*.sha256
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          name: Release ${{ steps.tag.outputs.TAG_NAME }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
