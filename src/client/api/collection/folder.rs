@@ -43,7 +43,7 @@ impl TidalClient {
 
         debug!("remove folder response: {}", res);
 
-        return Ok(());
+        Ok(())
     }
 
     pub async fn flattened_folders(
