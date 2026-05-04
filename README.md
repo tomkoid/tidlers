@@ -268,6 +268,12 @@ Core dependencies:
 - `thiserror` - Error handling
 - `tracing` - Logging and debugging
 
+## Contributing
+
+Any contributions you make to this project are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue if there's something that should be implemented but isn't.
+
 ## Development
 
 Build the library:
