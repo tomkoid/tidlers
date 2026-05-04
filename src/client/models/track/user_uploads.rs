@@ -1,10 +1,12 @@
+use crate::client::models::responses::ApiLinks;
+
 /// Response containing user uploaded tracks
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserUploads {
+pub struct UserUploadsResponse {
     pub data: Vec<serde_json::Value>,
     #[serde(default)]
-    pub included: Vec<UserUploadResource>,
+    pub included: Vec<UserUploadIncludedResource>,
     #[serde(default)]
     pub links: Option<serde_json::Value>,
 }
@@ -12,20 +14,20 @@ pub struct UserUploads {
 /// Represents a user upload source file resource
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserUploadResource {
+pub struct UserUploadIncludedResource {
     pub id: String,
     #[serde(rename = "type")]
     pub resource_type: String,
     #[serde(default)]
-    pub attributes: Option<UserUploadAttributes>,
+    pub attributes: Option<UserUploadResourceAttributes>,
     #[serde(default)]
-    pub relationships: Option<UserUploadRelationships>,
+    pub relationships: Option<UserUploadResourceRelationships>,
 }
 
 /// Attributes of a user upload source file
 #[derive(Debug, serde::Serialize, serde::Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct UserUploadAttributes {
+pub struct UserUploadResourceAttributes {
     #[serde(default)]
     pub md5_hash: Option<String>,
     #[serde(default)]
@@ -44,7 +46,7 @@ pub struct UploadLink {
     pub meta: UploadMeta,
 }
 
-/// Metadata for upload link
+/// TopArtistsMetadata for upload link
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UploadMeta {
@@ -71,22 +73,17 @@ pub struct UploadStatus {
 /// Relationships for user uploads
 #[derive(Debug, serde::Serialize, serde::Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct UserUploadRelationships {
+pub struct UserUploadResourceRelationships {
     #[serde(default)]
-    pub owners: Option<OwnerRelationship>,
+    pub owners: Option<UserUploadOwnerRelationship>,
 }
 
 /// Owner relationship information
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OwnerRelationship {
-    pub links: RelationshipLinks,
+pub struct UserUploadOwnerRelationship {
+    pub links: UserUploadRelationshipLinks,
 }
 
 /// Links for relationships
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RelationshipLinks {
-    #[serde(rename = "self")]
-    pub self_link: String,
-}
+pub type UserUploadRelationshipLinks = ApiLinks;

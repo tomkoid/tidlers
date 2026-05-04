@@ -6,11 +6,11 @@ use serde::{Deserialize, Serialize};
 pub struct CollectionArtistsResponse {
     #[serde(rename = "lastModifiedAt")]
     pub last_modified_at: String,
-    pub items: Vec<CollectionArtistMetadata>,
+    pub items: Vec<CollectionArtistEntry>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CollectionArtistMetadata {
+pub struct CollectionArtistEntry {
     pub trn: String,
     #[serde(rename = "itemType")]
     pub item_type: String,
@@ -20,11 +20,11 @@ pub struct CollectionArtistMetadata {
     pub last_modified_at: String,
     pub name: String,
     pub parent: Option<String>,
-    pub data: CollectionArtistData,
+    pub data: CollectionArtistDetails,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CollectionArtistData {
+pub struct CollectionArtistDetails {
     pub id: i64,
     pub name: String,
     pub picture: Option<String>,
@@ -34,7 +34,7 @@ pub struct CollectionArtistData {
     #[serde(rename = "artistTypes")]
     pub artist_types: Vec<String>,
     #[serde(rename = "artistRoles")]
-    pub artist_roles: Vec<CollectionArtistRole>,
+    pub artist_roles: Vec<CollectionArtistRoleEntry>,
     pub mixes: Option<HashMap<String, String>>,
     #[serde(rename = "vibrantColor")]
     pub vibrant_color: Option<String>,
@@ -50,7 +50,7 @@ pub struct CollectionArtistData {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CollectionArtistRole {
+pub struct CollectionArtistRoleEntry {
     #[serde(rename = "categoryId")]
     pub category_id: i64,
     pub category: String,

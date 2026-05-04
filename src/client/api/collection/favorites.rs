@@ -1,5 +1,5 @@
 use crate::{
-    client::{TidalClient, models::collection::track::CollectionTracksResponse},
+    client::{TidalClient, models::collection::track::CollectionFavoriteTracksResponse},
     error::TidalError,
     urls::API_V1_LOCATION,
 };
@@ -9,7 +9,7 @@ impl TidalClient {
     pub async fn get_collection_favorites(
         &self,
         limit: Option<u32>,
-    ) -> Result<CollectionTracksResponse, TidalError> {
+    ) -> Result<CollectionFavoriteTracksResponse, TidalError> {
         let url = format!("/users/{}/favorites/tracks", self.user_id()?);
 
         let body: String = self

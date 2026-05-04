@@ -1,14 +1,14 @@
 use crate::{
     client::{
         TidalClient,
-        models::activity::{ActivityTimeline, TopArtistsResponse},
+        models::activity::{ActivityTimelineResponse, TopArtistsMonthlyResponse},
     },
     error::TidalError,
     urls::API_V2_LOCATION,
 };
 
 impl TidalClient {
-    pub async fn get_activity_timeline(&self) -> Result<ActivityTimeline, TidalError> {
+    pub async fn get_activity_timeline(&self) -> Result<ActivityTimelineResponse, TidalError> {
         self.request(reqwest::Method::GET, "/my-activity/timeline")
             .with_country_code()
             .with_locale()
@@ -21,7 +21,7 @@ impl TidalClient {
         &self,
         year: i32,
         month: u32,
-    ) -> Result<TopArtistsResponse, TidalError> {
+    ) -> Result<TopArtistsMonthlyResponse, TidalError> {
         self.request(reqwest::Method::GET, "/my-activity/top-artists")
             .with_country_code()
             .with_locale()

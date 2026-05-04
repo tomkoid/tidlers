@@ -69,7 +69,7 @@ pub struct Track {
 /// Response containing track playback information including manifest data
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TrackPlaybackInfoPostPaywallResponse {
+pub struct TrackPlaybackInfoResponse {
     pub track_id: u64,
     pub asset_presentation: String,
     pub audio_mode: String,
@@ -77,16 +77,16 @@ pub struct TrackPlaybackInfoPostPaywallResponse {
     pub manifest_mime_type: String,
     pub manifest_hash: String,
     #[serde(skip_deserializing, default)]
-    pub manifest: Option<TrackManifest>,
+    pub manifest: Option<JsonTrackManifest>,
     #[serde(skip_deserializing, default)]
-    pub manifest_parsed: Option<ManifestType>,
+    pub manifest_parsed: Option<ParsedTrackManifest>,
     pub album_replay_gain: f64,
     pub album_peak_amplitude: f64,
     pub track_replay_gain: f64,
     pub track_peak_amplitude: f64,
 }
 
-impl TrackPlaybackInfoPostPaywallResponse {
+impl TrackPlaybackInfoResponse {
     /// Extracts all streaming URLs from the manifest
     ///
     /// # Example
@@ -107,8 +107,8 @@ impl TrackPlaybackInfoPostPaywallResponse {
     /// ```
     pub fn get_stream_urls(&self) -> Option<Vec<String>> {
         self.manifest_parsed.as_ref().map(|m| match m {
-            ManifestType::Json(json_manifest) => json_manifest.urls.clone(),
-            ManifestType::Dash(dash_manifest) => dash_manifest.urls.clone(),
+            ParsedTrackManifest::Json(json_manifest) => json_manifest.urls.clone(),
+            ParsedTrackManifest::Dash(dash_manifest) => dash_manifest.urls.clone(),
         })
     }
 
@@ -121,16 +121,16 @@ impl TrackPlaybackInfoPostPaywallResponse {
     /// Gets the MIME type from the manifest
     pub fn get_mime_type(&self) -> Option<String> {
         self.manifest_parsed.as_ref().map(|m| match m {
-            ManifestType::Json(json_manifest) => json_manifest.mime_type.clone(),
-            ManifestType::Dash(dash_manifest) => dash_manifest.mime_type.clone(),
+            ParsedTrackManifest::Json(json_manifest) => json_manifest.mime_type.clone(),
+            ParsedTrackManifest::Dash(dash_manifest) => dash_manifest.mime_type.clone(),
         })
     }
 
     /// Gets the codec information from the manifest
     pub fn get_codecs(&self) -> Option<String> {
         self.manifest_parsed.as_ref().map(|m| match m {
-            ManifestType::Json(json_manifest) => json_manifest.codecs.clone(),
-            ManifestType::Dash(dash_manifest) => dash_manifest.codecs.clone(),
+            ParsedTrackManifest::Json(json_manifest) => json_manifest.codecs.clone(),
+            ParsedTrackManifest::Dash(dash_manifest) => dash_manifest.codecs.clone(),
         })
     }
 }
@@ -138,7 +138,7 @@ impl TrackPlaybackInfoPostPaywallResponse {
 /// JSON manifest containing track streaming information
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TrackManifest {
+pub struct JsonTrackManifest {
     pub mime_type: String,
     pub codecs: String,
     pub encryption_type: String,
@@ -147,8 +147,8 @@ pub struct TrackManifest {
 
 /// Represents different types of streaming manifests
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub enum ManifestType {
-    Json(TrackManifest),
+pub enum ParsedTrackManifest {
+    Json(JsonTrackManifest),
     Dash(DashManifest),
 }
 
@@ -218,19 +218,19 @@ impl DashManifest {
 #[cfg(test)]
 mod tests {
     use crate::client::models::track::{
-        DashManifest, ManifestType, TrackManifest, TrackPlaybackInfoPostPaywallResponse,
+        DashManifest, ParsedTrackManifest, JsonTrackManifest, TrackPlaybackInfoResponse,
     };
 
     #[test]
     fn playback_info_helpers_work_for_json_manifest() {
-        let manifest = TrackManifest {
+        let manifest = JsonTrackManifest {
             mime_type: "audio/flac".to_string(),
             codecs: "flac".to_string(),
             encryption_type: "NONE".to_string(),
             urls: vec!["https://example.com/a.flac".to_string()],
         };
 
-        let playback = TrackPlaybackInfoPostPaywallResponse {
+        let playback = TrackPlaybackInfoResponse {
             track_id: 1,
             asset_presentation: "FULL".to_string(),
             audio_mode: "STEREO".to_string(),
@@ -238,7 +238,7 @@ mod tests {
             manifest_mime_type: "application/json".to_string(),
             manifest_hash: "hash".to_string(),
             manifest: Some(manifest.clone()),
-            manifest_parsed: Some(ManifestType::Json(manifest)),
+            manifest_parsed: Some(ParsedTrackManifest::Json(manifest)),
             album_replay_gain: 0.0,
             album_peak_amplitude: 0.0,
             track_replay_gain: 0.0,

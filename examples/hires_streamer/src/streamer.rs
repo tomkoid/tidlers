@@ -3,7 +3,7 @@ use color_eyre::eyre::{Result, eyre};
 use rodio::{Decoder, OutputStream, Sink};
 use std::io::BufReader;
 use tidlers::client::models::track::{
-    DashManifest, ManifestType, TrackPlaybackInfoPostPaywallResponse,
+    DashManifest, ParsedTrackManifest, TrackPlaybackInfoResponse,
 };
 
 pub struct DashStreamer {
@@ -133,7 +133,7 @@ impl DashStreamer {
 
     pub async fn stream_track(
         &self,
-        playback_info: &TrackPlaybackInfoPostPaywallResponse,
+        playback_info: &TrackPlaybackInfoResponse,
         max_segments: Option<u32>,
     ) -> Result<()> {
         let manifest = playback_info
@@ -142,7 +142,7 @@ impl DashStreamer {
             .ok_or_else(|| eyre!("No parsed manifest available"))?;
 
         match manifest {
-            ManifestType::Dash(dash) => {
+            ParsedTrackManifest::Dash(dash) => {
                 println!("\n=== DASH Manifest Info ===");
                 println!("MIME Type: {}", dash.mime_type);
                 println!("Codecs: {}", dash.codecs);
@@ -165,7 +165,7 @@ impl DashStreamer {
                 println!("\nInitializing audio playback...");
                 self.play_audio_data(audio_data)?;
             }
-            ManifestType::Json(json_manifest) => {
+            ParsedTrackManifest::Json(json_manifest) => {
                 println!("\n=== JSON Manifest Info ===");
                 println!("MIME Type: {}", json_manifest.mime_type);
                 println!("Codecs: {}", json_manifest.codecs);

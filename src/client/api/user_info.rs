@@ -1,17 +1,19 @@
 use crate::{
     client::{
         TidalClient,
-        models::user::{User, UserData},
+        models::{
+            responses::ApiDataResponse,
+            user::{User, UserProfileResource},
+        },
     },
     error::TidalError,
-    responses::TidalGenericResponse,
     urls::OPEN_API_V2_LOCATION,
 };
 
 impl TidalClient {
     /// Returns the current user's information, optionally forcing a refresh from the API
-    pub async fn get_user_info(&mut self) -> Result<UserData, TidalError> {
-        let json: TidalGenericResponse<UserData> = self
+    pub async fn get_user_info(&mut self) -> Result<UserProfileResource, TidalError> {
+        let json: ApiDataResponse<UserProfileResource> = self
             .request(reqwest::Method::GET, "/users/me")
             .with_base_url(OPEN_API_V2_LOCATION)
             .send()

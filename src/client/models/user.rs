@@ -63,15 +63,15 @@ pub struct UserInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UserData {
+pub struct UserProfileResource {
     pub id: String,
     #[serde(rename = "type")]
     pub user_type: String,
-    pub attributes: UserAttributes,
+    pub attributes: UserProfileAttributes,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UserAttributes {
+pub struct UserProfileAttributes {
     pub username: String,
     pub country: String,
     pub email: String,

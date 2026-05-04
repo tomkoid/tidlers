@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
+use crate::client::models::responses::ApiLinks;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct TrackMixInfo {
+pub struct TrackMixResponse {
     pub id: String,
 }
 
@@ -12,14 +13,10 @@ pub struct Mixes {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ArrivalMixData {
+pub struct ArrivalMixResource {
     pub id: String,
     #[serde(rename = "type")]
     pub data_type: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ArrivalMixLinks {
-    #[serde(rename = "self")]
-    pub self_link: String,
-}
+pub type ArrivalMixResourceLinks = ApiLinks;

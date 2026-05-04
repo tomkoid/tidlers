@@ -3,10 +3,10 @@ use crate::{
         TidalClient,
         models::{
             artist::{
-                ArtistAlbumsResponse, ArtistBioResponse, ArtistLinksResponse, ArtistResponse,
+                ArtistAlbumsResponse, ArtistBiographyResponse, ArtistLinksResponse, ArtistResponse,
                 ArtistTopTracksResponse, ArtistVideosResponse,
             },
-            mixes::TrackMixInfo,
+            mixes::TrackMixResponse,
         },
     },
     error::TidalError,
@@ -28,7 +28,7 @@ impl TidalClient {
     pub async fn get_artist_bio(
         &self,
         artist_id: impl Into<ArtistId>,
-    ) -> Result<ArtistBioResponse, TidalError> {
+    ) -> Result<ArtistBiographyResponse, TidalError> {
         let artist_id = artist_id.into();
         self.request(reqwest::Method::GET, format!("/artists/{}/bio", artist_id))
             .with_country_code()
@@ -134,7 +134,7 @@ impl TidalClient {
     pub async fn get_artist_mix(
         &self,
         artist_id: impl Into<ArtistId>,
-    ) -> Result<TrackMixInfo, TidalError> {
+    ) -> Result<TrackMixResponse, TidalError> {
         let artist_id = artist_id.into();
         self.request(reqwest::Method::GET, format!("/artists/{}/mix", artist_id))
             .with_country_code()

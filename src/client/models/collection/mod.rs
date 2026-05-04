@@ -8,7 +8,7 @@ pub mod track;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Creator {
+pub struct CollectionCreator {
     pub id: i64,
     pub name: Option<String>,
     pub picture: Option<String>,

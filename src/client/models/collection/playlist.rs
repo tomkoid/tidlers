@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-use crate::client::models::collection::Creator;
+use crate::client::models::collection::CollectionCreator;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PlaylistData {
+pub struct HomePlaylistData {
     pub uuid: String,
     #[serde(rename = "type")]
     pub playlist_type: String,
-    pub creator: Creator,
+    pub creator: CollectionCreator,
     pub curators: Vec<serde_json::Value>,
     pub content_behavior: String,
     pub sharing_level: String,
@@ -33,12 +33,12 @@ pub struct PlaylistData {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PlaylistCollectionItem {
+pub struct CollectionPlaylistEntry {
     pub trn: String,
     pub item_type: String,
     pub added_at: String,
     pub last_modified_at: String,
     pub name: String,
     pub parent: Option<String>,
-    pub data: PlaylistData,
+    pub data: HomePlaylistData,
 }

@@ -1,24 +1,25 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use crate::client::models::artist::ArtistRole;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TopArtistsResponse {
-    pub activity: Option<Activity>,
-    pub artists: Option<Vec<ArtistWithStreams>>,
+pub struct TopArtistsMonthlyResponse {
+    pub activity: Option<TopArtistsActivity>,
+    pub artists: Option<Vec<ArtistStreamStats>>,
     pub disclaimers: Option<Vec<Disclaimer>>,
-    pub metadata: Metadata,
+    pub metadata: TopArtistsMetadata,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Activity {
+pub struct TopArtistsActivity {
     #[serde(rename = "@class")]
     pub class: String,
     pub activity_type: String,
-    pub artists: Vec<TopArtist>,
-    pub images: Vec<Image>,
+    pub artists: Vec<TopArtistSummary>,
+    pub images: Vec<ActivityImage>,
     pub month: u32,
     pub total_nr_of_days_left: Option<u32>,
     pub subtitle: Option<String>,
@@ -28,21 +29,21 @@ pub struct Activity {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TopArtist {
+pub struct TopArtistSummary {
     pub id: u64,
     pub name: String,
     pub nr_of_streams: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Image {
+pub struct ActivityImage {
     pub id: String,
     pub url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ArtistWithStreams {
+pub struct ArtistStreamStats {
     pub artist: Artist,
     pub nr_of_streams: u32,
 }
@@ -63,30 +64,23 @@ pub struct Artist {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArtistRole {
-    pub category: String,
-    pub category_id: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Disclaimer {
     pub text: String,
     pub url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Metadata {
-    pub timeline: Vec<ActivityTimelineItem>,
+pub struct TopArtistsMetadata {
+    pub timeline: Vec<ActivityTimelineEntry>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct ActivityTimeline {
-    timeline: Vec<ActivityTimelineItem>,
+pub struct ActivityTimelineResponse {
+    timeline: Vec<ActivityTimelineEntry>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct ActivityTimelineItem {
+pub struct ActivityTimelineEntry {
     year: i32,
     month: u32,
     title: String,

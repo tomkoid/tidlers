@@ -17,7 +17,7 @@ pub struct Album {
 /// Response from TIDAL when requesting album info
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AlbumInfoResponse {
+pub struct AlbumResponse {
     pub id: i64,
     pub title: String,
     pub duration: u64,
@@ -94,12 +94,12 @@ pub struct AlbumItemsResponse {
     pub limit: i32,
     pub offset: i32,
     pub total_number_of_items: i32,
-    pub items: Vec<AlbumItem>,
+    pub items: Vec<AlbumItemsEntry>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AlbumItem {
+pub struct AlbumItemsEntry {
     pub item: Track,
     #[serde(rename = "type")]
     pub album_type: String,
@@ -144,7 +144,7 @@ pub type AlbumCreditsResponse = Vec<AlbumCredit>;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AlbumItemWithCredits {
+pub struct AlbumItemsWithCreditsEntry {
     pub item: Track,
     #[serde(rename = "type")]
     pub item_type: String,
@@ -157,5 +157,5 @@ pub struct AlbumItemsWithCreditsResponse {
     pub limit: u32,
     pub offset: u32,
     pub total_number_of_items: u32,
-    pub items: Vec<AlbumItemWithCredits>,
+    pub items: Vec<AlbumItemsWithCreditsEntry>,
 }

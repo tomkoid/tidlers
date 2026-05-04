@@ -4,10 +4,9 @@ use reqwest::Method;
 use tracing::{debug, info};
 
 use crate::{
-    client::TidalClient,
+    client::{TidalClient, models::responses::RefreshTokenGrantResponse},
     error::TidalError,
     requests::{self, TidalRequest},
-    responses::RefreshTokenResponse,
 };
 
 impl TidalClient {
@@ -60,7 +59,7 @@ impl TidalClient {
 
             let res = self.rq.request(req).await?;
             let body = res.text().await?;
-            let json: RefreshTokenResponse = serde_json::from_str(&body)?;
+            let json: RefreshTokenGrantResponse = serde_json::from_str(&body)?;
 
             // update the access token and refresh token
             self.session.auth.access_token = Some(json.access_token.clone());

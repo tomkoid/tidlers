@@ -1,26 +1,26 @@
 use serde::{Deserialize, Serialize};
 
-pub enum Order {
+pub enum FolderOrder {
     Date,
 }
 
-pub enum OrderDirection {
+pub enum FolderOrderDirection {
     Ascending,
     Descending,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FoldersFlattenedResponse {
-    pub items: Vec<FolderCollectionItem>,
+pub struct FolderListResponse {
+    pub items: Vec<FolderCollectionEntry>,
     pub cursor: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FolderCollectionItem {
+pub struct FolderCollectionEntry {
     pub added_at: String,
-    pub data: FolderData,
+    pub data: FolderDetails,
     pub item_type: String,
     pub last_modified_at: String,
     pub name: String,
@@ -30,7 +30,7 @@ pub struct FolderCollectionItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FolderData {
+pub struct FolderDetails {
     pub created_at: String,
     pub id: String,
     pub item_type: String,

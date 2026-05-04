@@ -2,7 +2,7 @@ use crate::{
     client::{
         TidalClient,
         models::album::{
-            AlbumCreditsResponse, AlbumInfoResponse, AlbumItemsResponse,
+            AlbumCreditsResponse, AlbumResponse, AlbumItemsResponse,
             AlbumItemsWithCreditsResponse,
         },
     },
@@ -29,7 +29,7 @@ impl TidalClient {
     pub async fn get_album(
         &self,
         album_id: impl Into<AlbumId>,
-    ) -> Result<AlbumInfoResponse, TidalError> {
+    ) -> Result<AlbumResponse, TidalError> {
         let album_id = album_id.into();
         self.request(reqwest::Method::GET, format!("/albums/{}/", album_id))
             .with_country_code()

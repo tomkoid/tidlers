@@ -7,7 +7,7 @@ mod search;
 mod track;
 
 use crate::{args::Commands, save::remove_session_data};
-use tidlers::{TidalClient, client::models::track::config::UserUploadsInclude};
+use tidlers::{TidalClient, client::models::track::config::UserUploadsIncludeOptions};
 
 pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre::Result<()> {
     match command {
@@ -46,7 +46,7 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
 
         Commands::Uploads => {
             let uploads = tidal
-                .get_user_uploads(UserUploadsInclude::default(), None)
+                .get_user_uploads(UserUploadsIncludeOptions::default(), None)
                 .await?;
             println!("{:#?}", uploads);
         }

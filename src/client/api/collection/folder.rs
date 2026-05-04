@@ -4,7 +4,7 @@ use crate::{
     client::{
         TidalClient,
         models::collection::folder::{
-            FolderCollectionItem, FoldersFlattenedResponse, Order, OrderDirection,
+            FolderCollectionEntry, FolderListResponse, FolderOrder, FolderOrderDirection,
         },
     },
     error::TidalError,
@@ -16,7 +16,7 @@ impl TidalClient {
         &self,
         name: impl Into<String>,
         parent_id: Option<String>,
-    ) -> Result<FolderCollectionItem, TidalError> {
+    ) -> Result<FolderCollectionEntry, TidalError> {
         self.request(
             reqwest::Method::PUT,
             "/my-collection/playlists/folders/create-folder",
@@ -50,17 +50,17 @@ impl TidalClient {
         &self,
         limit: Option<u32>,
         offset: Option<u32>,
-        order: Option<Order>,
-        order_direction: Option<OrderDirection>,
-    ) -> Result<FoldersFlattenedResponse, TidalError> {
+        order: Option<FolderOrder>,
+        order_direction: Option<FolderOrderDirection>,
+    ) -> Result<FolderListResponse, TidalError> {
         let order = match order {
-            Some(Order::Date) => "DATE",
+            Some(FolderOrder::Date) => "DATE",
             None => "DATE",
         };
 
         let order_direction = match order_direction {
-            Some(OrderDirection::Ascending) => "ASC",
-            Some(OrderDirection::Descending) => "DESC",
+            Some(FolderOrderDirection::Ascending) => "ASC",
+            Some(FolderOrderDirection::Descending) => "DESC",
             None => "DESC",
         };
 

@@ -1,14 +1,16 @@
 use crate::{
-    client::{TidalClient, models::mixes::ArrivalMixData},
+    client::{
+        TidalClient,
+        models::{mixes::ArrivalMixResource, responses::ApiDataResponse},
+    },
     error::TidalError,
-    responses::TidalGenericResponse,
     urls::OPEN_API_V2_LOCATION,
 };
 
 impl TidalClient {
     pub async fn get_arrival_mixes(
         &self,
-    ) -> Result<TidalGenericResponse<Vec<ArrivalMixData>>, TidalError> {
+    ) -> Result<ApiDataResponse<Vec<ArrivalMixResource>>, TidalError> {
         let url = format!(
             "/userRecommendations/{}/relationships/newArrivalMixes",
             self.user_id()?

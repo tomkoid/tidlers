@@ -1,11 +1,11 @@
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct SubscriptionInfo {
+pub struct UserSubscriptionResponse {
     #[serde(rename = "startDate")]
     pub start_date: String,
     #[serde(rename = "validUntil")]
     pub valid_until: String,
     pub status: String,
-    pub subscription: SubscriptionDetails,
+    pub subscription: SubscriptionPlan,
     #[serde(rename = "highestSoundQuality")]
     pub highest_sound_quality: String,
     #[serde(rename = "premiumAccess")]
@@ -19,7 +19,7 @@ pub struct SubscriptionInfo {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct SubscriptionDetails {
+pub struct SubscriptionPlan {
     #[serde(rename = "type")]
     pub subscription_type: String,
     #[serde(rename = "offlineGracePeriod")]

@@ -6,11 +6,11 @@ use crate::{
     client::{
         TidalClient,
         models::{
-            mixes::TrackMixInfo,
+            mixes::TrackMixResponse,
             playback::AssetPresentation,
             track::{
-                DashManifest, ManifestType, Track, TrackManifest,
-                TrackPlaybackInfoPostPaywallResponse,
+                DashManifest, ParsedTrackManifest, Track, JsonTrackManifest,
+                TrackPlaybackInfoResponse,
             },
         },
     },
@@ -19,8 +19,8 @@ use crate::{
     urls::OPEN_API_V2_LOCATION,
 };
 
-use crate::client::models::track::config::UserUploadsInclude;
-use crate::client::models::track::user_uploads::UserUploads;
+use crate::client::models::track::config::UserUploadsIncludeOptions;
+use crate::client::models::track::user_uploads::UserUploadsResponse;
 
 impl TidalClient {
     /// Retrieves track information by track ID
@@ -177,7 +177,7 @@ impl TidalClient {
     pub async fn get_track_postpaywall_playback_info(
         &self,
         track_id: impl Into<TrackId>,
-    ) -> Result<TrackPlaybackInfoPostPaywallResponse, TidalError> {
+    ) -> Result<TrackPlaybackInfoResponse, TidalError> {
         let track_id = track_id.into();
         let audio_quality = self.session.audio_quality.to_string();
         let playback_mode = self.session.playback_mode.to_string();
@@ -200,18 +200,18 @@ impl TidalClient {
             general_purpose::STANDARD.decode(parsed["manifest"].as_str().unwrap())?;
         let manifest_decoded_str = String::from_utf8(manifest_decoded)?;
 
-        let mut response: TrackPlaybackInfoPostPaywallResponse =
-            serde_json::from_str::<TrackPlaybackInfoPostPaywallResponse>(&body)?;
+        let mut response: TrackPlaybackInfoResponse =
+            serde_json::from_str::<TrackPlaybackInfoResponse>(&body)?;
 
         // Try to parse as JSON first (for LOW, HIGH, LOSSLESS)
-        if let Ok(json_manifest) = serde_json::from_str::<TrackManifest>(&manifest_decoded_str) {
+        if let Ok(json_manifest) = serde_json::from_str::<JsonTrackManifest>(&manifest_decoded_str) {
             response.manifest = Some(json_manifest.clone());
-            response.manifest_parsed = Some(ManifestType::Json(json_manifest));
+            response.manifest_parsed = Some(ParsedTrackManifest::Json(json_manifest));
         } else {
             // If JSON parsing fails, try DASH XML (for HiRes)
             match Self::parse_dash_manifest(&manifest_decoded_str) {
                 Ok(dash_manifest) => {
-                    response.manifest_parsed = Some(ManifestType::Dash(dash_manifest));
+                    response.manifest_parsed = Some(ParsedTrackManifest::Dash(dash_manifest));
                 }
                 Err(e) => {
                     return Err(TidalError::Other(format!(
@@ -228,7 +228,7 @@ impl TidalClient {
     pub async fn get_track_mix(
         &self,
         track_id: impl Into<TrackId>,
-    ) -> Result<TrackMixInfo, TidalError> {
+    ) -> Result<TrackMixResponse, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/mix", track_id))
             .with_country_code()
@@ -238,9 +238,9 @@ impl TidalClient {
 
     pub async fn get_user_uploads(
         &self,
-        include: UserUploadsInclude,
+        include: UserUploadsIncludeOptions,
         next_cursor: Option<String>,
-    ) -> Result<UserUploads, TidalError> {
+    ) -> Result<UserUploadsResponse, TidalError> {
         if self.session.auth.user_id.is_none() {
             return Err(TidalError::NotAuthenticated);
         }

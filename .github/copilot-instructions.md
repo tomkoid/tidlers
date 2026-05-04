@@ -34,7 +34,7 @@ If workspace checks fail on Linux audio dependencies, CI installs `libasound2-de
   - `src/auth/init.rs` for `TidalAuth` construction and client-credential token flow
   - `src/client/oauth.rs` for OAuth device-code login and polling
   - `src/client/auth.rs` for refresh-token logic
-- Payload types are mostly in `src/client/models/**`; auth/generic wrappers are in `src/responses.rs`.
+- Payload types are in `src/client/models/**`, including auth/generic wrappers in `src/client/models/responses.rs`.
 - Session persistence is implemented in `src/client/data.rs` via `get_json()` and `from_json()`.
 - Typed ID wrappers (`TrackId`, `AlbumId`, etc.) are defined in `src/ids.rs` and accepted by endpoint methods via `impl Into<...Id>`.
 
@@ -46,6 +46,10 @@ If workspace checks fail on Linux audio dependencies, CI installs `libasound2-de
 - Many endpoints call `.with_country_code()`, which depends on `self.user_info.country_code`; after OAuth/session restore, call `refresh_user_info()` before country-scoped requests.
 - Keep internal plumbing internal: request-builder and low-level request constructors are `pub(crate)`; external usage should stay on `TidalClient` + model/config types.
 - Preserve serde field mapping style used across models (`#[serde(rename = ...)]`, `#[serde(rename_all = "camelCase")]`) because API payload shapes vary by endpoint.
+- Model naming convention:
+  - Use `*Response` only for top-level endpoint return payloads.
+  - Keep nested/resource/domain structs suffix-free (no `Response` postfix).
+  - Do not use `*Page`; prefer `*Response` for paginated top-level payloads.
 - Keep `CHANGELOG.md` current for significant user-facing changes; add/update an `Unreleased` entry when behavior or API surface changes in a meaningful way.
 - Be explicit about the two search type enums:
   - Request config enum: `client::models::search::config::SearchType`

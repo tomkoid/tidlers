@@ -5,10 +5,15 @@ use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
 
 use crate::{
-    client::{TidalClient, models::user::User},
+    client::{
+        TidalClient,
+        models::{
+            responses::{OAuthTokenResponse, OAuthPendingAuthorizationResponse, OAuthDeviceAuthorizationResponse},
+            user::User,
+        },
+    },
     error::TidalError,
     requests::{self, TidalRequest},
-    responses::{AuthResponse, AuthResponseWaiting, OAuthLinkResponse},
 };
 
 /// Status updates during the OAuth flow
@@ -35,7 +40,7 @@ impl TidalClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn get_oauth_link(&self) -> Result<OAuthLinkResponse, TidalError> {
+    pub async fn get_oauth_link(&self) -> Result<OAuthDeviceAuthorizationResponse, TidalError> {
         debug!("requesting OAuth device authorization link");
         if self.session.auth.is_token_auth() {
             return Err(TidalError::InvalidArgument(
@@ -67,7 +72,7 @@ impl TidalClient {
         let res = self.rq.request(req).await?;
         let body = res.text().await?;
 
-        let json: OAuthLinkResponse =
+        let json: OAuthDeviceAuthorizationResponse =
             serde_json::from_str(&body).map_err(|e| TidalError::InvalidResponse(e.to_string()))?;
 
         debug!(
@@ -114,7 +119,7 @@ impl TidalClient {
         expires_in: u64,
         interval: u64,
         status_tx: Option<mpsc::UnboundedSender<OAuthStatus>>,
-    ) -> Result<AuthResponse, TidalError> {
+    ) -> Result<OAuthTokenResponse, TidalError> {
         debug!(
             device_code_len = device_code.len(),
             expires_in, interval, "starting OAuth device polling"
@@ -155,7 +160,7 @@ impl TidalClient {
             let res = self.rq.request(req.clone()).await?;
             let body = res.bytes().await?;
             // println!("oauth check response: {}", res.text().await?);
-            let json: Result<AuthResponse, _> = serde_json::from_slice(&body);
+            let json: Result<OAuthTokenResponse, _> = serde_json::from_slice(&body);
             match json {
                 Ok(json) => {
                     if let Some(tx) = &status_tx {
@@ -179,7 +184,7 @@ impl TidalClient {
                     return Ok(json);
                 }
                 Err(_) => {
-                    let json_waiting: Result<AuthResponseWaiting, _> =
+                    let json_waiting: Result<OAuthPendingAuthorizationResponse, _> =
                         serde_json::from_slice(&body);
 
                     match json_waiting {

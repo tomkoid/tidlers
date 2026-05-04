@@ -1,7 +1,7 @@
 use crate::args::FolderCommands;
 use tidlers::{
     TidalClient,
-    client::models::collection::folder::{Order, OrderDirection},
+    client::models::collection::folder::{FolderOrder, FolderOrderDirection},
 };
 
 pub async fn execute(tidal: &mut TidalClient, command: FolderCommands) -> eyre::Result<()> {
@@ -22,8 +22,8 @@ pub async fn execute(tidal: &mut TidalClient, command: FolderCommands) -> eyre::
                 .flattened_folders(
                     None,
                     None,
-                    Some(Order::Date),
-                    Some(OrderDirection::Ascending),
+                    Some(FolderOrder::Date),
+                    Some(FolderOrderDirection::Ascending),
                 )
                 .await?;
             println!("Flattened folders: {:#?}", flattened_folders);

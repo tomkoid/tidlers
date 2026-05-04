@@ -9,8 +9,8 @@ use tracing::{debug, warn};
 use crate::{
     TidalError,
     auth::TidalAuth,
+    client::models::responses::ClientCredentialsTokenResponse,
     requests::{self, TidalRequest},
-    responses::AccessTokenResponse,
 };
 
 impl TidalAuth {
@@ -29,7 +29,7 @@ impl TidalAuth {
         }
     }
 
-    pub async fn get_access_token(&self) -> Result<AccessTokenResponse, TidalError> {
+    pub async fn get_access_token(&self) -> Result<ClientCredentialsTokenResponse, TidalError> {
         debug!("requesting access token via client credentials flow");
         if !self.is_token_auth() {
             return Err(TidalError::InvalidArgument(
@@ -49,7 +49,7 @@ impl TidalAuth {
         req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
 
         let res = self.rq.request(req).await?;
-        let json: AccessTokenResponse = res.json().await?;
+        let json: ClientCredentialsTokenResponse = res.json().await?;
 
         debug!(
             expires_in = json.expires_in,

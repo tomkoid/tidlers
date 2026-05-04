@@ -38,10 +38,10 @@ pub mod client;
 pub mod error;
 pub mod ids;
 pub mod requests;
-pub mod responses;
 pub mod session;
 pub mod urls;
 pub mod utils;
+pub use client::models::responses;
 
 // Re-export main types for convenience
 pub use client::TidalClient;

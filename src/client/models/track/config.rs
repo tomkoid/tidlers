@@ -1,4 +1,4 @@
-pub struct UserUploadsInclude {
+pub struct UserUploadsIncludeOptions {
     pub albums: bool,
     pub albums_cover_art: bool,
     pub artists: bool,
@@ -8,7 +8,7 @@ pub struct UserUploadsInclude {
     pub track_stats: bool,
 }
 
-impl Default for UserUploadsInclude {
+impl Default for UserUploadsIncludeOptions {
     fn default() -> Self {
         Self {
             albums: true,
@@ -22,7 +22,7 @@ impl Default for UserUploadsInclude {
     }
 }
 
-impl UserUploadsInclude {
+impl UserUploadsIncludeOptions {
     pub fn to_api_params(&self) -> String {
         let mut includes = Vec::new();
         if self.albums {

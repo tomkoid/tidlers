@@ -2,9 +2,9 @@ use crate::{
     client::{
         TidalClient,
         models::{
-            collection::{SharingLevel, playlist::PlaylistCollectionItem},
+            collection::{SharingLevel, playlist::CollectionPlaylistEntry},
             playlist::{
-                PlaylistInfo, PlaylistItemsResponse, PlaylistsResponse, PublicUserPlaylistsResponse,
+                PlaylistResponse, PlaylistItemsResponse, UserPlaylistsResponse, PublicUserPlaylistsResponse,
             },
         },
     },
@@ -41,7 +41,7 @@ impl TidalClient {
         description: impl Into<String>,
         sharing_level: Option<SharingLevel>,
         parent_id: Option<String>,
-    ) -> Result<PlaylistCollectionItem, TidalError> {
+    ) -> Result<CollectionPlaylistEntry, TidalError> {
         self.request(
             reqwest::Method::PUT,
             "/my-collection/playlists/folders/create-playlist",
@@ -75,7 +75,7 @@ impl TidalClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn list_playlists(&self) -> Result<PlaylistsResponse, TidalError> {
+    pub async fn list_playlists(&self) -> Result<UserPlaylistsResponse, TidalError> {
         let url = format!("/users/{}/playlists", self.user_id()?);
 
         self.request(reqwest::Method::GET, url)
@@ -104,7 +104,7 @@ impl TidalClient {
     pub async fn get_playlist(
         &self,
         playlist_id: impl Into<PlaylistId>,
-    ) -> Result<PlaylistInfo, TidalError> {
+    ) -> Result<PlaylistResponse, TidalError> {
         let playlist_id = playlist_id.into();
         self.request(reqwest::Method::GET, format!("/playlists/{}/", playlist_id))
             .with_country_code()

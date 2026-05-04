@@ -165,7 +165,7 @@ For HiRes audio, TIDAL uses DASH streaming. Tidlers parses these manifests autom
 let playback_info = client.get_track_postpaywall_playback_info(track_id).await?;
 
 match &playback_info.manifest_parsed {
-    Some(ManifestType::Dash(dash)) => {
+    Some(ParsedTrackManifest::Dash(dash)) => {
         println!("Codec: {}", dash.codecs);
         println!("Bitrate: {} bps", dash.bitrate.unwrap_or(0));
         
@@ -181,7 +181,7 @@ match &playback_info.manifest_parsed {
             }
         }
     }
-    Some(ManifestType::Json(json)) => {
+    Some(ParsedTrackManifest::Json(json)) => {
         // Standard JSON manifest for non-HiRes
         println!("Direct URL: {}", json.urls[0]);
     }

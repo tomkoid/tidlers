@@ -2,7 +2,7 @@ use crate::{
     client::{
         TidalClient,
         models::search::{
-            SearchResultsFull, SearchSuggestionsFull,
+            SearchResultsResponse, SearchSuggestionsResponse,
             config::{SearchConfig, SearchSuggestionsConfig},
         },
     },
@@ -38,7 +38,7 @@ impl TidalClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn search(&self, config: SearchConfig) -> Result<SearchResultsFull, TidalError> {
+    pub async fn search(&self, config: SearchConfig) -> Result<SearchResultsResponse, TidalError> {
         let types_string = config
             .types
             .iter()
@@ -82,7 +82,7 @@ impl TidalClient {
     pub async fn search_suggestion(
         &self,
         config: SearchSuggestionsConfig,
-    ) -> Result<SearchSuggestionsFull, TidalError> {
+    ) -> Result<SearchSuggestionsResponse, TidalError> {
         self.request(reqwest::Method::GET, "/suggestions")
             .with_country_code()
             .with_param("query", config.query)

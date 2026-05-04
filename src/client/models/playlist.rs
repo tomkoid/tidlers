@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::client::models::track::Track;
+use crate::client::models::collection::CollectionCreator;
 
 /// Response containing playlist items with pagination
 #[derive(Debug, Serialize, Deserialize)]
@@ -25,13 +26,13 @@ pub struct PlaylistItem {
 /// Response containing a list of playlists
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PlaylistsResponse {
-    pub items: Vec<PlaylistInfo>,
+pub struct UserPlaylistsResponse {
+    pub items: Vec<PlaylistResponse>,
 }
 
 /// Detailed information about a playlist
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct PlaylistInfo {
+pub struct PlaylistResponse {
     pub uuid: String,
     pub title: String,
     #[serde(rename = "numberOfTracks")]
@@ -86,7 +87,7 @@ pub struct PublicUserPlaylist {
     pub uuid: String,
     #[serde(rename = "type")]
     pub playlist_type: String,
-    pub creator: PlaylistCreatorInfo,
+    pub creator: CollectionCreator,
     pub curators: Vec<Curator>,
     pub content_behavior: String,
     pub sharing_level: String,
@@ -106,16 +107,6 @@ pub struct PublicUserPlaylist {
     pub number_of_videos: i64,
     pub promoted_artists: Vec<serde_json::Value>,
     pub trn: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PlaylistCreatorInfo {
-    pub id: i64,
-    pub name: Option<String>,
-    pub picture: Option<String>,
-    #[serde(rename = "type")]
-    pub creator_type: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

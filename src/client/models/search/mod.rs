@@ -7,13 +7,13 @@ use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SearchResultsFull {
-    pub tracks: Option<SearchSection<SearchTrackHit>>,
-    pub uploads: Option<SearchSection<SearchTrackHit>>,
-    pub albums: Option<SearchSection<SearchAlbumHit>>,
-    pub playlists: Option<SearchSection<SearchPlaylistHit>>,
-    pub videos: Option<SearchSection<SearchVideoHit>>,
-    pub artists: Option<SearchSection<SearchArtistHit>>,
+pub struct SearchResultsResponse {
+    pub tracks: Option<SearchResultSection<SearchTrackHit>>,
+    pub uploads: Option<SearchResultSection<SearchTrackHit>>,
+    pub albums: Option<SearchResultSection<SearchAlbumHit>>,
+    pub playlists: Option<SearchResultSection<SearchPlaylistHit>>,
+    pub videos: Option<SearchResultSection<SearchVideoHit>>,
+    pub artists: Option<SearchResultSection<SearchArtistHit>>,
     pub genres: Option<Vec<SearchGenre>>,
     #[serde(rename = "contentTypeFilters")]
     pub content_type_filters: Option<Vec<String>>,
@@ -32,7 +32,7 @@ pub struct SearchGenre {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SearchSection<T> {
+pub struct SearchResultSection<T> {
     pub items: Vec<T>,
     pub total_number_of_items: u32,
     pub cacheable: Option<bool>,
@@ -268,7 +268,7 @@ pub struct SearchTopHit {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SearchSuggestionsFull {
+pub struct SearchSuggestionsResponse {
     pub history: Vec<SearchSuggestionEntry>,
     pub suggestions: Vec<SearchSuggestionEntry>,
     #[serde(rename = "directHits")]
@@ -291,12 +291,7 @@ pub struct SearchHighlight {
     pub length: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchSuggestionDirectHit {
-    pub value: Value,
-    #[serde(rename = "type")]
-    pub hit_type: String,
-}
+pub type SearchSuggestionDirectHit = SearchTopHit;
 
 #[derive(Clone, Debug)]
 pub enum SearchType {
