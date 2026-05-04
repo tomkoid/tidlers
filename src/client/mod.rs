@@ -101,15 +101,6 @@ impl TidalClient {
         tracing::debug!(enabled = debug_mode, "setting client debug mode");
         self.debug_mode = debug_mode;
     }
-
-    pub async fn home(&self) -> Result<(), TidalError> {
-        self.check_auth()?;
-
-        // TODO: Implement home page functionality
-        // self.page.r_get("pages/home");
-        Ok(())
-        // Ok(self.page.get("pages/home").await?)
-    }
 }
 
 impl Default for TidalClient {
