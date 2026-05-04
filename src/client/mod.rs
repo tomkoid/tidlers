@@ -56,14 +56,6 @@ impl TidalClient {
         self.session.auth.oauth_login && self.session.auth.access_token.is_none()
     }
 
-    fn check_auth(&self) -> Result<bool, TidalError> {
-        if self.session.auth.access_token.is_none() {
-            Err(TidalError::NotAuthenticated)
-        } else {
-            Ok(true)
-        }
-    }
-
     pub(crate) fn user_id(&self) -> Result<u64, TidalError> {
         self.user_info
             .as_ref()
