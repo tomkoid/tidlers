@@ -5,6 +5,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Gets the artists in the user's collection = followed.
     pub async fn get_collection_artists(
         &self,
         limit: u32,
