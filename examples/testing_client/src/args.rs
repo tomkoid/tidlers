@@ -60,6 +60,9 @@ pub enum Commands {
     /// Show user's home feed
     Home,
 
+    /// Show user's activity feed
+    ActivityFeed,
+
     /// Show user's uploads
     Uploads,
 

@@ -79,6 +79,11 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
             println!("{:#?}", home_feed);
         }
 
+        Commands::ActivityFeed => {
+            let activity_feed = tidal.get_activity_feed().await;
+            println!("{:#?}", activity_feed);
+        }
+
         Commands::Search { command, query } => {
             search::execute(&mut tidal, query, command).await?;
         }
