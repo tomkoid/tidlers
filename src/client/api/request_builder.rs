@@ -17,6 +17,7 @@ pub struct ApiRequestBuilder<'a> {
     headers: Option<reqwest::header::HeaderMap>,
     add_country_code: bool,
     add_locale: bool,
+    send_params_as_form: bool,
     request_debug: bool,
 }
 
@@ -36,6 +37,7 @@ impl<'a> ApiRequestBuilder<'a> {
             headers: None,
             add_country_code: false,
             add_locale: false,
+            send_params_as_form: false,
             request_debug,
         }
     }
@@ -82,6 +84,12 @@ impl<'a> ApiRequestBuilder<'a> {
         self
     }
 
+    /// Sends all accumulated params in request body as x-www-form-urlencoded
+    pub(crate) fn with_params_as_form(mut self) -> Self {
+        self.send_params_as_form = true;
+        self
+    }
+
     /// Sets custom headers for the request
     pub(crate) fn with_headers(mut self, headers: reqwest::header::HeaderMap) -> Self {
         self.headers = Some(headers);
@@ -109,6 +117,7 @@ impl<'a> ApiRequestBuilder<'a> {
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = self.headers;
+        req.send_params_as_form = self.send_params_as_form;
 
         debug!(
             method = %req.method,
@@ -116,6 +125,7 @@ impl<'a> ApiRequestBuilder<'a> {
             params_count = req.params.as_ref().map_or(0, |p| p.len()),
             has_custom_base_url = req.base_url.is_some(),
             has_headers = req.headers.is_some(),
+            send_params_as_form = req.send_params_as_form,
             "sending API request"
         );
         let resp = self.client.rq.request(req).await?;
@@ -179,6 +189,7 @@ impl<'a> ApiRequestBuilder<'a> {
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = self.headers;
+        req.send_params_as_form = self.send_params_as_form;
 
         debug!(
             method = %req.method,
@@ -186,6 +197,7 @@ impl<'a> ApiRequestBuilder<'a> {
             params_count = req.params.as_ref().map_or(0, |p| p.len()),
             has_custom_base_url = req.base_url.is_some(),
             has_headers = req.headers.is_some(),
+            send_params_as_form = req.send_params_as_form,
             "sending raw API request"
         );
         let resp = self.client.rq.request(req).await?;
