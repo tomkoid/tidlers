@@ -6,7 +6,7 @@ pub mod artist;
 pub mod collection;
 pub mod home;
 pub mod logout;
-pub mod mixes;
+pub mod mix;
 pub mod openapi;
 pub mod search;
 pub mod subscription;

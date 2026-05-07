@@ -51,8 +51,11 @@ pub enum Commands {
     /// Show user's subscription details
     Subscription,
 
-    /// Show user's arrival mixes
-    ArrivalMixes,
+    /// Mixes
+    Mix {
+        #[clap(subcommand)]
+        command: MixCommands,
+    },
 
     /// Show user's home feed
     Home,
@@ -250,6 +253,26 @@ pub enum PlaylistCommands {
     List,
     /// List public playlists
     ListPublic,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum MixCommands {
+    /// Show items of a specific mix
+    Items {
+        /// Mix ID
+        mix_id: String,
+
+        /// Limit number of items to show (default 100)
+        #[clap(short, long, default_value = "100")]
+        limit: u32,
+
+        /// Offset for items to show (default 0)
+        #[clap(short, long, default_value = "0")]
+        offset: u32,
+    },
+
+    /// Show arrival mixes
+    ArrivalMixes,
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]

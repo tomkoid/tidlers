@@ -2,6 +2,7 @@ mod activity;
 mod album;
 mod artist;
 mod folder;
+mod mix;
 mod playlist;
 mod search;
 mod track;
@@ -45,11 +46,8 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
             println!("{:#?}", subscription);
         }
 
-        Commands::ArrivalMixes => {
-            let mixes = tidal.get_arrival_mixes().await?;
-            for mix in mixes.data {
-                println!("{} - ID: {}", mix.data_type, mix.id);
-            }
+        Commands::Mix { command } => {
+            mix::execute(&mut tidal, command).await?;
         }
 
         Commands::Uploads => {

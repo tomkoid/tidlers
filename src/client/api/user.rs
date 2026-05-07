@@ -1,7 +1,7 @@
 use crate::{
     TidalClient, TidalError,
     client::models::user::{UserV1Response, UserV2Response},
-    urls::{API_V2_LOCATION, OPEN_API_V2_LOCATION},
+    urls::API_V2_LOCATION,
 };
 
 impl TidalClient {
