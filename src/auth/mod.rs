@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{auth::credentials::get_default_client_credentials, requests, urls::API_V1_LOCATION};
 
 pub mod credentials;
+pub mod init;
 pub mod token;
 
 /// Authentication credentials and configuration for the Tidal API client.
