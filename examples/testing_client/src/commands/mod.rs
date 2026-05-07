@@ -111,12 +111,31 @@ async fn execute_collection_command(
             playlist::execute(tidal, command).await?;
         }
 
-        args::CollectionCommands::Favorite { resource_type, id } => {
-            tidal
-                .add_to_favorites(resource_type.to_favorite_resource_type(), id.parse()?)
-                .await?;
+        args::CollectionCommands::Favorite {
+            resource_type,
+            id,
+            remove,
+        } => {
+            match remove {
+                true => {
+                    tidal
+                        .remove_from_favorites(
+                            resource_type.to_favorite_resource_type(),
+                            id.parse()?,
+                        )
+                        .await?;
+                    println!("Removed from favorites");
+                }
+                false => {
+                    // continue to add to favorites
+                    tidal
+                        .add_to_favorites(resource_type.to_favorite_resource_type(), id.parse()?)
+                        .await?;
+                    println!("Added to favorites");
+                }
+            }
 
-            println!("Added to favorites");
+            return Ok(());
         }
 
         args::CollectionCommands::Folder { command } => {

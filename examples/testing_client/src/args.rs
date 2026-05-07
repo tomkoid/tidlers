@@ -160,11 +160,15 @@ pub enum CollectionCommands {
     /// Add a type to favorites
     Favorite {
         /// Type to add to favorites (tracks or albums)
-        #[clap(short, long, value_enum)]
+        #[clap(short = 't', long, value_enum)]
         resource_type: ArgFavoriteResourceType,
 
         /// ID of the resource to add to favorites
         id: String,
+
+        /// Remove from favorites instead of adding
+        #[clap(short, long, default_value_t = false)]
+        remove: bool,
     },
 
     /// Show favorite tracks

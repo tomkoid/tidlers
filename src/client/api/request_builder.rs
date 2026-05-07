@@ -13,11 +13,11 @@ pub struct ApiRequestBuilder<'a> {
     method: Method,
     url: String,
     params: HashMap<String, String>,
+    form_params: HashMap<String, String>,
     base_url: Option<String>,
     headers: Option<reqwest::header::HeaderMap>,
     add_country_code: bool,
     add_locale: bool,
-    send_params_as_form: bool,
     request_debug: bool,
 }
 
@@ -33,11 +33,11 @@ impl<'a> ApiRequestBuilder<'a> {
             method,
             url: url.into(),
             params: HashMap::new(),
+            form_params: HashMap::new(),
             base_url: None,
             headers: None,
             add_country_code: false,
             add_locale: false,
-            send_params_as_form: false,
             request_debug,
         }
     }
@@ -66,6 +66,16 @@ impl<'a> ApiRequestBuilder<'a> {
         self
     }
 
+    /// Adds an x-www-form-urlencoded body parameter to the request
+    pub(crate) fn with_form_param(
+        mut self,
+        key: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Self {
+        self.form_params.insert(key.into(), value.into());
+        self
+    }
+
     /// Adds multiple query parameters from a HashMap
     pub(crate) fn _with_params(mut self, params: HashMap<String, String>) -> Self {
         self.params.extend(params);
@@ -81,12 +91,6 @@ impl<'a> ApiRequestBuilder<'a> {
         if let Some(v) = value {
             self.params.insert(key.into(), v.into());
         }
-        self
-    }
-
-    /// Sends all accumulated params in request body as x-www-form-urlencoded
-    pub(crate) fn with_params_as_form(mut self) -> Self {
-        self.send_params_as_form = true;
         self
     }
 
@@ -114,10 +118,10 @@ impl<'a> ApiRequestBuilder<'a> {
 
         let mut req = TidalRequest::new(self.method, self.url.clone());
         req.params = Some(self.params);
+        req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = self.headers;
-        req.send_params_as_form = self.send_params_as_form;
 
         debug!(
             method = %req.method,
@@ -125,7 +129,6 @@ impl<'a> ApiRequestBuilder<'a> {
             params_count = req.params.as_ref().map_or(0, |p| p.len()),
             has_custom_base_url = req.base_url.is_some(),
             has_headers = req.headers.is_some(),
-            send_params_as_form = req.send_params_as_form,
             "sending API request"
         );
         let resp = self.client.rq.request(req).await?;
@@ -186,10 +189,10 @@ impl<'a> ApiRequestBuilder<'a> {
 
         let mut req = TidalRequest::new(self.method, self.url);
         req.params = Some(self.params);
+        req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = self.headers;
-        req.send_params_as_form = self.send_params_as_form;
 
         debug!(
             method = %req.method,
@@ -197,7 +200,6 @@ impl<'a> ApiRequestBuilder<'a> {
             params_count = req.params.as_ref().map_or(0, |p| p.len()),
             has_custom_base_url = req.base_url.is_some(),
             has_headers = req.headers.is_some(),
-            send_params_as_form = req.send_params_as_form,
             "sending raw API request"
         );
         let resp = self.client.rq.request(req).await?;
