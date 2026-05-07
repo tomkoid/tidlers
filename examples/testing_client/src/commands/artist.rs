@@ -37,6 +37,11 @@ pub async fn execute(
             println!("{:#?}", mix);
         }
 
+        ArtistCommands::Similar => {
+            let similar = tidal.get_similar_artists(artist_id, None).await?;
+            println!("{:#?}", similar);
+        }
+
         ArtistCommands::Videos => {
             let videos = tidal.get_artist_videos(artist_id, None, None).await?;
             println!("{:#?}", videos);

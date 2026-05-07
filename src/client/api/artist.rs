@@ -4,7 +4,7 @@ use crate::{
         models::{
             artist::{
                 ArtistAlbumsResponse, ArtistBiographyResponse, ArtistLinksResponse, ArtistResponse,
-                ArtistTopTracksResponse, ArtistVideosResponse,
+                ArtistTopTracksResponse, ArtistVideosResponse, SimilarArtistsResponse,
             },
             mixes::TrackMixResponse,
         },
@@ -127,6 +127,23 @@ impl TidalClient {
         .with_country_code()
         .with_param("limit", limit.to_string())
         .with_param("offset", offset.to_string())
+        .send()
+        .await
+    }
+
+    /// Gets a list of similar artists to the given artist
+    pub async fn get_similar_artists(
+        &self,
+        artist_id: impl Into<ArtistId>,
+        limit: Option<u32>,
+    ) -> Result<SimilarArtistsResponse, TidalError> {
+        let artist_id = artist_id.into();
+        self.request(
+            reqwest::Method::GET,
+            format!("/artists/{}/similar", artist_id),
+        )
+        .with_param("limit", limit.unwrap_or(50).to_string())
+        .with_country_code()
         .send()
         .await
     }

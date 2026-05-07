@@ -146,8 +146,8 @@ pub enum ArtistCommands {
     Mix,
     /// Show artist's videos
     Videos,
-    // /// Show artist's related artists
-    // Related,
+    /// Show artist's related artists
+    Similar,
 }
 
 #[derive(Parser, Debug, Clone)]
