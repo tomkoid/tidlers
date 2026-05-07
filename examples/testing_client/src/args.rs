@@ -151,8 +151,20 @@ pub enum CollectionCommands {
 
     /// Show collection artists
     Artists,
-    /// Show collection favorites
-    Favorites {
+
+    /// Show favorite tracks
+    Tracks {
+        /// Limit number of favorites to show (default 100)
+        #[clap(short, long, default_value = "100")]
+        limit: u32,
+
+        /// Offset for favorites to show (default 0)
+        #[clap(short, long, default_value = "0")]
+        offset: u32,
+    },
+
+    /// Show favorite albums
+    Albums {
         /// Limit number of favorites to show (default 100)
         #[clap(short, long, default_value = "100")]
         limit: u32,

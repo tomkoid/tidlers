@@ -16,8 +16,8 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
         }
 
         Commands::Playlists => {
-            let favorites = tidal.get_collection_favorites(Some(50), Some(0)).await?;
-            println!("{:#?}", favorites);
+            let playlists = tidal.list_playlists().await?;
+            println!("{:#?}", playlists);
         }
 
         Commands::Collection { command } => {
@@ -93,9 +93,16 @@ async fn execute_collection_command(
             println!("{:#?}", artists);
         }
 
-        args::CollectionCommands::Favorites { limit, offset } => {
+        args::CollectionCommands::Tracks { limit, offset } => {
             let favorites = tidal
-                .get_collection_favorites(Some(limit), Some(offset))
+                .get_collection_track_favorites(Some(limit), Some(offset))
+                .await?;
+            println!("{:#?}", favorites);
+        }
+
+        args::CollectionCommands::Albums { limit, offset } => {
+            let favorites = tidal
+                .get_collection_album_favorites(Some(limit), Some(offset))
                 .await?;
             println!("{:#?}", favorites);
         }

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+pub mod album;
 pub mod artist;
 pub mod favorites;
 pub mod folder;
