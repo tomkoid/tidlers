@@ -113,7 +113,7 @@ let session_data = std::fs::read_to_string("session.json")?;
 let mut client = TidalClient::from_json(&session_data)?;
 
 // Refresh token if needed
-client.refresh_access_token().await?;
+client.refresh_access_token(false).await?;
 ```
 
 ## API Examples
