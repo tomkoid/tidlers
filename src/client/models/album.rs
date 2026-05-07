@@ -159,3 +159,11 @@ pub struct AlbumItemsWithCreditsResponse {
     pub total_number_of_items: u32,
     pub items: Vec<AlbumItemsWithCreditsEntry>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlbumReviewResponse {
+    pub source: String,
+    pub last_updated: String,
+    pub text: String,
+}

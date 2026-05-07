@@ -114,6 +114,9 @@ pub enum AlbumCommands {
 
     /// Show album items credits
     ItemsCredits,
+
+    /// Show album review
+    Review,
 }
 
 #[derive(Parser, Debug, Clone)]

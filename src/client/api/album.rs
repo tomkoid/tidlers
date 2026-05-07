@@ -2,8 +2,8 @@ use crate::{
     client::{
         TidalClient,
         models::album::{
-            AlbumCreditsResponse, AlbumResponse, AlbumItemsResponse,
-            AlbumItemsWithCreditsResponse,
+            AlbumCreditsResponse, AlbumItemsResponse, AlbumItemsWithCreditsResponse, AlbumResponse,
+            AlbumReviewResponse,
         },
     },
     error::TidalError,
@@ -91,6 +91,18 @@ impl TidalClient {
         .with_country_code()
         .send()
         .await
+    }
+
+    /// Retrieves album review
+    pub async fn get_album_review(
+        &self,
+        album_id: impl Into<AlbumId>,
+    ) -> Result<AlbumReviewResponse, TidalError> {
+        let album_id = album_id.into();
+        self.request(reqwest::Method::GET, format!("/albums/{}/review", album_id))
+            .with_country_code()
+            .send()
+            .await
     }
 
     pub async fn get_album_items_credits(
