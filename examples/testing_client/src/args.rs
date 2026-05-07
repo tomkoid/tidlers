@@ -1,5 +1,7 @@
 use clap::Parser;
-use tidlers::client::models::playback::AudioQuality;
+use tidlers::client::models::{
+    collection::favorites::FavoriteResourceType, playback::AudioQuality,
+};
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -155,6 +157,16 @@ pub enum CollectionCommands {
     /// Show collection artists
     Artists,
 
+    /// Add a type to favorites
+    Favorite {
+        /// Type to add to favorites (tracks or albums)
+        #[clap(short, long, value_enum)]
+        resource_type: ArgFavoriteResourceType,
+
+        /// ID of the resource to add to favorites
+        id: String,
+    },
+
     /// Show favorite tracks
     Tracks {
         /// Limit number of favorites to show (default 100)
@@ -252,6 +264,15 @@ pub enum ArgAudioQuality {
     HiRes,
 }
 
+#[derive(clap::ValueEnum, Clone, Default, Debug)]
+pub enum ArgFavoriteResourceType {
+    #[clap(name = "tracks")]
+    #[default]
+    Tracks,
+    #[clap(name = "albums")]
+    Albums,
+}
+
 impl ArgAudioQuality {
     pub fn to_api_quality(&self) -> AudioQuality {
         match self {
@@ -259,6 +280,15 @@ impl ArgAudioQuality {
             ArgAudioQuality::High => AudioQuality::High,
             ArgAudioQuality::Lossless => AudioQuality::Lossless,
             ArgAudioQuality::HiRes => AudioQuality::HiRes,
+        }
+    }
+}
+
+impl ArgFavoriteResourceType {
+    pub fn to_favorite_resource_type(&self) -> FavoriteResourceType {
+        match self {
+            ArgFavoriteResourceType::Tracks => FavoriteResourceType::Tracks,
+            ArgFavoriteResourceType::Albums => FavoriteResourceType::Albums,
         }
     }
 }
