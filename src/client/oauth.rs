@@ -206,17 +206,37 @@ impl TidalClient {
                         serde_json::from_slice(&body);
 
                     match json_waiting {
-                        Ok(_) => {
+                        Ok(pending) if pending.error == "authorization_pending" => {
                             if let Some(tx) = &status_tx {
                                 let _ = tx.send(OAuthStatus::Waiting);
                             }
                             debug!(attempt, "OAuth authorization still pending");
                         }
+                        Ok(other) => {
+                            // Any other RFC 8628 §3.5 error (slow_down,
+                            // expired_token, access_denied, invalid_request,
+                            // ...) is fatal — keep-polling would just hammer
+                            // TIDAL with the same dead device_code forever.
+                            let msg = format!(
+                                "OAuth error {} (sub_status {}): {}",
+                                other.error, other.sub_status, other.error_description,
+                            );
+                            if let Some(tx) = &status_tx {
+                                let _ = tx.send(OAuthStatus::Error(msg.clone()));
+                            }
+                            warn!(attempt, error = %msg, "OAuth flow rejected by TIDAL");
+                            return Err(TidalError::InvalidResponse(msg));
+                        }
                         Err(e) => {
                             if let Some(tx) = &status_tx {
                                 let _ = tx.send(OAuthStatus::Error(e.to_string()));
                             }
-                            warn!(attempt, error = %e, "unexpected OAuth polling response payload");
+                            warn!(
+                                attempt,
+                                error = %e,
+                                body = %String::from_utf8_lossy(&body),
+                                "unexpected OAuth polling response payload"
+                            );
                         }
                     }
                 }
