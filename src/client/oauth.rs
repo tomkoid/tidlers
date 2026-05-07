@@ -157,9 +157,27 @@ impl TidalClient {
                 remaining_seconds = expiry,
                 "polling OAuth token endpoint"
             );
-            let res = self.rq.request(req.clone()).await?;
-            let body = res.bytes().await?;
-            // println!("oauth check response: {}", res.text().await?);
+            // OAuth Device Authorization Grant uses HTTP 400 with a body of
+            // `{"error":"authorization_pending", ...}` as the *normal* "keep
+            // polling" signal (RFC 8628 §3.5).  After the request layer was
+            // changed to turn every 4xx into a hard `StatusCode` error, this
+            // loop short-circuits before the body is ever inspected and
+            // surfaces a fatal error on the very first poll.
+            //
+            // Recover the body from the error's `body_snippet` (truncated to
+            // 1024 chars by the request layer, but the OAuth response payload
+            // is well under 200 chars) so the parsing logic below can
+            // distinguish `authorization_pending` from a real failure.
+            let body: Vec<u8> = match self.rq.request(req.clone()).await {
+                Ok(res) => res.bytes().await?.to_vec(),
+                Err(requests::RequestClientError::StatusCode {
+                    status,
+                    body_snippet,
+                    ..
+                }) if status == reqwest::StatusCode::BAD_REQUEST => body_snippet.into_bytes(),
+                Err(e) => return Err(TidalError::RequestClient(e)),
+            };
+            // println!("oauth check response: {}", String::from_utf8_lossy(&body));
             let json: Result<OAuthTokenResponse, _> = serde_json::from_slice(&body);
             match json {
                 Ok(json) => {
