@@ -15,6 +15,11 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
             println!("{:#?}", tidal.user_info);
         }
 
+        Commands::User { user_id } => {
+            let user_v1 = tidal.get_user_v1(user_id).await?;
+            println!("v1: {:#?}", user_v1);
+        }
+
         Commands::Playlists => {
             let playlists = tidal.list_playlists().await?;
             println!("{:#?}", playlists);

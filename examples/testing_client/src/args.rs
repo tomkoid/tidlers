@@ -19,8 +19,14 @@ pub struct Args {
 
 #[derive(Parser, Debug)]
 pub enum Commands {
-    /// Show user information
+    /// Show user's own information
     UserInfo,
+
+    /// Show user information
+    User {
+        /// User ID
+        user_id: String,
+    },
 
     /// List user's playlists
     Playlists,

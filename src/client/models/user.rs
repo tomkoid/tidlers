@@ -78,3 +78,10 @@ pub struct UserProfileAttributes {
     #[serde(rename = "emailVerified")]
     pub email_verified: bool,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserV1Response {
+    pub id: u32,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+}
