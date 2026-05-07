@@ -9,8 +9,8 @@ use crate::{
             mixes::TrackMixResponse,
             playback::AssetPresentation,
             track::{
-                DashManifest, ParsedTrackManifest, Track, JsonTrackManifest,
-                TrackPlaybackInfoResponse,
+                DashManifest, JsonTrackManifest, ParsedTrackManifest, Track,
+                TrackPlaybackInfoResponse, TrackRadioResponse,
             },
         },
     },
@@ -204,7 +204,8 @@ impl TidalClient {
             serde_json::from_str::<TrackPlaybackInfoResponse>(&body)?;
 
         // Try to parse as JSON first (for LOW, HIGH, LOSSLESS)
-        if let Ok(json_manifest) = serde_json::from_str::<JsonTrackManifest>(&manifest_decoded_str) {
+        if let Ok(json_manifest) = serde_json::from_str::<JsonTrackManifest>(&manifest_decoded_str)
+        {
             response.manifest = Some(json_manifest.clone());
             response.manifest_parsed = Some(ParsedTrackManifest::Json(json_manifest));
         } else {
@@ -231,6 +232,21 @@ impl TidalClient {
     ) -> Result<TrackMixResponse, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/mix", track_id))
+            .with_country_code()
+            .send()
+            .await
+    }
+
+    pub async fn get_track_radio(
+        &self,
+        track_id: impl Into<TrackId>,
+        limit: Option<u32>,
+        offset: Option<u32>,
+    ) -> Result<TrackRadioResponse, TidalError> {
+        let track_id = track_id.into();
+        self.request(reqwest::Method::GET, format!("/tracks/{}/radio", track_id))
+            .with_param("limit", limit.unwrap_or(100).to_string())
+            .with_param("offset", offset.unwrap_or(0).to_string())
             .with_country_code()
             .send()
             .await

@@ -57,8 +57,8 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
             println!("{:#?}", uploads);
         }
 
-        Commands::Track { track_id, quality } => {
-            track::execute(&mut tidal, track_id, quality).await?;
+        Commands::Track { track_id, command } => {
+            track::execute(&mut tidal, track_id, command).await?;
         }
 
         Commands::Album { command, album_id } => {

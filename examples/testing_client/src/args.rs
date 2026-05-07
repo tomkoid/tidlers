@@ -65,11 +65,11 @@ pub enum Commands {
 
     /// Show details of a specific track
     Track {
-        #[clap(short, long, default_value_t = ArgAudioQuality::High, value_enum)]
-        quality: ArgAudioQuality,
-
-        /// Track ID
+        #[clap(required = true)]
         track_id: String,
+
+        #[clap(subcommand)]
+        command: TrackCommands,
     },
 
     /// Show details of a specific album
@@ -273,6 +273,26 @@ pub enum MixCommands {
 
     /// Show arrival mixes
     ArrivalMixes,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum TrackCommands {
+    /// Show track info
+    Info {
+        #[clap(short, long, default_value_t = ArgAudioQuality::High, value_enum)]
+        quality: ArgAudioQuality,
+    },
+
+    /// Show track radio
+    Radio {
+        /// Limit number of items to show (default 100)
+        #[clap(short, long, default_value = "100")]
+        limit: u32,
+
+        /// Offset for items to show (default 0)
+        #[clap(short, long, default_value = "0")]
+        offset: u32,
+    },
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]

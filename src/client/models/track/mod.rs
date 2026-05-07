@@ -66,6 +66,15 @@ pub struct Track {
     pub item_uuid: Option<String>,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackRadioResponse {
+    pub limit: u32,
+    pub offset: u32,
+    pub total_number_of_items: u32,
+    pub items: Vec<Track>,
+}
+
 pub type TrackPlaybackInfoPostPaywallResponse = TrackPlaybackInfoResponse;
 
 /// Response containing track playback information including manifest data
