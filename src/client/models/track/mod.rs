@@ -147,6 +147,8 @@ pub struct JsonTrackManifest {
     pub urls: Vec<String>,
 }
 
+pub type ManifestType = ParsedTrackManifest;
+
 /// Represents different types of streaming manifests
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum ParsedTrackManifest {
