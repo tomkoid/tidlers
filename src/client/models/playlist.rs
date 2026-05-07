@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::client::models::track::Track;
 use crate::client::models::collection::CollectionCreator;
+use crate::client::models::track::Track;
 
 /// Response containing playlist items with pagination
 #[derive(Debug, Serialize, Deserialize)]

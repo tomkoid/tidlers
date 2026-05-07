@@ -1,6 +1,6 @@
+use crate::client::models::{artist::ArtistRole, media::MediaMetadata};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::client::models::{artist::ArtistRole, media::MediaMetadata};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

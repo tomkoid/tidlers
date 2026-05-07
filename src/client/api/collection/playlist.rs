@@ -4,7 +4,8 @@ use crate::{
         models::{
             collection::{SharingLevel, playlist::CollectionPlaylistEntry},
             playlist::{
-                PlaylistResponse, PlaylistItemsResponse, UserPlaylistsResponse, PublicUserPlaylistsResponse,
+                PlaylistItemsResponse, PlaylistResponse, PublicUserPlaylistsResponse,
+                UserPlaylistsResponse,
             },
         },
     },
