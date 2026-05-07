@@ -9,7 +9,7 @@ pub async fn execute(
     match command {
         TrackCommands::Info { quality } => {
             let track_info = tidal.get_track(track_id.clone()).await?;
-            let track_mix = tidal.get_track_mix(track_id.clone()).await?;
+            let track_mix = tidal.get_track_mix(track_id.clone(), None, None).await?;
 
             println!("Track Info:\n{:#?}\n", track_info);
             println!("Track Mix:\n{:#?}\n", track_mix);
