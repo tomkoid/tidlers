@@ -66,6 +66,8 @@ pub struct Track {
     pub item_uuid: Option<String>,
 }
 
+pub type TrackPlaybackInfoPostPaywallResponse = TrackPlaybackInfoResponse;
+
 /// Response containing track playback information including manifest data
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -218,7 +220,7 @@ impl DashManifest {
 #[cfg(test)]
 mod tests {
     use crate::client::models::track::{
-        DashManifest, ParsedTrackManifest, JsonTrackManifest, TrackPlaybackInfoResponse,
+        DashManifest, JsonTrackManifest, ParsedTrackManifest, TrackPlaybackInfoResponse,
     };
 
     #[test]
