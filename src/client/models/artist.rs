@@ -20,7 +20,7 @@ pub struct Artist {
     pub name: String,
     pub handle: Option<String>,
     #[serde(rename = "type")]
-    pub artist_type: String,
+    pub artist_type: Option<String>,
     pub picture: Option<String>,
 }
 
@@ -123,4 +123,13 @@ pub struct ArtistVideosResponse {
     pub offset: u32,
     pub total_number_of_items: u32,
     pub items: Vec<ArtistVideo>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SimilarArtistsResponse {
+    pub limit: u32,
+    pub offset: u32,
+    pub total_number_of_items: u32,
+    pub items: Vec<Artist>,
 }
