@@ -8,6 +8,7 @@ use crate::client::models::collection::artist::CollectionArtistEntry;
 pub enum FavoriteResourceType {
     Tracks,
     Albums,
+    Artists,
 }
 
 impl Display for FavoriteResourceType {
@@ -15,6 +16,7 @@ impl Display for FavoriteResourceType {
         let s = match self {
             FavoriteResourceType::Tracks => "tracks",
             FavoriteResourceType::Albums => "albums",
+            FavoriteResourceType::Artists => "artists",
         };
         write!(f, "{}", s)
     }

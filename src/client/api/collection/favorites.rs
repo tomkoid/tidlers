@@ -4,6 +4,14 @@ use crate::{
 };
 
 impl TidalClient {
+    fn get_resouce_id_param(&self, resource: &FavoriteResourceType) -> &'static str {
+        match resource {
+            FavoriteResourceType::Tracks => "trackIds",
+            FavoriteResourceType::Albums => "albumIds",
+            FavoriteResourceType::Artists => "artistIds",
+        }
+    }
+
     /// Adds a resource into user's favorite items
     pub async fn add_to_favorites(
         &self,
@@ -16,10 +24,7 @@ impl TidalClient {
             .user_id
             .ok_or_else(|| TidalError::NotAuthenticated)?;
 
-        let resource_id_param = match resource {
-            FavoriteResourceType::Tracks => "trackIds",
-            FavoriteResourceType::Albums => "albumIds",
-        };
+        let resource_id_param = self.get_resouce_id_param(&resource);
 
         let url = format!("/users/{user_id}/favorites/{resource}");
         self.request(reqwest::Method::POST, url)
@@ -44,10 +49,7 @@ impl TidalClient {
             .user_id
             .ok_or_else(|| TidalError::NotAuthenticated)?;
 
-        let resource_id_param = match resource {
-            FavoriteResourceType::Tracks => "trackIds",
-            FavoriteResourceType::Albums => "albumIds",
-        };
+        let resource_id_param = self.get_resouce_id_param(&resource);
 
         let url = format!("/users/{user_id}/favorites/{resource}/{resource_id}");
         self.request(reqwest::Method::DELETE, url)
