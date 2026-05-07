@@ -32,7 +32,7 @@ pub struct ArtistResponse {
     pub artist_types: Vec<String>,
     pub handle: Option<String>,
     pub id: u64,
-    pub mixes: HashMap<String, String>,
+    pub mixes: Option<HashMap<String, String>>,
     pub name: String,
     pub picture: Option<String>,
     pub popularity: u32,
