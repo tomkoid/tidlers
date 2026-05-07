@@ -61,6 +61,12 @@ impl TidalClient {
             let res = self.rq.request(req).await?;
             let body = res.text().await?;
             let json: RefreshTokenGrantResponse = serde_json::from_str(&body)?;
+            debug!(
+                expires_in = json.expires_in,
+                token_type = %json.token_type,
+                user_id = %json.user_id,
+                "received refresh token response"
+            );
 
             // update the access token and refresh token
             self.session.auth.access_token = Some(json.access_token.clone());
@@ -70,6 +76,7 @@ impl TidalClient {
                     .duration_since(std::time::UNIX_EPOCH)?
                     .as_secs(),
             );
+            self.session.auth.user_id = Some(json.user_id.try_into()?);
             info!("access token refreshed successfully");
 
             return Ok(true);

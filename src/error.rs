@@ -1,4 +1,4 @@
-use std::time::SystemTimeError;
+use std::{num::TryFromIntError, time::SystemTimeError};
 
 use serde::Serialize;
 use thiserror::Error;
@@ -51,6 +51,10 @@ pub enum TidalError {
     #[error("system time error: {0}")]
     #[serde(serialize_with = "serialize_generic")]
     SystemTimeError(#[from] SystemTimeError),
+
+    #[error("try from int error: {0}")]
+    #[serde(serialize_with = "serialize_generic")]
+    TryFromIntError(#[from] TryFromIntError),
 
     #[error("{0}")]
     Other(String),
