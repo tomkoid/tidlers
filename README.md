@@ -20,9 +20,10 @@ A Rust library for interacting with the TIDAL music streaming API.
 
 ## Projects using Tidlers
 
-Tidlers is still very WIP, but here is my project that uses it:
+Tidlers is still very WIP, but here are projects that use it:
 
 - [yadal](https://codeberg.org/tomkoid/yadal) - Command-line downloader with parallel downloads and all quality support
+- [Maré Player](https://github.com/glima/mare-player) - COSMIC TIDAL applet/standalone app
 
 ## Installation
 

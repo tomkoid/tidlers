@@ -42,7 +42,7 @@ pub struct User {
     #[serde(rename = "updated")]
     pub updated: i64,
     #[serde(rename = "facebookUid")]
-    pub facebook_uid: u64,
+    pub facebook_uid: Option<u64>,
     #[serde(rename = "appleUid")]
     pub apple_uid: Option<String>,
     #[serde(rename = "googleUid")]
