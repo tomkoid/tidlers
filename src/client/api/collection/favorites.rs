@@ -21,7 +21,7 @@ impl TidalClient {
             FavoriteResourceType::Albums => "albumIds",
         };
 
-        let url = format!("/users/{}/favorites/{}", user_id, resource.to_string());
+        let url = format!("/users/{}/favorites/{}", user_id, resource);
         self.request(reqwest::Method::POST, url)
             .with_country_code()
             .with_param(resource_id_param, resource_id.to_string())

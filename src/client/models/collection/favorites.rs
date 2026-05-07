@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 use crate::client::models::collection::artist::CollectionArtistEntry;
@@ -8,12 +10,13 @@ pub enum FavoriteResourceType {
     Albums,
 }
 
-impl ToString for FavoriteResourceType {
-    fn to_string(&self) -> String {
-        match self {
-            FavoriteResourceType::Tracks => "tracks".to_string(),
-            FavoriteResourceType::Albums => "albums".to_string(),
-        }
+impl Display for FavoriteResourceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            FavoriteResourceType::Tracks => "tracks",
+            FavoriteResourceType::Albums => "albums",
+        };
+        write!(f, "{}", s)
     }
 }
 
