@@ -47,7 +47,7 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
         }
 
         Commands::Mix { command } => {
-            mix::execute(&mut tidal, command).await?;
+            mix::execute(&tidal, command).await?;
         }
 
         Commands::Uploads => {

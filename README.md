@@ -148,7 +148,7 @@ let items = client.get_playlist_items("playlist_uuid".to_string(), Some(50), Som
 ### Get Track Mixes (Recommendations)
 
 ```rust
-let mix = client.get_track_mix("track_id".to_string()).await?;
+let mix = client.get_track_mix("track_id".to_string(), None, None).await?;
 ```
 
 ### Check Subscription
