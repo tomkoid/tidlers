@@ -8,12 +8,16 @@ use crate::{
     client::{
         TidalClient,
         models::{
-            responses::{OAuthTokenResponse, OAuthPendingAuthorizationResponse, OAuthDeviceAuthorizationResponse},
+            responses::{
+                OAuthDeviceAuthorizationResponse, OAuthPendingAuthorizationResponse,
+                OAuthTokenResponse,
+            },
             user::User,
         },
     },
     error::TidalError,
     requests::{self, TidalRequest},
+    urls::OAUTH2_V1_LOCATION,
 };
 
 /// Status updates during the OAuth flow
@@ -67,7 +71,7 @@ impl TidalClient {
         let mut req = TidalRequest::new(Method::POST, "/device_authorization".to_string());
         req.form = Some(vec![form]);
         req.send_params_as_form = true;
-        req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
+        req.base_url = Some(OAUTH2_V1_LOCATION.to_string());
 
         let res = self.rq.request(req).await?;
         let body = res.text().await?;
@@ -146,7 +150,7 @@ impl TidalClient {
         let mut req = TidalRequest::new(Method::POST, "/token".to_string());
         req.form = Some(vec![form]);
         req.send_params_as_form = true;
-        req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
+        req.base_url = Some(OAUTH2_V1_LOCATION.to_string());
 
         let mut expiry = expires_in;
         let mut attempt = 0_u64;

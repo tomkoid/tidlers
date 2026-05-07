@@ -7,6 +7,7 @@ use crate::{
     client::{TidalClient, models::responses::RefreshTokenGrantResponse},
     error::TidalError,
     requests::{self, TidalRequest},
+    urls::OAUTH2_V1_LOCATION,
 };
 
 impl TidalClient {
@@ -55,7 +56,7 @@ impl TidalClient {
                 self.session.auth.client_id.clone(),
                 self.session.auth.client_secret.clone(),
             ));
-            req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
+            req.base_url = Some(OAUTH2_V1_LOCATION.to_string());
 
             let res = self.rq.request(req).await?;
             let body = res.text().await?;

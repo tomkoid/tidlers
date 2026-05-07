@@ -11,6 +11,7 @@ use crate::{
     auth::TidalAuth,
     client::models::responses::ClientCredentialsTokenResponse,
     requests::{self, TidalRequest},
+    urls::OAUTH2_V1_LOCATION,
 };
 
 impl TidalAuth {
@@ -46,7 +47,7 @@ impl TidalAuth {
             self.client_id.clone(),
             self.client_secret.clone(),
         ));
-        req.base_url = Some("https://auth.tidal.com/v1/oauth2".to_string());
+        req.base_url = Some(OAUTH2_V1_LOCATION.to_string());
 
         let res = self.rq.request(req).await?;
         let json: ClientCredentialsTokenResponse = res.json().await?;
