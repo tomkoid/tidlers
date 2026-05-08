@@ -256,6 +256,14 @@ pub enum PlaylistCommands {
     List,
     /// List public playlists
     ListPublic,
+
+    /// Add items to a playlist
+    AddItems {
+        /// Playlist UUID
+        playlist_id: String,
+        /// IDs of items to add (comma-separated)
+        item_ids: String,
+    },
 }
 
 #[derive(Parser, Debug, Clone)]

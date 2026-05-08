@@ -36,6 +36,31 @@ pub async fn execute(tidal: &mut TidalClient, command: PlaylistCommands) -> eyre
             println!("{:#?}", items);
         }
 
+        PlaylistCommands::AddItems {
+            playlist_id,
+            item_ids,
+        } => {
+            let item_ids: Vec<String> = item_ids
+                .split(',')
+                .map(|id| id.trim().parse())
+                .collect::<Result<_, _>>()?;
+
+            let playlist_items = tidal
+                .get_playlist_items_with_etag(playlist_id.clone(), Some(1), None)
+                .await?;
+            let total_nr_items = playlist_items.items.total_number_of_items;
+
+            tidal
+                .add_items_to_playlist_with_etag(
+                    playlist_id,
+                    item_ids,
+                    Some(total_nr_items),
+                    &playlist_items.etag,
+                )
+                .await?;
+            println!("Added items to playlist");
+        }
+
         PlaylistCommands::List => {
             let playlists = tidal.list_playlists().await?;
             println!("{:#?}", playlists);

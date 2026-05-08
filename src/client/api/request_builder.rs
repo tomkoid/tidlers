@@ -171,6 +171,86 @@ impl<'a> ApiRequestBuilder<'a> {
         })
     }
 
+    /// Executes the request, deserializes the response, and returns ETag response header
+    pub(crate) async fn send_with_etag<T: DeserializeOwned>(
+        mut self,
+    ) -> Result<(T, Option<String>), TidalError> {
+        if self.add_country_code {
+            if let Some(user_info) = &self.client.user_info {
+                self.params
+                    .insert("countryCode".to_string(), user_info.country_code.clone());
+            } else {
+                return Err(TidalError::NotAuthenticated);
+            }
+        }
+
+        if self.add_locale {
+            self.params
+                .insert("locale".to_string(), self.client.session.locale.clone());
+        }
+
+        let mut req = TidalRequest::new(self.method, self.url.clone());
+        req.params = Some(self.params);
+        req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
+        req.access_token = self.client.session.auth.access_token.clone();
+        req.base_url = self.base_url;
+        req.headers = self.headers;
+
+        debug!(
+            method = %req.method,
+            path = %self.url,
+            params_count = req.params.as_ref().map_or(0, |p| p.len()),
+            has_custom_base_url = req.base_url.is_some(),
+            has_headers = req.headers.is_some(),
+            "sending API request"
+        );
+        let resp = self.client.rq.request(req).await?;
+
+        if resp.status() == reqwest::StatusCode::NOT_FOUND {
+            return Err(TidalError::NotFound);
+        }
+
+        let status = resp.status();
+        let response_url = resp.url().to_string();
+        let etag = resp
+            .headers()
+            .get(reqwest::header::ETAG)
+            .and_then(|value| value.to_str().ok())
+            .map(str::to_owned);
+        let body = resp.text().await?;
+        debug!(
+            path = %self.url,
+            response_url = %response_url,
+            status = status.as_u16(),
+            body_bytes = body.len(),
+            "received API response"
+        );
+
+        if self.request_debug {
+            debug_json_str(&body);
+        }
+
+        let parsed = serde_json::from_str(&body).map_err(|error| {
+            let response_body = if body.trim().is_empty() {
+                "<empty response body>"
+            } else {
+                body.as_str()
+            };
+            warn!(
+                path = %self.url,
+                response_url = %response_url,
+                status = status.as_u16(),
+                "failed to deserialize API response body"
+            );
+
+            TidalError::InvalidResponse(format!(
+                "failed to parse JSON response from {response_url} (status {status}): {error}\nresponse body: {response_body}"
+            ))
+        })?;
+
+        Ok((parsed, etag))
+    }
+
     /// Executes the request and returns the raw response as a String
     pub(crate) async fn send_raw(mut self) -> Result<String, TidalError> {
         if self.add_country_code {

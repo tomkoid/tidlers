@@ -7,10 +7,16 @@ use crate::client::models::track::Track;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaylistItemsResponse {
-    pub limit: i32,
-    pub offset: i32,
-    pub total_number_of_items: i32,
+    pub limit: u64,
+    pub offset: u64,
+    pub total_number_of_items: u64,
     pub items: Vec<PlaylistItem>,
+}
+
+#[derive(Debug)]
+pub struct PlaylistItemsWithEtag {
+    pub items: PlaylistItemsResponse,
+    pub etag: String,
 }
 
 /// Represents a single item in a playlist

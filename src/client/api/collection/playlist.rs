@@ -4,8 +4,8 @@ use crate::{
         models::{
             collection::{SharingLevel, playlist::CollectionPlaylistEntry},
             playlist::{
-                PlaylistItemsResponse, PlaylistResponse, PublicUserPlaylistsResponse,
-                UserPlaylistsResponse,
+                PlaylistItemsResponse, PlaylistItemsWithEtag, PlaylistResponse,
+                PublicUserPlaylistsResponse, UserPlaylistsResponse,
             },
         },
     },
@@ -13,6 +13,7 @@ use crate::{
     ids::PlaylistId,
     urls::API_V2_LOCATION,
 };
+use reqwest::header::{HeaderMap, HeaderValue, IF_NONE_MATCH};
 
 impl TidalClient {
     /// Creates a new playlist in the user's collection
@@ -119,6 +120,18 @@ impl TidalClient {
         limit: Option<u64>,
         offset: Option<u64>,
     ) -> Result<PlaylistItemsResponse, TidalError> {
+        let response = self
+            .get_playlist_items_with_etag(playlist_id, limit, offset)
+            .await?;
+        Ok(response.items)
+    }
+
+    pub async fn get_playlist_items_with_etag(
+        &self,
+        playlist_id: impl Into<PlaylistId>,
+        limit: Option<u64>,
+        offset: Option<u64>,
+    ) -> Result<PlaylistItemsWithEtag, TidalError> {
         let playlist_id = playlist_id.into();
         let limit = limit.unwrap_or(20);
         let offset = offset.unwrap_or(0);
@@ -129,15 +142,70 @@ impl TidalClient {
             ));
         }
 
+        let (items, etag) = self
+            .request(
+                reqwest::Method::GET,
+                format!("/playlists/{}/items", playlist_id),
+            )
+            .with_country_code()
+            .with_param("limit", limit.to_string())
+            .with_param("offset", offset.to_string())
+            .send_with_etag()
+            .await?;
+
+        let etag = etag.ok_or_else(|| {
+            TidalError::InvalidResponse(
+                "missing ETag header in get_playlist_items response".to_string(),
+            )
+        })?;
+
+        Ok(PlaylistItemsWithEtag { items, etag })
+    }
+
+    pub async fn add_items_to_playlist(
+        &self,
+        playlist_id: impl Into<PlaylistId>,
+        item_ids: Vec<String>,
+        to_index: Option<u64>,
+    ) -> Result<(), TidalError> {
+        let playlist_id = playlist_id.into();
+        let playlist_items = self
+            .get_playlist_items_with_etag(playlist_id.clone(), Some(1), Some(0))
+            .await?;
+        self.add_items_to_playlist_with_etag(playlist_id, item_ids, to_index, &playlist_items.etag)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn add_items_to_playlist_with_etag(
+        &self,
+        playlist_id: impl Into<PlaylistId>,
+        item_ids: Vec<String>,
+        to_index: Option<u64>,
+        etag: &str,
+    ) -> Result<(), TidalError> {
+        let playlist_id = playlist_id.into();
+        let mut headers = HeaderMap::new();
+        let etag_value = HeaderValue::from_str(etag).map_err(|error| {
+            TidalError::InvalidArgument(format!("invalid etag header value: {error}"))
+        })?;
+        headers.insert(IF_NONE_MATCH, etag_value);
+
         self.request(
-            reqwest::Method::GET,
+            reqwest::Method::POST,
             format!("/playlists/{}/items", playlist_id),
         )
         .with_country_code()
-        .with_param("limit", limit.to_string())
-        .with_param("offset", offset.to_string())
-        .send()
-        .await
+        .with_locale()
+        .with_form_param("itemIds", item_ids.join(","))
+        .with_form_param("toIndex", to_index.unwrap_or(0).to_string())
+        .with_form_param("onArtifactNotFound", "SKIP".to_string())
+        .with_headers(headers)
+        .send_raw()
+        .await?;
+
+        Ok(())
     }
 
     pub async fn get_playlist_recommendations_items(
