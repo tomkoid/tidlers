@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 use crate::client::models::collection::CollectionCreator;
@@ -22,13 +24,25 @@ pub struct PlaylistItemsWithEtag {
 #[derive(Debug, Clone)]
 pub enum PlaylistItemsOrder {
     Index,
+    Date,
+    Name,
+    Album,
+    Artist,
 }
 
-impl ToString for PlaylistItemsOrder {
-    fn to_string(&self) -> String {
-        match self {
-            PlaylistItemsOrder::Index => "INDEX".to_string(),
-        }
+impl Display for PlaylistItemsOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                PlaylistItemsOrder::Index => "INDEX".to_string(),
+                PlaylistItemsOrder::Date => "DATE".to_string(),
+                PlaylistItemsOrder::Name => "NAME".to_string(),
+                PlaylistItemsOrder::Album => "ALBUM".to_string(),
+                PlaylistItemsOrder::Artist => "ARTIST".to_string(),
+            }
+        )
     }
 }
 
