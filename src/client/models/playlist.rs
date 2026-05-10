@@ -19,6 +19,19 @@ pub struct PlaylistItemsWithEtag {
     pub etag: String,
 }
 
+#[derive(Debug, Clone)]
+pub enum PlaylistItemsOrder {
+    Index,
+}
+
+impl ToString for PlaylistItemsOrder {
+    fn to_string(&self) -> String {
+        match self {
+            PlaylistItemsOrder::Index => "INDEX".to_string(),
+        }
+    }
+}
+
 /// Represents a single item in a playlist
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

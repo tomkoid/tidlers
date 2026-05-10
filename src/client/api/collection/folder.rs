@@ -3,8 +3,9 @@ use tracing::debug;
 use crate::{
     client::{
         TidalClient,
-        models::collection::folder::{
-            FolderCollectionEntry, FolderListResponse, FolderOrder, FolderOrderDirection,
+        models::{
+            OrderDirection,
+            collection::folder::{FolderCollectionEntry, FolderListResponse, FolderOrder},
         },
     },
     error::TidalError,
@@ -51,7 +52,7 @@ impl TidalClient {
         limit: Option<u32>,
         offset: Option<u32>,
         order: Option<FolderOrder>,
-        order_direction: Option<FolderOrderDirection>,
+        order_direction: Option<OrderDirection>,
     ) -> Result<FolderListResponse, TidalError> {
         let order = match order {
             Some(FolderOrder::Date) => "DATE",
@@ -59,9 +60,8 @@ impl TidalClient {
         };
 
         let order_direction = match order_direction {
-            Some(FolderOrderDirection::Ascending) => "ASC",
-            Some(FolderOrderDirection::Descending) => "DESC",
-            None => "DESC",
+            Some(a) => a.to_string(),
+            None => "DESC".to_string(),
         };
 
         self.request(

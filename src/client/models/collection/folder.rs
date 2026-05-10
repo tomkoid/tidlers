@@ -4,10 +4,8 @@ pub enum FolderOrder {
     Date,
 }
 
-pub enum FolderOrderDirection {
-    Ascending,
-    Descending,
-}
+/// Order direction for sorting folders (backwards compatibility, reusing OrderDirection)
+pub type FolderOrderDirection = crate::client::models::OrderDirection;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -2,9 +2,10 @@ use crate::{
     client::{
         TidalClient,
         models::{
+            OrderDirection,
             collection::{SharingLevel, playlist::CollectionPlaylistEntry},
             playlist::{
-                PlaylistItemsResponse, PlaylistItemsWithEtag, PlaylistResponse,
+                PlaylistItemsOrder, PlaylistItemsResponse, PlaylistItemsWithEtag, PlaylistResponse,
                 PublicUserPlaylistsResponse, UserPlaylistsResponse,
             },
         },
@@ -119,9 +120,11 @@ impl TidalClient {
         playlist_id: impl Into<PlaylistId>,
         limit: Option<u64>,
         offset: Option<u64>,
+        order: Option<PlaylistItemsOrder>,
+        order_direction: Option<OrderDirection>,
     ) -> Result<PlaylistItemsResponse, TidalError> {
         let response = self
-            .get_playlist_items_with_etag(playlist_id, limit, offset)
+            .get_playlist_items_with_etag(playlist_id, limit, offset, order, order_direction)
             .await?;
         Ok(response.items)
     }
@@ -131,6 +134,8 @@ impl TidalClient {
         playlist_id: impl Into<PlaylistId>,
         limit: Option<u64>,
         offset: Option<u64>,
+        order: Option<PlaylistItemsOrder>,
+        order_direction: Option<OrderDirection>,
     ) -> Result<PlaylistItemsWithEtag, TidalError> {
         let playlist_id = playlist_id.into();
         let limit = limit.unwrap_or(20);
@@ -150,6 +155,16 @@ impl TidalClient {
             .with_country_code()
             .with_param("limit", limit.to_string())
             .with_param("offset", offset.to_string())
+            .with_param(
+                "order",
+                order.unwrap_or(PlaylistItemsOrder::Index).to_string(),
+            )
+            .with_param(
+                "orderDirection",
+                order_direction
+                    .unwrap_or(OrderDirection::Ascending)
+                    .to_string(),
+            )
             .send_with_etag()
             .await?;
 
@@ -170,7 +185,7 @@ impl TidalClient {
     ) -> Result<(), TidalError> {
         let playlist_id = playlist_id.into();
         let playlist_items = self
-            .get_playlist_items_with_etag(playlist_id.clone(), Some(1), Some(0))
+            .get_playlist_items_with_etag(playlist_id.clone(), Some(1), Some(0), None, None)
             .await?;
         self.add_items_to_playlist_with_etag(playlist_id, item_ids, to_index, &playlist_items.etag)
             .await?;

@@ -142,7 +142,7 @@ let items = client.get_album_items("album_id".to_string(), Some(50), Some(0)).aw
 let playlist = client.get_playlist("playlist_uuid".to_string()).await?;
 
 // Takes in the playlist uuid with optional limit and offset for pagination
-let items = client.get_playlist_items("playlist_uuid".to_string(), Some(50), Some(0)).await?;
+let items = client.get_playlist_items("playlist_uuid".to_string(), Some(50), Some(0), PlaylistItemsOrder::Index, OrderDirection::Ascending).await?;
 ```
 
 ### Get Track Mixes (Recommendations)

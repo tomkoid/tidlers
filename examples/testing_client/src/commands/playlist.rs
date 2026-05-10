@@ -31,7 +31,7 @@ pub async fn execute(tidal: &mut TidalClient, command: PlaylistCommands) -> eyre
 
         PlaylistCommands::Items { playlist_id } => {
             let items = tidal
-                .get_playlist_items(playlist_id, Some(10), Some(0))
+                .get_playlist_items(playlist_id, Some(10), Some(0), None, None)
                 .await?;
             println!("{:#?}", items);
         }
@@ -46,7 +46,7 @@ pub async fn execute(tidal: &mut TidalClient, command: PlaylistCommands) -> eyre
                 .collect::<Result<_, _>>()?;
 
             let playlist_items = tidal
-                .get_playlist_items_with_etag(playlist_id.clone(), Some(1), None)
+                .get_playlist_items_with_etag(playlist_id.clone(), Some(1), None, None, None)
                 .await?;
             let total_nr_items = playlist_items.items.total_number_of_items;
 
