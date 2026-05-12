@@ -181,14 +181,39 @@ impl TidalClient {
         &self,
         playlist_id: impl Into<PlaylistId>,
         item_ids: Vec<String>,
-        to_index: Option<u64>,
+        index: Option<u64>,
     ) -> Result<(), TidalError> {
         let playlist_id = playlist_id.into();
         let playlist_items = self
             .get_playlist_items_with_etag(playlist_id.clone(), Some(1), Some(0), None, None)
             .await?;
-        self.add_items_to_playlist_with_etag(playlist_id, item_ids, to_index, &playlist_items.etag)
+        self.add_items_to_playlist_with_etag(playlist_id, item_ids, index, &playlist_items.etag)
             .await?;
+
+        Ok(())
+    }
+
+    /// Removes items queried by index from playlist
+    /// NOTE: Index numbers are counted from 0!
+    pub async fn remove_items_from_playlist(
+        &self,
+        playlist_id: impl Into<PlaylistId>,
+        indices: Vec<u64>,
+        order: Option<PlaylistItemsOrder>,
+        order_direction: Option<OrderDirection>,
+    ) -> Result<(), TidalError> {
+        let playlist_id = playlist_id.into();
+        let playlist_items = self
+            .get_playlist_items_with_etag(playlist_id.clone(), Some(1), Some(0), None, None)
+            .await?;
+        self.remove_items_from_playlist_with_etag(
+            playlist_id,
+            indices,
+            order,
+            order_direction,
+            &playlist_items.etag,
+        )
+        .await?;
 
         Ok(())
     }
@@ -197,7 +222,7 @@ impl TidalClient {
         &self,
         playlist_id: impl Into<PlaylistId>,
         item_ids: Vec<String>,
-        to_index: Option<u64>,
+        index: Option<u64>,
         etag: &str,
     ) -> Result<(), TidalError> {
         let playlist_id = playlist_id.into();
@@ -214,8 +239,56 @@ impl TidalClient {
         .with_country_code()
         .with_locale()
         .with_form_param("itemIds", item_ids.join(","))
-        .with_form_param("toIndex", to_index.unwrap_or(0).to_string())
+        .with_form_param("toIndex", index.unwrap_or(0).to_string())
         .with_form_param("onArtifactNotFound", "SKIP".to_string())
+        .with_headers(headers)
+        .send_raw()
+        .await?;
+
+        Ok(())
+    }
+
+    /// Removes item queried by index from playlist with an ETag
+    /// NOTE: Index numbers are counted from 0!
+    pub async fn remove_items_from_playlist_with_etag(
+        &self,
+        playlist_id: impl Into<PlaylistId>,
+        indices: Vec<u64>,
+        order: Option<PlaylistItemsOrder>,
+        order_direction: Option<OrderDirection>,
+        etag: &str,
+    ) -> Result<(), TidalError> {
+        let playlist_id = playlist_id.into();
+        let mut headers = HeaderMap::new();
+        let etag_value = HeaderValue::from_str(etag).map_err(|error| {
+            TidalError::InvalidArgument(format!("invalid etag header value: {error}"))
+        })?;
+        headers.insert(IF_NONE_MATCH, etag_value);
+
+        self.request(
+            reqwest::Method::DELETE,
+            format!(
+                "/playlists/{}/items/{}",
+                playlist_id,
+                indices
+                    .iter()
+                    .map(|n| n.to_string())
+                    .collect::<Vec<String>>()
+                    .join(",")
+            ),
+        )
+        .with_country_code()
+        .with_locale()
+        .with_param(
+            "order",
+            order.unwrap_or(PlaylistItemsOrder::Index).to_string(),
+        )
+        .with_param(
+            "orderDirection",
+            order_direction
+                .unwrap_or(OrderDirection::Ascending)
+                .to_string(),
+        )
         .with_headers(headers)
         .send_raw()
         .await?;

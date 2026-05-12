@@ -264,6 +264,14 @@ pub enum PlaylistCommands {
         /// IDs of items to add (comma-separated)
         item_ids: String,
     },
+
+    /// Remove item from a playlist
+    RemoveItems {
+        /// Playlist UUID
+        playlist_id: String,
+        /// Indices of item to remove (defined by custom order)
+        indices: Vec<u64>,
+    },
 }
 
 #[derive(Parser, Debug, Clone)]

@@ -1,5 +1,8 @@
 use crate::args::{ArgSharingLevel, PlaylistCommands};
-use tidlers::TidalClient;
+use tidlers::{
+    TidalClient,
+    client::models::{OrderDirection, playlist::PlaylistItemsOrder},
+};
 
 pub async fn execute(tidal: &mut TidalClient, command: PlaylistCommands) -> eyre::Result<()> {
     match command {
@@ -59,6 +62,33 @@ pub async fn execute(tidal: &mut TidalClient, command: PlaylistCommands) -> eyre
                 )
                 .await?;
             println!("Added items to playlist");
+        }
+
+        PlaylistCommands::RemoveItems {
+            playlist_id,
+            indices,
+        } => {
+            let playlist_items = tidal
+                .get_playlist_items_with_etag(playlist_id.clone(), Some(1), None, None, None)
+                .await?;
+
+            tidal
+                .remove_items_from_playlist_with_etag(
+                    playlist_id,
+                    indices.clone(),
+                    Some(PlaylistItemsOrder::Index),
+                    Some(OrderDirection::Ascending),
+                    &playlist_items.etag,
+                )
+                .await?;
+            println!(
+                "Removed items with indices {} from playlist",
+                indices
+                    .iter()
+                    .map(|n| n.to_string())
+                    .collect::<Vec<String>>()
+                    .join(",")
+            );
         }
 
         PlaylistCommands::List => {
