@@ -3,6 +3,7 @@ pub mod auth;
 pub mod data;
 pub mod models;
 pub mod oauth;
+pub mod pkce;
 
 use crate::{
     auth::TidalAuth,

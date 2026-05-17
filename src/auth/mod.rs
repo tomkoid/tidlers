@@ -1,9 +1,15 @@
 use serde::{Deserialize, Serialize};
+use std::time::SystemTimeError;
 
-use crate::{auth::credentials::get_default_client_credentials, requests, urls::API_V1_LOCATION};
+use crate::{
+    auth::{credentials::get_default_client_credentials, pkce::PkceConfig},
+    requests,
+    urls::API_V1_LOCATION,
+};
 
 pub mod credentials;
 pub mod init;
+pub mod pkce;
 pub mod token;
 
 /// Authentication credentials and configuration for the Tidal API client.
@@ -31,6 +37,7 @@ pub mod token;
 /// );
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct TidalAuth {
     pub client_id: String,
     pub client_secret: String,
@@ -39,9 +46,14 @@ pub struct TidalAuth {
     pub refresh_token: Option<String>,
     pub refresh_expiry: Option<u64>,
     pub last_refresh_time: Option<u64>,
+    pub client_name: Option<String>,
     pub user_id: Option<u64>,
 
     pub oauth_login: bool,
+    pub api_token_auth: bool,
+    pub pkce_login: bool,
+
+    pub pkce_config: PkceConfig,
 
     #[serde(
         skip_serializing,
@@ -49,8 +61,6 @@ pub struct TidalAuth {
         default = "auth_default_request_client"
     )]
     pub rq: requests::RequestClient,
-
-    pub api_token_auth: bool,
 }
 impl TidalAuth {
     /// Creates a new TidalAuth with default client credentials
@@ -95,6 +105,34 @@ impl TidalAuth {
         Self {
             api_token_auth: false,
             oauth_login: true,
+            ..Default::default()
+        }
+    }
+
+    /// Creates a `TidalAuth` configured for PKCE-based OAuth2 authentication.
+    ///
+    /// Use this when you want to perform login through the browser-based PKCE flow.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use tidlers::{TidalClient, auth::TidalAuth};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let auth = TidalAuth::with_pkce();
+    /// let mut client = TidalClient::new(&auth);
+    ///
+    /// let login_url = client.initiate_pkce_login()?;
+    /// println!("Visit: {}", login_url);
+    ///
+    /// // After redirect, pass the redirect URL you received:
+    /// // client.finish_pkce_login("your_redirect_url").await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn with_pkce() -> Self {
+        Self {
+            pkce_login: true,
             ..Default::default()
         }
     }
@@ -144,15 +182,52 @@ impl TidalAuth {
             ..Default::default()
         }
     }
+
+    pub(crate) fn apply_access_token_state(
+        &mut self,
+        access_token: String,
+        expires_in: u64,
+        user_id: u64,
+        client_name: Option<String>,
+    ) -> Result<(), SystemTimeError> {
+        self.access_token = Some(access_token);
+        self.refresh_expiry = Some(expires_in);
+        self.last_refresh_time = Some(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)?
+                .as_secs(),
+        );
+        self.user_id = Some(user_id);
+        if let Some(client_name) = client_name {
+            self.client_name = Some(client_name);
+        }
+
+        Ok(())
+    }
+
+    pub(crate) fn apply_oauth_token_state(
+        &mut self,
+        access_token: String,
+        refresh_token: String,
+        expires_in: u64,
+        user_id: u64,
+        client_name: Option<String>,
+    ) -> Result<(), SystemTimeError> {
+        self.refresh_token = Some(refresh_token);
+        self.apply_access_token_state(access_token, expires_in, user_id, client_name)
+    }
 }
 
 impl Default for TidalAuth {
     fn default() -> Self {
         let c_creds = get_default_client_credentials();
         let rq = auth_default_request_client();
+        let pkce_config = PkceConfig::try_default().unwrap();
+
         Self {
             client_id: c_creds.0,
             client_secret: c_creds.1,
+            client_name: None,
             access_token: None,
             refresh_token: None,
             refresh_expiry: None,
@@ -160,6 +235,8 @@ impl Default for TidalAuth {
             user_id: None,
             api_token_auth: false,
             oauth_login: false,
+            pkce_login: false,
+            pkce_config,
             rq,
         }
     }

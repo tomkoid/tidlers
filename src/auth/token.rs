@@ -67,10 +67,12 @@ impl TidalAuth {
             return Ok(false);
         }
 
-        let req = TidalRequest::new(
-            Method::GET,
-            format!("/users/{}/subscription", self.user_id.unwrap()),
-        );
+        let Some(user_id) = self.user_id else {
+            warn!("check_login: access token present but no user_id available");
+            return Ok(false);
+        };
+
+        let req = TidalRequest::new(Method::GET, format!("/users/{user_id}/subscription"));
 
         let res = self.rq.request(req).await?;
         if res.status().is_success() {

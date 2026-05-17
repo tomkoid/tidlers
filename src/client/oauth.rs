@@ -188,15 +188,13 @@ impl TidalClient {
                     if let Some(tx) = &status_tx {
                         let _ = tx.send(OAuthStatus::Success);
                     }
-                    let now = std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)?
-                        .as_secs();
-
-                    self.session.auth.access_token = Some(json.access_token.clone());
-                    self.session.auth.refresh_token = Some(json.refresh_token.clone());
-                    self.session.auth.refresh_expiry = Some(json.expires_in);
-                    self.session.auth.last_refresh_time = Some(now);
-                    self.session.auth.user_id = Some(json.user_id);
+                    self.session.auth.apply_oauth_token_state(
+                        json.access_token.clone(),
+                        json.refresh_token.clone(),
+                        json.expires_in,
+                        json.user_id,
+                        Some(json.client_name.clone()),
+                    )?;
                     self.user_info = Some(json.user.clone());
                     info!(
                         attempt,
@@ -272,16 +270,14 @@ impl TidalClient {
             expires_in,
             "applying manual OAuth login state"
         );
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)?
-            .as_secs();
-
-        self.session.auth.access_token = Some(access_token);
-        self.session.auth.refresh_token = Some(refresh_token);
-        self.session.auth.refresh_expiry = Some(expires_in);
-        self.session.auth.last_refresh_time = Some(now);
-        self.session.auth.user_id = Some(user_id);
-        self.user_info = Some(user.clone());
+        self.session.auth.apply_oauth_token_state(
+            access_token,
+            refresh_token,
+            expires_in,
+            user_id,
+            None,
+        )?;
+        self.user_info = Some(user);
 
         Ok(())
     }

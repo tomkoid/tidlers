@@ -56,6 +56,10 @@ pub enum TidalError {
     #[serde(serialize_with = "serialize_generic")]
     TryFromIntError(#[from] TryFromIntError),
 
+    #[error("url parse error: {0}")]
+    #[serde(serialize_with = "serialize_generic")]
+    UrlParseError(#[from] url::ParseError),
+
     #[error("{0}")]
     Other(String),
 }

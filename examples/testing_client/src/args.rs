@@ -15,6 +15,10 @@ pub struct Args {
     /// Trace requests and responses for the command being executed
     #[clap(short, long, default_value_t = false)]
     pub trace: bool,
+
+    /// Use PKCE authentication flow instead of device-code OAuth when login is required
+    #[clap(long, default_value_t = false)]
+    pub pkce: bool,
 }
 
 #[derive(Parser, Debug)]

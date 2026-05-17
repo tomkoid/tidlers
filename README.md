@@ -4,210 +4,207 @@ A Rust library for interacting with the TIDAL music streaming API.
 
 ## Features
 
-- OAuth 2.0 authentication
-- Access token management and refresh
-- Support for all TIDAL audio quality levels (Low, High, Lossless, HiRes)
-- DASH manifest parsing for HiRes audio streaming
-- API coverage:
-  - Track information and playback
-  - Album and playlist management
-  - Artist information
-  - User profile and subscription details
-  - Mixes and recommendations
-- Session persistence for seamless re-authentication
-- Type-safe API with serde-based deserialization
-- Tracing for request/auth/session flows
+- Multiple auth flows:
+  - OAuth2 device-code flow (`TidalAuth::with_oauth()`)
+  - OAuth2 PKCE flow for HiRes streaming (`TidalAuth::with_pkce()`)
+  - Client-credentials flow (`TidalAuth::with_api_token(...)`)
+  - Direct access token (`TidalAuth::with_access_token(...)`)
+- Access-token refresh support
+- Session persistence (`get_json()` / `from_json()`)
+- Audio quality support: Low, High, Lossless, HiRes
+- DASH manifest parsing for HiRes playback
+- API support for tracks, albums, artists, playlists, collection, mixes, search, user, and subscription
+- `tracing` for auth/session/request flows
 
 ## Projects using Tidlers
-
-Tidlers is still very WIP, but here are projects that use it:
 
 - [yadal](https://codeberg.org/tomkoid/yadal) - Command-line downloader with parallel downloads and all quality support
 - [Maré Player](https://github.com/glima/mare-player) - COSMIC TIDAL applet/standalone app
 
 ## Installation
 
-Using this command, you can add the newest version of Tidlers to your `Cargo.toml`:
-
 ```sh
 cargo add tidlers
 ```
 
-Or you can add this to your `Cargo.toml` to use the git version for the latest features:
+Or use the latest git version:
 
 ```toml
 [dependencies]
 tidlers = { git = "https://codeberg.org/tomkoid/tidlers.git" }
 ```
 
-## Quick Start
+## Quick Start (OAuth device-code flow)
 
 ```rust
-use tidlers::{
-    TidalClient,
-    auth::TidalAuth,
-    client::models::playback::AudioQuality,
-};
+use tidlers::{auth::TidalAuth, TidalClient};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create client with OAuth authentication
     let auth = TidalAuth::with_oauth();
     let mut client = TidalClient::new(&auth);
-    
-    // Get OAuth link for user to authorize
+
     let oauth = client.get_oauth_link().await?;
-    println!("Visit: https://{}", oauth.verification_uri_complete);
-    
-    // Wait for authorization
-    client.wait_for_oauth(
-        &oauth.device_code,
-        oauth.expires_in,
-        oauth.interval,
-        None,
-    ).await?;
-    
-    // Get user information (this is very important for some API calls which require sending some part of the user info)
-    client.refresh_user_info().await?;
-    println!("Logged in as: {}", client.user_info.unwrap().username);
-    
-    // Get track information
-    let track = client.get_track("66035607".to_string()).await?;
-    println!("Track: {} by {}", track.title, track.artist.name);
-    
-    // Get playback info for HiRes audio
-    client.set_audio_quality(AudioQuality::HiRes);
-    let playback = client.get_track_postpaywall_playback_info("66035607".to_string()).await?;
-    
-    // Access stream URLs
-    if let Some(urls) = playback.get_stream_urls() {
-        println!("Stream URLs: {:?}", urls);
-    }
-    
+    println!("Visit: {}", oauth.verification_uri_complete);
+
+    client
+        .wait_for_oauth(
+            &oauth.device_code,
+            oauth.expires_in,
+            oauth.interval,
+            None,
+        )
+        .await?;
+
+    let me = client.refresh_user_info().await?;
+    println!("Logged in as: {}", me.username);
+
     Ok(())
 }
 ```
 
-## Audio Quality Support
+## PKCE Quick Start
 
-Tidlers supports all TIDAL audio quality tiers:
+```rust
+use tidlers::{auth::TidalAuth, TidalClient};
 
-- **Low**: 96 kbps AAC
-- **High**: 320 kbps AAC
-- **Lossless**: 44.1 KHz FLAC (CD quality)
-- **HiRes**: 192 KHz FLAC (High-Res)
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let auth = TidalAuth::with_pkce();
+    let mut client = TidalClient::new(&auth);
 
-HiRes audio uses DASH (Dynamic Adaptive Streaming over HTTP) manifests, which are automatically parsed by the library.
+    let login_url = client.initiate_pkce_login()?;
+    println!("Visit: {}", login_url);
+
+    // After browser redirect, paste the full redirect URL:
+    let mut redirect_url = String::new();
+    std::io::stdin().read_line(&mut redirect_url)?;
+    client.finish_pkce_login(redirect_url.trim()).await?;
+
+    client.refresh_user_info().await?;
+    Ok(())
+}
+```
 
 ## Session Persistence
 
-Save and restore sessions to avoid re-authentication:
-
 ```rust
-// Save session
 let session_json = client.get_json();
 std::fs::write("session.json", session_json)?;
 
-// Load session
 let session_data = std::fs::read_to_string("session.json")?;
 let mut client = TidalClient::from_json(&session_data)?;
-
-// Refresh token if needed
 client.refresh_access_token(false).await?;
+client.refresh_user_info().await?;
 ```
 
 ## API Examples
 
-### Get Track Information
+### Get track info + playback info
 
 ```rust
-let track = client.get_track("track_id".to_string()).await?;
-println!("Title: {}", track.title);
-println!("Artist: {}", track.artist.name);
-println!("Duration: {}s", track.duration);
+use tidlers::client::models::playback::AudioQuality;
+
+let track = client.get_track("66035607").await?;
+println!("{} - {}", track.artist.name, track.title);
+
+client.set_audio_quality(AudioQuality::HiRes);
+let playback = client.get_track_postpaywall_playback_info("66035607").await?;
+if let Some(urls) = playback.get_stream_urls() {
+    println!("Stream URLs: {urls:?}");
+}
 ```
 
-### Get Album Details
+### Album + items
 
 ```rust
-let album = client.get_album("album_id".to_string()).await?;
+let album = client.get_album("251380836").await?;
+println!("Album: {}", album.title);
 
-// Takes in the album id with optional limit and offset for pagination
-let items = client.get_album_items("album_id".to_string(), Some(50), Some(0)).await?;
+let items = client
+    .get_album_items("251380836", Some(50), Some(0))
+    .await?;
+println!("Album items: {}", items.items.len());
 ```
 
-### Get Playlist
+### Playlist + paginated items
 
 ```rust
-let playlist = client.get_playlist("playlist_uuid".to_string()).await?;
+use tidlers::client::models::playlist::{OrderDirection, PlaylistItemsOrder};
 
-// Takes in the playlist uuid with optional limit and offset for pagination
-let items = client.get_playlist_items("playlist_uuid".to_string(), Some(50), Some(0), PlaylistItemsOrder::Index, OrderDirection::Ascending).await?;
+let playlist = client.get_playlist("YOUR_PLAYLIST_UUID").await?;
+println!("Playlist: {}", playlist.title);
+
+let playlist_items = client
+    .get_playlist_items(
+        "YOUR_PLAYLIST_UUID",
+        Some(100),
+        Some(0),
+        PlaylistItemsOrder::Index,
+        OrderDirection::Ascending,
+    )
+    .await?;
+println!("Playlist items: {}", playlist_items.items.len());
 ```
 
-### Get Track Mixes (Recommendations)
+### Search
 
 ```rust
-let mix = client.get_track_mix("track_id".to_string(), None, None).await?;
+use tidlers::client::models::search::config::SearchType;
+
+let results = client
+    .search_direct("daft punk", Some(vec![SearchType::Tracks]), Some(10), Some(0))
+    .await?;
+
+println!("Found {} top hits", results.top_hits.items.len());
 ```
 
-### Check Subscription
+### Subscription + mixes
 
 ```rust
 let subscription = client.subscription().await?;
-println!("Type: {:?}", subscription.subscription.subscription_type);
-```
+println!(
+    "Subscription type: {:?}",
+    subscription.subscription.subscription_type
+);
 
-## DASH Manifest Support
-
-For HiRes audio, TIDAL uses DASH streaming. Tidlers parses these manifests automatically:
-
-```rust
-let playback_info = client.get_track_postpaywall_playback_info(track_id).await?;
-
-match &playback_info.manifest_parsed {
-    Some(ParsedTrackManifest::Dash(dash)) => {
-        println!("Codec: {}", dash.codecs);
-        println!("Bitrate: {} bps", dash.bitrate.unwrap_or(0));
-        
-        // Get initialization segment
-        if let Some(init_url) = dash.get_init_url() {
-            // Download init segment
-        }
-        
-        // Get individual segments
-        for i in 1..=10 {
-            if let Some(segment_url) = dash.get_segment_url(i) {
-                // Download segment i
-            }
-        }
-    }
-    Some(ParsedTrackManifest::Json(json)) => {
-        // Standard JSON manifest for non-HiRes
-        println!("Direct URL: {}", json.urls[0]);
-    }
-    None => {}
-}
+let mix = client.get_track_mix("66035607", Some(20), Some(0)).await?;
+println!("Mix items: {}", mix.items.len());
 ```
 
 ## Examples
 
-The repository includes several examples demonstrating different use cases:
+### `testing-client`
 
-
-### testing_client
-
-Basic example showing authentication, API calls, and data retrieval:
+General CLI for testing endpoints and auth flows.
 
 ```bash
-cargo run -p testing-client
+# Device-code OAuth
+cargo run -p testing-client -- user-info
+
+# PKCE auth (optional via CLI flag)
+cargo run -p testing-client -- --pkce user-info
 ```
 
-This example is also where I test new features during development.
+### `pkce-login`
 
-### hires_streamer
+Minimal PKCE login example.
 
-Complete audio streaming example with playback support:
+```bash
+cargo run -p pkce-login
+```
+
+### `login-save`
+
+Shows login + session persistence usage.
+
+```bash
+cargo run -p login-save
+```
+
+### `hires-streamer`
+
+HiRes streaming and DASH manifest usage.
 
 ```bash
 cargo run -p hires-streamer
@@ -215,10 +212,10 @@ cargo run -p hires-streamer
 
 ## Tracing
 
-Tidlers logs through `tracing` around request execution, OAuth/auth flows, and session serialization. To see logs, configure a subscriber in your app:
+Tidlers emits logs via `tracing`. Example subscriber:
 
 ```rust
-use tracing_subscriber::{EnvFilter, fmt};
+use tracing_subscriber::{fmt, EnvFilter};
 
 fn init_tracing() {
     let _ = fmt()
@@ -230,77 +227,26 @@ fn init_tracing() {
 }
 ```
 
-Then run with an env filter, for example:
+Then run with:
 
 ```bash
-RUST_LOG=tidlers=debug cargo run -p testing-client
+RUST_LOG=tidlers=debug cargo run -p testing-client -- user-info
 ```
-
-
-## Error Handling
-
-The library uses the `TidalError` enum for error handling:
-
-```rust
-use tidlers::error::TidalError;
-
-match client.get_track(track_id).await {
-    Ok(track) => println!("Got track: {}", track.title),
-    Err(TidalError::NotAuthenticated) => println!("Please login first"),
-    Err(TidalError::Request(e)) => println!("Network error: {}", e),
-    Err(e) => println!("Other error: {}", e),
-}
-```
-
-## Requirements
-
-- Rust 2024 edition
-- TIDAL account with active subscription
-- Network connection for API access (obviously)
-
-## Dependencies
-
-Core dependencies:
-- `reqwest` - HTTP client
-- `serde` / `serde_json` - Serialization
-- `tokio` - Async runtime
-- `base64` - Base64 encoding/decoding
-- `quick-xml` - XML parsing for DASH manifests
-- `thiserror` - Error handling
-- `tracing` - Logging and debugging
-
-## Contributing
-
-Any contributions you make to this project are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue if there's something that should be implemented but isn't.
 
 ## Development
 
-Build the library:
-
 ```bash
 cargo build
-```
-
-Run tests:
-
-```bash
-cargo test
-```
-
-Run an example:
-
-```bash
-cargo run -p testing-client
-cargo run -p hires-streamer
+cargo check --workspace --all-targets
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace --all-targets
 ```
 
 ## Notes
 
-- OAuth device code flow requires user interaction via browser
-- DASH segments for HiRes audio are MP4 fragments that need to be combined
-- Rate limiting is not implemented; use responsibly
+- OAuth device-code and PKCE flows require browser/user interaction
+- Many endpoints are country-scoped; after restoring a session, call `refresh_user_info()` before country-scoped requests
+- Rate limiting is not implemented
 - Some parts of code and documentation are written using AI
 
 ## License

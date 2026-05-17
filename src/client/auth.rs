@@ -35,27 +35,33 @@ impl TidalClient {
     /// ```
     pub async fn refresh_access_token(&mut self, force: bool) -> Result<bool, TidalError> {
         debug!(force, "refresh_access_token called");
-        if self.session.auth.refresh_token.is_none() {
+        let Some(refresh_token) = self.session.auth.refresh_token.clone() else {
             return Err(TidalError::Other(
                 "No refresh token available, cannot refresh access token.".to_string(),
             ));
-        }
+        };
+
+        let (client_id, client_secret) = if self.session.auth.pkce_login {
+            (
+                self.session.auth.pkce_config.client_id.clone(),
+                self.session.auth.pkce_config.client_secret.clone(),
+            )
+        } else {
+            (
+                self.session.auth.client_id.clone(),
+                self.session.auth.client_secret.clone(),
+            )
+        };
 
         let is_expired = self.session.auth.is_token_expired()?;
         if force || is_expired {
             debug!(force, is_expired, "refreshing access token");
             let mut form = HashMap::new();
             form.insert("grant_type".to_string(), "refresh_token".to_string());
-            form.insert(
-                "refresh_token".to_string(),
-                self.session.auth.refresh_token.clone().unwrap(),
-            );
+            form.insert("refresh_token".to_string(), refresh_token);
             let mut req = TidalRequest::new(Method::POST, "/token".to_string());
             req.form = Some(vec![form]);
-            req.basic_auth = Some(requests::BasicAuth::new(
-                self.session.auth.client_id.clone(),
-                self.session.auth.client_secret.clone(),
-            ));
+            req.basic_auth = Some(requests::BasicAuth::new(client_id, client_secret));
             req.base_url = Some(OAUTH2_V1_LOCATION.to_string());
 
             let res = self.rq.request(req).await?;
@@ -68,15 +74,13 @@ impl TidalClient {
                 "received refresh token response"
             );
 
-            // update the access token and refresh token
-            self.session.auth.access_token = Some(json.access_token.clone());
-            self.session.auth.refresh_expiry = Some(json.expires_in as u64);
-            self.session.auth.last_refresh_time = Some(
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)?
-                    .as_secs(),
-            );
-            self.session.auth.user_id = Some(json.user_id.try_into()?);
+            self.session.auth.apply_access_token_state(
+                json.access_token.clone(),
+                json.expires_in.try_into()?,
+                json.user_id.try_into()?,
+                Some(json.client_name.clone()),
+            )?;
+            self.user_info = Some(json.user);
             info!("access token refreshed successfully");
 
             return Ok(true);

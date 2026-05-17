@@ -2,7 +2,10 @@ use clap::Parser;
 use tidlers::client::TidalClient;
 
 use crate::{
-    args::Args, auth::handle_auth, commands::execute_command, save::save_session_data,
+    args::Args,
+    auth::{handle_auth, handle_pkce_flow},
+    commands::execute_command,
+    save::save_session_data,
     tracing::configure_tidlers_tracing,
 };
 
@@ -23,10 +26,10 @@ async fn main() -> eyre::Result<()> {
         configure_tidlers_tracing();
     }
 
-    let mut tidal = initialize_client().await?;
+    let mut tidal = initialize_client(args.pkce).await?;
 
     configure_client(&mut tidal, args.debug);
-    complete_oauth_if_needed(&mut tidal).await?;
+    complete_login_if_needed(&mut tidal).await?;
     finalize_authentication(&mut tidal).await?;
 
     execute_command(tidal, args.command).await?;
@@ -34,8 +37,8 @@ async fn main() -> eyre::Result<()> {
     Ok(())
 }
 
-async fn initialize_client() -> eyre::Result<TidalClient> {
-    if let Some(auth) = handle_auth().await {
+async fn initialize_client(use_pkce: bool) -> eyre::Result<TidalClient> {
+    if let Some(auth) = handle_auth(use_pkce).await {
         Ok(TidalClient::new(&auth))
     } else {
         load_saved_session().await
@@ -62,14 +65,19 @@ fn configure_client(client: &mut TidalClient, debug: bool) {
     client.set_time_offset("+01:00".to_string()); // TODO: auto-detect timezone
 }
 
-async fn complete_oauth_if_needed(client: &mut TidalClient) -> eyre::Result<()> {
-    if !client.waiting_for_oauth_login() {
+async fn complete_login_if_needed(client: &mut TidalClient) -> eyre::Result<()> {
+    if client.waiting_for_oauth_login() {
+        println!("Completing OAuth login...");
+        auth::handle_oauth_flow(client).await?;
+        println!("OAuth complete");
         return Ok(());
     }
 
-    println!("Completing OAuth login...");
-    auth::handle_oauth_flow(client).await?;
-    println!("OAuth complete");
+    if client.session.auth.pkce_login && client.session.auth.access_token.is_none() {
+        println!("Completing PKCE login...");
+        handle_pkce_flow(client).await?;
+        println!("PKCE complete");
+    }
 
     Ok(())
 }
