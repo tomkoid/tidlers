@@ -110,7 +110,7 @@ pub struct FeedAlbum {
     pub num_tracks: u32,
     pub duration: u32,
     pub release_date: Option<String>,
-    pub cover_url: Option<String>,
+    pub cover: Option<String>,
     pub explicit: bool,
     pub audio_quality: Option<String>,
 }
@@ -182,7 +182,7 @@ fn parse_album_release(album: ActivityFeedAlbumSource) -> Option<FeedItem> {
         num_tracks: album.number_of_tracks,
         duration: album.duration,
         release_date: album.release_date,
-        cover_url: album.cover.as_deref().map(uuid_to_cdn_url),
+        cover: album.cover,
         explicit: album.explicit,
         audio_quality: album.audio_quality,
     }))
@@ -202,13 +202,6 @@ fn parse_history_mix(mix: ActivityFeedHistoryMixSource) -> Option<FeedItem> {
         subtitle,
         image_url,
     }))
-}
-
-fn uuid_to_cdn_url(uuid: &str) -> String {
-    format!(
-        "https://resources.tidal.com/images/{}/640x640",
-        uuid.replace('-', "")
-    )
 }
 
 #[cfg(test)]

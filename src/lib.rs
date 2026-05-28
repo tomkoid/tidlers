@@ -38,6 +38,7 @@ pub mod client;
 pub mod error;
 pub mod ids;
 pub mod requests;
+pub mod resources;
 pub mod session;
 pub mod urls;
 pub mod utils;
