@@ -47,7 +47,7 @@ pub struct Artist {
     // mixes
     // banner
     // selectedAlbumCoverFallback
-    pub user_id: u32,
+    pub user_id: Option<u64>,
     #[serde(rename = "type")]
     pub artist_type: Option<String>,
     pub artist_roles: Option<Vec<ArtistRole>>,

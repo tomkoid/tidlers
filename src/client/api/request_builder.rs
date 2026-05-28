@@ -152,12 +152,20 @@ impl<'a> ApiRequestBuilder<'a> {
             debug_json_str(&body);
         }
 
-        serde_json::from_str(&body).map_err(|error| {
+        let mut deserializer = serde_json::Deserializer::from_str(&body);
+        serde_path_to_error::deserialize(&mut deserializer).map_err(|error| {
             let response_body = if body.trim().is_empty() {
                 "<empty response body>"
             } else {
                 body.as_str()
             };
+            let path = error.path().to_string();
+            let path = if path.is_empty() {
+                "<root>".to_string()
+            } else {
+                path
+            };
+            let inner = error.into_inner();
             warn!(
                 path = %self.url,
                 response_url = %response_url,
@@ -166,7 +174,7 @@ impl<'a> ApiRequestBuilder<'a> {
             );
 
             TidalError::InvalidResponse(format!(
-                "failed to parse JSON response from {response_url} (status {status}): {error}\nresponse body: {response_body}"
+                "failed to parse JSON response from {response_url} (status {status}): {inner} (path: {path})\nresponse body: {response_body}"
             ))
         })
     }
@@ -230,12 +238,20 @@ impl<'a> ApiRequestBuilder<'a> {
             debug_json_str(&body);
         }
 
-        let parsed = serde_json::from_str(&body).map_err(|error| {
+        let mut deserializer = serde_json::Deserializer::from_str(&body);
+        let parsed = serde_path_to_error::deserialize(&mut deserializer).map_err(|error| {
             let response_body = if body.trim().is_empty() {
                 "<empty response body>"
             } else {
                 body.as_str()
             };
+            let path = error.path().to_string();
+            let path = if path.is_empty() {
+                "<root>".to_string()
+            } else {
+                path
+            };
+            let inner = error.into_inner();
             warn!(
                 path = %self.url,
                 response_url = %response_url,
@@ -244,7 +260,7 @@ impl<'a> ApiRequestBuilder<'a> {
             );
 
             TidalError::InvalidResponse(format!(
-                "failed to parse JSON response from {response_url} (status {status}): {error}\nresponse body: {response_body}"
+                "failed to parse JSON response from {response_url} (status {status}): {inner} (path: {path})\nresponse body: {response_body}"
             ))
         })?;
 
