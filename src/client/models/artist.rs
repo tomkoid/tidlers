@@ -56,7 +56,7 @@ pub struct Artist {
     // TODO: make a type for relation type
     pub relation_type: Option<String>,
     pub spotlighted: Option<bool>,
-    pub url: String,
+    pub url: Option<String>,
 }
 
 /// Detailed artist information response
