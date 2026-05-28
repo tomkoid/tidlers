@@ -13,15 +13,50 @@ pub struct ArtistRole {
     pub category_id: i32,
 }
 
+// "artistRoles": null,
+// "artistTypes": [
+//   "ARTIST",
+//   "CONTRIBUTOR"
+// ],
+// "banner": null,
+// "handle": null,
+// "id": 15078437,
+// "mixes": {
+//   "ARTIST_MIX": "000914bdf1141cb958e3a0aefc8a92"
+// },
+// "name": "Natori",
+// "picture": null,
+// "popularity": 0,
+// "relationType": "SIMILAR_ARTIST",
+// "selectedAlbumCoverFallback": null,
+// "spotlighted": false,
+// "type": null,
+// "url": "http://www.tidal.com/artist/15078437",
+// "userId": null
+
 /// Represents a music artist
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Artist {
     pub id: u64,
     pub name: String,
     pub handle: Option<String>,
+    pub picture: Option<String>,
+
+    // TODO implement these fields:
+    // mixes
+    // banner
+    // selectedAlbumCoverFallback
+    pub user_id: Option<u64>,
     #[serde(rename = "type")]
     pub artist_type: Option<String>,
-    pub picture: Option<String>,
+    pub artist_roles: Option<Vec<ArtistRole>>,
+    // TODO: make a type for artist type
+    pub artist_types: Option<Vec<String>>,
+    // TODO: make a type for relation type
+    pub relation_type: Option<String>,
+    pub spotlighted: Option<bool>,
+    pub url: Option<String>,
 }
 
 /// Detailed artist information response
