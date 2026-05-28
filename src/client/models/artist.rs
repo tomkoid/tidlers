@@ -55,7 +55,7 @@ pub struct Artist {
     pub artist_types: Option<Vec<String>>,
     // TODO: make a type for relation type
     pub relation_type: Option<String>,
-    pub spotlighted: bool,
+    pub spotlighted: Option<bool>,
     pub url: String,
 }
 
