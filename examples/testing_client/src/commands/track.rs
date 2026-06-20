@@ -25,6 +25,11 @@ pub async fn execute(
                 .await?;
             println!("Radio Items:\n{:#?}", radio_items);
         }
+
+        TrackCommands::Lyrics => {
+            let lyrics = tidal.get_track_lyrics(track_id).await?;
+            println!("Lyrics:\n{:#?}", lyrics);
+        }
     };
 
     Ok(())

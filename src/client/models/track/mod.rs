@@ -75,6 +75,18 @@ pub struct TrackRadioResponse {
     pub items: Vec<Track>,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LyricsResponse {
+    pub track_id: u32,
+    pub lyrics_provider: String,
+    pub provider_commontrack_id: String,
+    pub provider_lyrics_id: String,
+    pub lyrics: String,
+    #[serde(rename = "isRightToLeft")]
+    pub right_to_left: bool,
+}
+
 pub type TrackPlaybackInfoPostPaywallResponse = TrackPlaybackInfoResponse;
 
 /// Response containing track playback information including manifest data

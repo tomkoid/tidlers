@@ -316,6 +316,8 @@ pub enum TrackCommands {
         #[clap(short, long, default_value = "0")]
         offset: u32,
     },
+
+    Lyrics,
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]

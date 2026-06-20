@@ -9,7 +9,7 @@ use crate::{
             mixes::TrackMixResponse,
             playback::AssetPresentation,
             track::{
-                DashManifest, JsonTrackManifest, ParsedTrackManifest, Track,
+                DashManifest, JsonTrackManifest, LyricsResponse, ParsedTrackManifest, Track,
                 TrackPlaybackInfoResponse, TrackRadioResponse,
             },
         },
@@ -251,6 +251,17 @@ impl TidalClient {
         self.request(reqwest::Method::GET, format!("/tracks/{}/radio", track_id))
             .with_param("limit", limit.unwrap_or(100).to_string())
             .with_param("offset", offset.unwrap_or(0).to_string())
+            .with_country_code()
+            .send()
+            .await
+    }
+
+    pub async fn get_track_lyrics(
+        &self,
+        track_id: impl Into<TrackId>,
+    ) -> Result<LyricsResponse, TidalError> {
+        let track_id = track_id.into();
+        self.request(reqwest::Method::GET, format!("/tracks/{}/lyrics", track_id))
             .with_country_code()
             .send()
             .await
