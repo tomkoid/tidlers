@@ -27,8 +27,13 @@ pub async fn execute(
         }
 
         TrackCommands::Lyrics => {
-            let lyrics = tidal.get_track_lyrics(track_id).await?;
-            println!("Lyrics:\n{:#?}", lyrics);
+            let lyrics = tidal.get_track_lyrics(track_id).await;
+
+            if let Err(e) = &lyrics {
+                eprintln!("Failed to fetch lyrics: {e}");
+            }
+
+            println!("Lyrics:\n{:#?}", lyrics?);
         }
     };
 

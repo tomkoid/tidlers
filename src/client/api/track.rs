@@ -1,6 +1,7 @@
 use base64::{Engine, engine::general_purpose};
 use quick_xml::Reader;
 use quick_xml::events::Event;
+use reqwest::StatusCode;
 
 use crate::{
     client::{
@@ -16,6 +17,7 @@ use crate::{
     },
     error::TidalError,
     ids::TrackId,
+    requests::RequestClientError,
     urls::OPEN_API_V2_LOCATION,
 };
 
@@ -260,11 +262,20 @@ impl TidalClient {
         &self,
         track_id: impl Into<TrackId>,
     ) -> Result<LyricsResponse, TidalError> {
-        let track_id = track_id.into();
-        self.request(reqwest::Method::GET, format!("/tracks/{}/lyrics", track_id))
-            .with_country_code()
-            .send()
-            .await
+        self.request(
+            reqwest::Method::GET,
+            format!("/tracks/{}/lyrics", track_id.into()),
+        )
+        .with_country_code()
+        .send()
+        .await
+        .map_err(|e| match e {
+            TidalError::RequestClient(RequestClientError::StatusCode {
+                status: StatusCode::NOT_FOUND,
+                ..
+            }) => TidalError::NotFound,
+            _ => e,
+        })
     }
 
     pub async fn get_user_uploads(
