@@ -3,6 +3,7 @@ mod album;
 mod artist;
 mod folder;
 mod mix;
+mod pages;
 mod playlist;
 mod search;
 mod track;
@@ -86,6 +87,10 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
 
         Commands::Search { command, query } => {
             search::execute(&mut tidal, query, command).await?;
+        }
+
+        Commands::Pages { command } => {
+            pages::execute(&mut tidal, command).await?;
         }
     }
 

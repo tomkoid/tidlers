@@ -15,7 +15,7 @@ pub struct ApiRequestBuilder<'a> {
     params: HashMap<String, String>,
     form_params: HashMap<String, String>,
     base_url: Option<String>,
-    headers: Option<reqwest::header::HeaderMap>,
+    headers: reqwest::header::HeaderMap,
     add_country_code: bool,
     add_locale: bool,
     request_debug: bool,
@@ -35,7 +35,7 @@ impl<'a> ApiRequestBuilder<'a> {
             params: HashMap::new(),
             form_params: HashMap::new(),
             base_url: None,
-            headers: None,
+            headers: reqwest::header::HeaderMap::new(),
             add_country_code: false,
             add_locale: false,
             request_debug,
@@ -63,6 +63,21 @@ impl<'a> ApiRequestBuilder<'a> {
     /// Adds a query parameter to the request
     pub(crate) fn with_param(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.params.insert(key.into(), value.into());
+        self
+    }
+
+    /// Adds `deviceType` and `platform` query parameters and `x-tidal-client-version` header to the request
+    pub(crate) fn with_web_stuff(mut self) -> Self {
+        self.params
+            .insert("deviceType".to_string(), "BROWSER".to_string());
+        self.params
+            .insert("platform".to_string(), "WEB".to_string());
+
+        self.headers.insert(
+            "x-tidal-client-version",
+            reqwest::header::HeaderValue::from_static("2026.1.6"),
+        );
+
         self
     }
 
@@ -96,7 +111,7 @@ impl<'a> ApiRequestBuilder<'a> {
 
     /// Sets custom headers for the request
     pub(crate) fn with_headers(mut self, headers: reqwest::header::HeaderMap) -> Self {
-        self.headers = Some(headers);
+        self.headers = headers;
         self
     }
 
@@ -121,7 +136,7 @@ impl<'a> ApiRequestBuilder<'a> {
         req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
-        req.headers = self.headers;
+        req.headers = Some(self.headers);
 
         debug!(
             method = %req.method,
@@ -202,7 +217,7 @@ impl<'a> ApiRequestBuilder<'a> {
         req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
-        req.headers = self.headers;
+        req.headers = Some(self.headers);
 
         debug!(
             method = %req.method,
@@ -288,7 +303,7 @@ impl<'a> ApiRequestBuilder<'a> {
         req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
-        req.headers = self.headers;
+        req.headers = Some(self.headers);
 
         debug!(
             method = %req.method,

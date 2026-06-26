@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use serde::{Deserialize, Serialize};
+
 pub mod activity;
 pub mod album;
 pub mod artist;
@@ -8,6 +10,7 @@ pub mod feed;
 pub mod home;
 pub mod media;
 pub mod mix;
+pub mod pages;
 pub mod playback;
 pub mod playlist;
 pub mod responses;
@@ -19,6 +22,12 @@ pub mod user;
 // backwards compat
 pub mod mixes {
     pub use super::mix::*;
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ArtistNameId {
+    pub name: String,
+    pub id: Option<u64>,
 }
 
 #[derive(Debug, Clone)]

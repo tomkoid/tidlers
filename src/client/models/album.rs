@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::client::models::{artist::Artist, media::MediaMetadata, track::Track};
+use crate::client::models::{ArtistNameId, artist::Artist, media::MediaMetadata, track::Track};
 
 /// Used generically to represent an album in various responses
 #[derive(Debug, Serialize, Deserialize)]
@@ -127,17 +127,11 @@ impl Album {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct AlbumCreditContributor {
-    pub name: String,
-    pub id: Option<u64>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbumCredit {
     #[serde(rename = "type")]
     pub credit_type: String,
-    pub contributors: Vec<AlbumCreditContributor>,
+    pub contributors: Vec<ArtistNameId>,
 }
 
 pub type AlbumCreditsResponse = Vec<AlbumCredit>;

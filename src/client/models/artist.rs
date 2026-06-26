@@ -35,7 +35,7 @@ pub struct ArtistRole {
 // "userId": null
 
 /// Represents a music artist
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Artist {
     pub id: u64,

@@ -106,6 +106,12 @@ pub enum Commands {
         query: String,
     },
 
+    /// Pages
+    Pages {
+        #[clap(subcommand)]
+        command: PagesCommands,
+    },
+
     /// Logout the user
     Logout,
 }
@@ -117,6 +123,20 @@ pub enum SearchCommands {
 
     /// Show search suggestions for query
     Suggestions,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum PagesCommands {
+    Custom {
+        /// Page slug
+        slug: String,
+    },
+
+    /// Show explore page
+    Explore,
+
+    /// Show Indie Rock page
+    IndieRock,
 }
 
 #[derive(Parser, Debug, Clone)]

@@ -9,6 +9,7 @@ pub mod home;
 pub mod logout;
 pub mod mix;
 pub mod openapi;
+pub mod pages;
 pub mod search;
 pub mod subscription;
 pub mod track;
