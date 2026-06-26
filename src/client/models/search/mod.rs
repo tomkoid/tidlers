@@ -45,7 +45,7 @@ pub struct SearchTrackHit {
     pub id: u64,
     pub editable: bool,
     pub title: String,
-    pub album: SearchAlbumSummary,
+    pub album: Option<SearchAlbumSummary>,
     pub artists: Vec<SearchArtistSummary>,
     pub version: Option<String>,
     pub duration: u64,

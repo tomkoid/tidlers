@@ -7,62 +7,45 @@ pub mod user_uploads;
 
 /// Represents a music track
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Track {
     pub id: u64,
     pub title: String,
     pub duration: u64,
-    #[serde(rename = "replayGain")]
     pub replay_gain: f64,
     pub peak: f32,
-    #[serde(rename = "allowStreaming")]
     pub allow_streaming: bool,
-    #[serde(rename = "streamReady")]
     pub stream_ready: bool,
-    #[serde(rename = "payToStream")]
     pub pay_to_stream: bool,
-    #[serde(rename = "adSupportedStreamReady")]
     pub ad_supported_stream_ready: bool,
-    #[serde(rename = "djReady")]
     pub dj_ready: bool,
-    #[serde(rename = "stemReady")]
     pub stem_ready: bool,
-    #[serde(rename = "streamStartDate")]
     pub stream_start_date: Option<String>,
-    #[serde(rename = "premiumStreamingOnly")]
     pub premium_streaming_only: bool,
-    #[serde(rename = "trackNumber")]
     pub track_number: u32,
-    #[serde(rename = "volumeNumber")]
     pub volume_number: u32,
     pub version: Option<String>,
     pub popularity: u32,
     pub copyright: Option<String>,
     pub bpm: Option<f32>,
     pub key: Option<String>,
-    #[serde(rename = "keyScale")]
     pub key_scale: Option<String>,
     pub url: String,
     pub isrc: Option<String>,
     pub editable: bool,
     pub explicit: bool,
-    #[serde(rename = "audioQuality")]
     pub audio_quality: String,
-    #[serde(rename = "audioModes")]
     pub audio_modes: Vec<String>,
-    #[serde(rename = "mediaMetadata")]
     pub media_metadata: Option<MediaMetadata>,
     pub upload: bool,
-    #[serde(rename = "accessType")]
     pub access_type: Option<String>,
     pub spotlighted: Option<bool>,
-    #[serde(rename = "dateAdded")]
     pub date_added: Option<String>,
     pub index: Option<u64>,
     pub artist: Artist,
     pub artists: Vec<Artist>,
-    pub album: Album,
+    pub album: Option<Album>,
     pub mixes: Option<HashMap<String, String>>,
-    #[serde(rename = "itemUuid")]
     pub item_uuid: Option<String>,
 }
 
