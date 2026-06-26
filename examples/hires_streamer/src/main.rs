@@ -67,7 +67,7 @@ async fn main() -> Result<()> {
     println!("\n=== Track Info ===");
     println!("Title: {}", track_info.title);
     println!("Artist: {}", track_info.artist.name);
-    println!("Album: {}", track_info.album.title);
+    println!("Album: {}", track_info.album.unwrap().title);
     println!("Duration: {}s", track_info.duration);
     println!("==================\n");
 
