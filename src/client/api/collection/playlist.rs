@@ -104,6 +104,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves a playlist by ID.
     pub async fn get_playlist(
         &self,
         playlist_id: impl Into<PlaylistId>,
@@ -115,6 +116,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves the items in a playlist.
     pub async fn get_playlist_items(
         &self,
         playlist_id: impl Into<PlaylistId>,
@@ -129,6 +131,7 @@ impl TidalClient {
         Ok(response.items)
     }
 
+    /// Retrieves playlist items together with the response ETag.
     pub async fn get_playlist_items_with_etag(
         &self,
         playlist_id: impl Into<PlaylistId>,
@@ -177,6 +180,7 @@ impl TidalClient {
         Ok(PlaylistItemsWithEtag { items, etag })
     }
 
+    /// Adds items to a playlist using the current ETag.
     pub async fn add_items_to_playlist(
         &self,
         playlist_id: impl Into<PlaylistId>,
@@ -218,6 +222,7 @@ impl TidalClient {
         Ok(())
     }
 
+    /// Adds items to a playlist using a provided ETag.
     pub async fn add_items_to_playlist_with_etag(
         &self,
         playlist_id: impl Into<PlaylistId>,
@@ -296,6 +301,7 @@ impl TidalClient {
         Ok(())
     }
 
+    /// Retrieves recommended items for a playlist.
     pub async fn get_playlist_recommendations_items(
         &self,
         playlist_id: impl Into<PlaylistId>,

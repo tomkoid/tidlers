@@ -2,6 +2,7 @@ use tidlers::TidalClient;
 
 use crate::args::PagesCommands;
 
+/// Runs the page-related CLI subcommand.
 pub async fn execute(tidal: &mut TidalClient, command: PagesCommands) -> eyre::Result<()> {
     match command {
         PagesCommands::Custom { slug } => {

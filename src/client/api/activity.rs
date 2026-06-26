@@ -8,6 +8,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Retrieves the user's activity timeline.
     pub async fn get_activity_timeline(&self) -> Result<ActivityTimelineResponse, TidalError> {
         self.request(reqwest::Method::GET, "/my-activity/timeline")
             .with_country_code()
@@ -17,6 +18,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves the user's top artists for a given month.
     pub async fn get_activity_top_artists(
         &self,
         year: i32,

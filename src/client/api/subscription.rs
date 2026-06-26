@@ -4,6 +4,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Retrieves the current user's subscription details.
     pub async fn subscription(&self) -> Result<UserSubscriptionResponse, TidalError> {
         let url = format!("/users/{}/subscription", self.user_id()?);
 

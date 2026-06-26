@@ -35,6 +35,7 @@ impl TidalClient {
         self.pkce_url()
     }
 
+    /// Completes the PKCE login flow by exchanging the authorization code from a redirect URL.
     pub async fn finish_pkce_login(&mut self, redirect_url: &str) -> Result<(), crate::TidalError> {
         self.check_pkce_login()?;
 

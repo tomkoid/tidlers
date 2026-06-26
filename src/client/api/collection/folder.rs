@@ -13,6 +13,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Creates a new collection folder.
     pub async fn create_folder(
         &self,
         name: impl Into<String>,
@@ -30,6 +31,7 @@ impl TidalClient {
         .await
     }
 
+    /// Removes a collection folder.
     pub async fn remove_folder(&self, id: impl Into<String>) -> Result<(), TidalError> {
         let res = self
             .request(
@@ -47,6 +49,7 @@ impl TidalClient {
         Ok(())
     }
 
+    /// Retrieves all folders in a flat list.
     pub async fn flattened_folders(
         &self,
         limit: Option<u32>,

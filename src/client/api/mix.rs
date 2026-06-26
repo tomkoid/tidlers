@@ -23,6 +23,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves the user's arrival mixes.
     pub async fn get_arrival_mixes(
         &self,
     ) -> Result<ApiDataResponse<Vec<ArrivalMixResource>>, TidalError> {

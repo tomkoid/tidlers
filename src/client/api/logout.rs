@@ -1,6 +1,7 @@
 use crate::{client::TidalClient, error::TidalError, requests::TidalRequest};
 
 impl TidalClient {
+    /// Logs the current user out of Tidal.
     pub async fn logout(&self) -> Result<(), TidalError> {
         let url = "/logout".to_string();
 

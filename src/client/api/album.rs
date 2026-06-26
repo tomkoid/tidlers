@@ -105,6 +105,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves album items with credits information.
     pub async fn get_album_items_credits(
         &self,
         album_id: impl Into<AlbumId>,

@@ -14,6 +14,7 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Retrieves an artist profile.
     pub async fn get_artist(
         &self,
         artist_id: impl Into<ArtistId>,
@@ -25,6 +26,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves an artist biography.
     pub async fn get_artist_bio(
         &self,
         artist_id: impl Into<ArtistId>,
@@ -36,6 +38,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves external links for an artist.
     pub async fn get_artist_links(
         &self,
         artist_id: impl Into<ArtistId>,
@@ -50,6 +53,7 @@ impl TidalClient {
         .await
     }
 
+    /// Retrieves an artist's top tracks.
     pub async fn get_artist_tracks(
         &self,
         artist_id: impl Into<ArtistId>,
@@ -77,6 +81,7 @@ impl TidalClient {
         .await
     }
 
+    /// Retrieves albums for an artist.
     pub async fn get_artist_albums(
         &self,
         artist_id: impl Into<ArtistId>,
@@ -104,6 +109,7 @@ impl TidalClient {
         .await
     }
 
+    /// Retrieves videos for an artist.
     pub async fn get_artist_videos(
         &self,
         artist_id: impl Into<ArtistId>,
@@ -148,6 +154,7 @@ impl TidalClient {
         .await
     }
 
+    /// Retrieves the mix associated with an artist.
     pub async fn get_artist_mix(
         &self,
         artist_id: impl Into<ArtistId>,

@@ -228,6 +228,7 @@ impl TidalClient {
         Ok(response)
     }
 
+    /// Retrieves the mix for a track.
     pub async fn get_track_mix(
         &self,
         track_id: impl Into<TrackId>,
@@ -243,6 +244,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves the radio station for a track.
     pub async fn get_track_radio(
         &self,
         track_id: impl Into<TrackId>,
@@ -258,6 +260,7 @@ impl TidalClient {
             .await
     }
 
+    /// Retrieves the lyrics for a track.
     pub async fn get_track_lyrics(
         &self,
         track_id: impl Into<TrackId>,
@@ -278,6 +281,7 @@ impl TidalClient {
         })
     }
 
+    /// Retrieves the current user's uploaded tracks.
     pub async fn get_user_uploads(
         &self,
         include: UserUploadsIncludeOptions,

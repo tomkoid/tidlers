@@ -11,6 +11,7 @@ mod track;
 use crate::{args::Commands, save::remove_session_data};
 use tidlers::{TidalClient, client::models::track::config::UserUploadsIncludeOptions};
 
+/// Executes the selected CLI command with the provided Tidal client.
 pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre::Result<()> {
     match command {
         Commands::UserInfo => {
