@@ -1,5 +1,5 @@
 use crate::{
-    client::{TidalClient, models::pages::PageResponse},
+    client::{TidalClient, models::page::PageResponse},
     error::TidalError,
 };
 

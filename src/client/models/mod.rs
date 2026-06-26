@@ -10,7 +10,7 @@ pub mod feed;
 pub mod home;
 pub mod media;
 pub mod mix;
-pub mod pages;
+pub mod page;
 pub mod playback;
 pub mod playlist;
 pub mod responses;

@@ -107,9 +107,9 @@ pub enum Commands {
     },
 
     /// Pages
-    Pages {
+    Page {
         #[clap(subcommand)]
-        command: PagesCommands,
+        command: PageCommands,
     },
 
     /// Logout the user
@@ -126,7 +126,7 @@ pub enum SearchCommands {
 }
 
 #[derive(Parser, Debug, Clone)]
-pub enum PagesCommands {
+pub enum PageCommands {
     Custom {
         /// Page slug
         slug: String,
