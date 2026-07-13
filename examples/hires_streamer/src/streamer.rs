@@ -2,7 +2,7 @@ use bytes::Bytes;
 use color_eyre::eyre::{Result, eyre};
 use rodio::{Decoder, OutputStream, Sink};
 use std::io::BufReader;
-use tidlers::client::models::track::{
+use tidlers::client::models::track::playback::{
     DashManifest, ParsedTrackManifest, TrackPlaybackInfoResponse,
 };
 

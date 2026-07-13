@@ -1,5 +1,6 @@
 use crate::client::models::{album::Album, artist::Artist};
 
+pub mod config;
 pub mod playback;
 
 /// Represents a video

@@ -1,3 +1,12 @@
+use crate::client::models::playback::{AssetPresentation, AudioQuality, PlaybackMode};
+
+#[derive(Clone, Default)]
+pub struct TrackPlaybackInfoConfig {
+    pub audio_quality: Option<AudioQuality>,
+    pub playback_mode: Option<PlaybackMode>,
+    pub asset_presentation: Option<AssetPresentation>,
+}
+
 pub struct UserUploadsIncludeOptions {
     pub albums: bool,
     pub albums_cover_art: bool,

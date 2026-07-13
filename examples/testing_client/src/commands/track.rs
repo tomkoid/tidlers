@@ -1,5 +1,5 @@
 use crate::args::TrackCommands;
-use tidlers::TidalClient;
+use tidlers::{TidalClient, client::models::track::config::TrackPlaybackInfoConfig};
 
 pub async fn execute(
     tidal: &mut TidalClient,
@@ -14,8 +14,15 @@ pub async fn execute(
             println!("Track Info:\n{:#?}\n", track_info);
             println!("Track Mix:\n{:#?}\n", track_mix);
 
-            tidal.set_audio_quality(quality.to_api_quality());
-            let playback_info = tidal.get_track_postpaywall_playback_info(track_id).await?;
+            let playback_info = tidal
+                .get_track_postpaywall_playback_info(
+                    track_id,
+                    Some(TrackPlaybackInfoConfig {
+                        audio_quality: Some(quality.to_api_quality()),
+                        ..Default::default() // default here means that it uses the session set config
+                    }),
+                )
+                .await?;
             println!("Playback Info:\n{:#?}", playback_info);
         }
 

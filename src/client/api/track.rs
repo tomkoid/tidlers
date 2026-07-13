@@ -10,8 +10,11 @@ use crate::{
             mixes::TrackMixResponse,
             playback::AssetPresentation,
             track::{
-                DashManifest, JsonTrackManifest, LyricsResponse, ParsedTrackManifest, Track,
-                TrackPlaybackInfoResponse, TrackRadioResponse,
+                LyricsResponse, Track, TrackRadioResponse,
+                config::TrackPlaybackInfoConfig,
+                playback::{
+                    DashManifest, JsonTrackManifest, ParsedTrackManifest, TrackPlaybackInfoResponse,
+                },
             },
         },
     },
@@ -161,6 +164,7 @@ impl TidalClient {
     }
 
     /// Gets track playback information including streaming URLs and manifest
+    /// Takes in a track ID and optionally a config that overrides session set config
     ///
     /// # Example
     ///
@@ -169,7 +173,7 @@ impl TidalClient {
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
-    /// let playback = client.get_track_postpaywall_playback_info("123456789").await?;
+    /// let playback = client.get_track_postpaywall_playback_info("123456789", None).await?;
     /// if let Some(url) = playback.get_primary_url() {
     ///     println!("Stream URL: {}", url);
     /// }
@@ -179,10 +183,19 @@ impl TidalClient {
     pub async fn get_track_postpaywall_playback_info(
         &self,
         track_id: impl Into<TrackId>,
+        config: Option<TrackPlaybackInfoConfig>,
     ) -> Result<TrackPlaybackInfoResponse, TidalError> {
         let track_id = track_id.into();
-        let audio_quality = self.session.audio_quality.to_string();
-        let playback_mode = self.session.playback_mode.to_string();
+
+        let config = config.unwrap_or_default();
+
+        let audio_quality = config
+            .audio_quality
+            .unwrap_or(self.session.audio_quality.clone());
+        let playback_mode = config
+            .playback_mode
+            .unwrap_or(self.session.playback_mode.clone());
+        let asset_presentation = config.asset_presentation.unwrap_or(AssetPresentation::Full);
 
         let body: String = self
             .request(
@@ -190,9 +203,9 @@ impl TidalClient {
                 format!("/tracks/{}/playbackinfopostpaywall", track_id),
             )
             .with_country_code()
-            .with_param("audioquality", audio_quality)
-            .with_param("playbackmode", playback_mode)
-            .with_param("assetpresentation", AssetPresentation::Full.to_string())
+            .with_param("audioquality", audio_quality.to_string())
+            .with_param("playbackmode", playback_mode.to_string())
+            .with_param("assetpresentation", asset_presentation.to_string())
             .send_raw()
             .await?;
 

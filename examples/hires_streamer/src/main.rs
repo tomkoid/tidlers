@@ -103,7 +103,7 @@ async fn main() -> Result<()> {
     // get playback information
     println!("Fetching playback information...");
     let playback_info = tidal
-        .get_track_postpaywall_playback_info(track_id.to_string())
+        .get_track_postpaywall_playback_info(track_id.to_string(), None)
         .await?;
 
     println!("Audio Mode: {}", playback_info.audio_mode);

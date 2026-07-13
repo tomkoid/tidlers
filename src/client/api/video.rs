@@ -1,3 +1,4 @@
+use crate::client::models::video::config::VideoPlaybackInfoConfig;
 use crate::client::models::video::playback::EmuVideoManifest;
 use crate::client::models::video::playback::VideoPlaybackInfoResponse;
 
@@ -25,11 +26,19 @@ impl TidalClient {
     pub async fn get_video_postpaywall_playback_info(
         &self,
         video_id: impl Into<VideoId>,
+        config: Option<VideoPlaybackInfoConfig>,
     ) -> Result<VideoPlaybackInfoResponse, TidalError> {
         let video_id = video_id.into();
 
-        let video_quality = self.session.video_quality.to_string();
-        let playback_mode = self.session.playback_mode.to_string();
+        let config = config.unwrap_or_default();
+
+        let video_quality = config
+            .video_quality
+            .unwrap_or(self.session.video_quality.clone());
+        let playback_mode = config
+            .playback_mode
+            .unwrap_or(self.session.playback_mode.clone());
+        let asset_presentation = config.asset_presentation.unwrap_or(AssetPresentation::Full);
 
         let body: String = self
             .request(
@@ -37,9 +46,9 @@ impl TidalClient {
                 format!("/videos/{}/playbackinfopostpaywall", video_id),
             )
             .with_country_code()
-            .with_param("videoquality", video_quality)
-            .with_param("playbackmode", playback_mode)
-            .with_param("assetpresentation", AssetPresentation::Full.to_string())
+            .with_param("videoquality", video_quality.to_string())
+            .with_param("playbackmode", playback_mode.to_string())
+            .with_param("assetpresentation", asset_presentation.to_string())
             .send_raw()
             .await?;
 
