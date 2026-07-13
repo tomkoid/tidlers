@@ -18,6 +18,7 @@ pub mod search;
 pub mod subscription;
 pub mod track;
 pub mod user;
+pub mod video;
 
 // backwards compat
 pub mod mixes {

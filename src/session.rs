@@ -1,6 +1,6 @@
 use crate::{
     auth::TidalAuth,
-    client::models::playback::{AudioQuality, PlaybackMode},
+    client::models::playback::{AudioQuality, PlaybackMode, VideoQuality},
 };
 
 /// Contains session configuration for a Tidal client
@@ -16,6 +16,9 @@ pub struct TidalSession {
 
     #[serde(default = "default_audio_quality")]
     pub audio_quality: AudioQuality,
+
+    #[serde(default = "default_video_quality")]
+    pub video_quality: VideoQuality,
 
     #[serde(default = "default_playback_mode")]
     pub playback_mode: PlaybackMode,
@@ -33,6 +36,10 @@ fn default_audio_quality() -> AudioQuality {
     AudioQuality::High
 }
 
+fn default_video_quality() -> VideoQuality {
+    VideoQuality::High
+}
+
 fn default_playback_mode() -> PlaybackMode {
     PlaybackMode::Stream
 }
@@ -46,6 +53,7 @@ impl TidalSession {
             time_offset: default_time_offset(),
 
             audio_quality: AudioQuality::High,
+            video_quality: VideoQuality::High,
             playback_mode: PlaybackMode::Stream,
         }
     }

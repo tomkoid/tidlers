@@ -15,3 +15,4 @@ pub mod subscription;
 pub mod track;
 pub mod user;
 pub mod user_info;
+pub mod video;

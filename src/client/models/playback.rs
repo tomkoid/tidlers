@@ -9,6 +9,12 @@ pub enum AudioQuality {
     HiRes,
 }
 
+/// Video quality levels available for streaming
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum VideoQuality {
+    High,
+}
+
 /// Playback mode for tracks
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum PlaybackMode {
@@ -30,6 +36,14 @@ impl fmt::Display for AudioQuality {
             Self::High => write!(f, "HIGH"),
             Self::Lossless => write!(f, "LOSSLESS"),
             Self::HiRes => write!(f, "HI_RES"),
+        }
+    }
+}
+
+impl fmt::Display for VideoQuality {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::High => write!(f, "HIGH"),
         }
     }
 }

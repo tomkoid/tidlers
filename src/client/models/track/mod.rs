@@ -5,7 +5,7 @@ use crate::client::models::{album::Album, artist::Artist, media::MediaMetadata};
 pub mod config;
 pub mod user_uploads;
 
-/// Represents a music track
+/// Represents a track
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Track {

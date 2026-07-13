@@ -7,6 +7,7 @@ mod page;
 mod playlist;
 mod search;
 mod track;
+mod video;
 
 use crate::{args::Commands, save::remove_session_data};
 use tidlers::{TidalClient, client::models::track::config::UserUploadsIncludeOptions};
@@ -61,6 +62,13 @@ pub async fn execute_command(mut tidal: TidalClient, command: Commands) -> eyre:
 
         Commands::Track { track_id, command } => {
             track::execute(&mut tidal, track_id, command).await?;
+        }
+
+        Commands::Video {
+            track_id: video_id,
+            command,
+        } => {
+            video::execute(&mut tidal, video_id, command).await?;
         }
 
         Commands::Album { command, album_id } => {

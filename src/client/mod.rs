@@ -8,7 +8,7 @@ pub mod pkce;
 use crate::{
     auth::TidalAuth,
     client::models::{
-        playback::{AudioQuality, PlaybackMode},
+        playback::{AudioQuality, PlaybackMode, VideoQuality},
         user::User,
     },
     error::TidalError,
@@ -77,6 +77,11 @@ impl TidalClient {
     /// ```
     pub fn set_audio_quality(&mut self, quality: AudioQuality) {
         self.session.audio_quality = quality;
+    }
+
+    /// Sets the video quality preference for playback
+    pub fn set_video_quality(&mut self, quality: VideoQuality) {
+        self.session.video_quality = quality;
     }
 
     /// Sets the time offset for the session

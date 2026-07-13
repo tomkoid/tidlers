@@ -1,6 +1,7 @@
 use clap::Parser;
 use tidlers::client::models::{
-    collection::favorites::FavoriteResourceType, playback::AudioQuality,
+    collection::favorites::FavoriteResourceType,
+    playback::{AudioQuality, VideoQuality},
 };
 
 #[derive(Parser, Debug)]
@@ -77,6 +78,15 @@ pub enum Commands {
 
         #[clap(subcommand)]
         command: TrackCommands,
+    },
+
+    /// Show details of a specific track
+    Video {
+        #[clap(required = true)]
+        track_id: String,
+
+        #[clap(subcommand)]
+        command: VideoCommands,
     },
 
     /// Show details of a specific album
@@ -340,6 +350,15 @@ pub enum TrackCommands {
     Lyrics,
 }
 
+#[derive(Parser, Debug, Clone)]
+pub enum VideoCommands {
+    /// Show video info
+    Info {
+        #[clap(short, long, default_value_t = ArgVideoQuality::High, value_enum)]
+        quality: ArgVideoQuality,
+    },
+}
+
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
 pub enum ArgSharingLevel {
     #[clap(name = "PUBLIC")]
@@ -363,6 +382,13 @@ pub enum ArgAudioQuality {
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
+pub enum ArgVideoQuality {
+    #[clap(name = "high")]
+    #[default]
+    High,
+}
+
+#[derive(clap::ValueEnum, Clone, Default, Debug)]
 pub enum ArgFavoriteResourceType {
     #[clap(name = "tracks")]
     #[default]
@@ -378,6 +404,14 @@ impl ArgAudioQuality {
             ArgAudioQuality::High => AudioQuality::High,
             ArgAudioQuality::Lossless => AudioQuality::Lossless,
             ArgAudioQuality::HiRes => AudioQuality::HiRes,
+        }
+    }
+}
+
+impl ArgVideoQuality {
+    pub fn to_api_quality(&self) -> VideoQuality {
+        match self {
+            ArgVideoQuality::High => VideoQuality::High,
         }
     }
 }
