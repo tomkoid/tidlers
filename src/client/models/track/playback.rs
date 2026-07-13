@@ -28,7 +28,7 @@ impl TrackPlaybackInfoResponse {
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// # let auth = TidalAuth::with_oauth();
     /// # let client = TidalClient::new(&auth);
-    /// let playback = client.get_track_postpaywall_playback_info("123456789").await?;
+    /// let playback = client.get_track_postpaywall_playback_info("123456789", None).await?;
     /// if let Some(urls) = playback.get_stream_urls() {
     ///     for url in urls {
     ///         println!("URL: {}", url);
@@ -127,7 +127,7 @@ impl DashManifest {
     /// # Example
     ///
     /// ```
-    /// # use tidlers::client::models::track::DashManifest;
+    /// # use tidlers::client::models::track::playback::DashManifest;
     /// # let manifest = DashManifest {
     /// #     mime_type: "audio/mp4".to_string(),
     /// #     codecs: "mp4a.40.2".to_string(),

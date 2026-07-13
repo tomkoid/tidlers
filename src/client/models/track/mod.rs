@@ -73,7 +73,7 @@ pub struct LyricsResponse {
 
 #[cfg(test)]
 mod tests {
-    use crate::client::models::track::{
+    use crate::client::models::track::playback::{
         DashManifest, JsonTrackManifest, ParsedTrackManifest, TrackPlaybackInfoResponse,
     };
 
