@@ -383,6 +383,10 @@ pub enum ArgAudioQuality {
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
 pub enum ArgVideoQuality {
+    #[clap(name = "low")]
+    Low,
+    #[clap(name = "medium")]
+    Medium,
     #[clap(name = "high")]
     #[default]
     High,
@@ -411,6 +415,8 @@ impl ArgAudioQuality {
 impl ArgVideoQuality {
     pub fn to_api_quality(&self) -> VideoQuality {
         match self {
+            ArgVideoQuality::Low => VideoQuality::Low,
+            ArgVideoQuality::Medium => VideoQuality::Medium,
             ArgVideoQuality::High => VideoQuality::High,
         }
     }

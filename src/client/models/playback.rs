@@ -12,6 +12,8 @@ pub enum AudioQuality {
 /// Video quality levels available for streaming
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum VideoQuality {
+    Low,
+    Medium,
     High,
 }
 
@@ -43,6 +45,8 @@ impl fmt::Display for AudioQuality {
 impl fmt::Display for VideoQuality {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Low => write!(f, "LOW"),
+            Self::Medium => write!(f, "MEDIUM"),
             Self::High => write!(f, "HIGH"),
         }
     }
