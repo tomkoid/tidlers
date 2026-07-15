@@ -25,7 +25,8 @@ pub struct Video {
     pub allow_streaming: bool,
     pub explicit: bool,
     pub popularity: u32,
-    pub r#type: String,
+    #[serde(rename = "type")]
+    pub video_type: String,
     pub ads_url: Option<String>,
     pub ads_pre_paywall_only: bool,
     pub artist: Artist,
