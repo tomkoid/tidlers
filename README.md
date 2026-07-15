@@ -1,27 +1,27 @@
 # Tidlers
 
-A Rust library for interacting with the TIDAL music streaming API.
+An unofficial Rust library for interacting with the TIDAL music streaming API.
+
+This library has API support for tracks, albums, artists, videos, playlists, collection, mixes, search, user, subscription information and much more...
 
 ## Features
 
+- Audio quality support: Low, High, Lossless, HiRes (only with PKCE auth)
 - Multiple auth flows:
   - OAuth2 device-code flow (`TidalAuth::with_oauth()`)
   - OAuth2 PKCE flow for HiRes streaming (`TidalAuth::with_pkce()`)
   - Client-credentials flow (`TidalAuth::with_api_token(...)`)
   - Direct access token (`TidalAuth::with_access_token(...)`)
-- Access-token refresh support
-- Session persistence (`get_json()` / `from_json()`)
-- Audio quality support: Low, High, Lossless, HiRes
 - DASH manifest parsing for HiRes playback
-- API support for tracks, albums, artists, playlists, collection, mixes, search, user, and subscription
+- Session persistence (`get_json()` / `from_json()`)
 - `tracing` for auth/session/request flows
 
 ## Projects using Tidlers
 
-Tidlers is still in WIP state, but here are some projects using it:
+Tidlers is in active development, here are some projects using it:
 
-- [yadal](https://codeberg.org/tomkoid/yadal) - Command-line downloader with parallel downloads and all quality support
 - [Maré Player](https://github.com/glima/mare-player) - COSMIC TIDAL applet/standalone app
+- [yadal](https://codeberg.org/tomkoid/yadal) - Command-line downloader with parallel downloads and all quality support
 
 ## Installation
 
@@ -34,6 +34,32 @@ Or use the latest git version:
 ```toml
 [dependencies]
 tidlers = { git = "https://codeberg.org/tomkoid/tidlers.git" }
+```
+
+## Some examples
+
+### `pkce-login`
+
+Minimal PKCE login example.
+
+```bash
+cargo run -p pkce-login
+```
+
+### `login-save`
+
+Login + session persistence usage.
+
+```bash
+cargo run -p login-save
+```
+
+### `hires-streamer`
+
+HiRes streaming and DASH manifest usage.
+
+```bash
+cargo run -p hires-streamer
 ```
 
 ## Quick Start (OAuth device-code flow)
@@ -174,43 +200,6 @@ let mix = client.get_track_mix("66035607", Some(20), Some(0)).await?;
 println!("Mix items: {}", mix.items.len());
 ```
 
-## Examples
-
-### `testing-client`
-
-General CLI for testing endpoints and auth flows.
-
-```bash
-# Device-code OAuth
-cargo run -p testing-client -- user-info
-
-# PKCE auth (optional via CLI flag)
-cargo run -p testing-client -- --pkce user-info
-```
-
-### `pkce-login`
-
-Minimal PKCE login example.
-
-```bash
-cargo run -p pkce-login
-```
-
-### `login-save`
-
-Shows login + session persistence usage.
-
-```bash
-cargo run -p login-save
-```
-
-### `hires-streamer`
-
-HiRes streaming and DASH manifest usage.
-
-```bash
-cargo run -p hires-streamer
-```
 
 ## Tracing
 
@@ -234,6 +223,10 @@ Then run with:
 ```bash
 RUST_LOG=tidlers=debug cargo run -p testing-client -- user-info
 ```
+
+## Contributing
+
+If you have a feature/suggestion/fix that would make this project better, please fork the repo and create a pull request or simply open an issue on [Codeberg](https://codeberg.org/tomkoid/tidlers). I'm very open to new features.
 
 ## Development
 
