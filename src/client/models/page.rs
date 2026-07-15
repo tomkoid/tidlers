@@ -20,7 +20,7 @@ pub struct PageRow {
 pub struct PageModule {
     pub id: String,
     #[serde(rename = "type")]
-    pub r#type: String,
+    pub page_type: String,
     pub title: String,
     pub description: String,
     pub layout: Option<String>,
