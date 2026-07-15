@@ -111,7 +111,7 @@ let track = client.get_track("66035607").await?;
 println!("{} - {}", track.artist.name, track.title);
 
 client.set_audio_quality(AudioQuality::HiRes);
-let playback = client.get_track_postpaywall_playback_info("66035607").await?;
+let playback = client.get_track_postpaywall_playback_info("66035607", None).await?;
 if let Some(urls) = playback.get_stream_urls() {
     println!("Stream URLs: {urls:?}");
 }
