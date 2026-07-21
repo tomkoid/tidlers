@@ -29,7 +29,7 @@ fn default_locale() -> String {
 }
 
 fn default_time_offset() -> String {
-    "+00:00".to_string()
+    chrono::Local::now().format("%:z").to_string()
 }
 
 fn default_audio_quality() -> AudioQuality {

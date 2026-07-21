@@ -26,6 +26,7 @@ tidlers = { path = "." }
 
 [dependencies]
 base64 = "0.22.1"
+chrono = "0.4.45"
 quick-xml = "0.41.0"
 rand = "0.10.2"
 reqwest = { version = "0.13.4", features = ["json", "form"] }
