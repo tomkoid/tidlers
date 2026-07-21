@@ -108,10 +108,8 @@ pub struct AlbumItemsEntry {
 impl Album {
     pub fn get_cover_url(&self, size_x: u32, size_y: u32) -> Option<String> {
         // split string by dashes
-        let cover_parts: Vec<&str> = match self.cover {
-            Some(ref cover) => cover.split('-').collect(),
-            None => return None,
-        };
+        let cover = self.cover.clone()?;
+        let cover_parts: Vec<&str> = cover.split('-').collect();
 
         let mut cover_path = String::new();
         for part in cover_parts.iter() {
