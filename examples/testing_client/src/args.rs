@@ -348,6 +348,7 @@ pub enum TrackCommands {
     },
 
     Lyrics,
+    Credits,
 }
 
 #[derive(Parser, Debug, Clone)]

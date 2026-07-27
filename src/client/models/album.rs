@@ -126,13 +126,14 @@ impl Album {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AlbumCredit {
+pub struct GeneralCredit {
     #[serde(rename = "type")]
     pub credit_type: String,
     pub contributors: Vec<ArtistNameId>,
 }
 
-pub type AlbumCreditsResponse = Vec<AlbumCredit>;
+pub type GeneralCreditsResponse = Vec<GeneralCredit>;
+pub type AlbumCreditsResponse = Vec<GeneralCredit>; // for backwards compat
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -140,7 +141,7 @@ pub struct AlbumItemsWithCreditsEntry {
     pub item: Track,
     #[serde(rename = "type")]
     pub item_type: String,
-    pub credits: Vec<AlbumCredit>,
+    pub credits: Vec<GeneralCredit>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

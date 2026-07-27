@@ -7,6 +7,7 @@ use crate::{
     client::{
         TidalClient,
         models::{
+            album::{AlbumCreditsResponse, GeneralCreditsResponse},
             mixes::TrackMixResponse,
             playback::AssetPresentation,
             track::{
@@ -292,6 +293,21 @@ impl TidalClient {
             }) => TidalError::NotFound,
             _ => e,
         })
+    }
+
+    /// Retrieves album credits information
+    pub async fn get_track_credits(
+        &self,
+        track_id: impl Into<TrackId>,
+    ) -> Result<GeneralCreditsResponse, TidalError> {
+        let track_id = track_id.into();
+        self.request(
+            reqwest::Method::GET,
+            format!("/tracks/{}/credits", track_id),
+        )
+        .with_country_code()
+        .send()
+        .await
     }
 
     /// Retrieves the current user's uploaded tracks.

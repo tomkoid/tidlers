@@ -3,7 +3,7 @@ use crate::{
         TidalClient,
         models::album::{
             AlbumCreditsResponse, AlbumItemsResponse, AlbumItemsWithCreditsResponse, AlbumResponse,
-            AlbumReviewResponse,
+            AlbumReviewResponse, GeneralCreditsResponse,
         },
     },
     error::TidalError,
@@ -82,7 +82,7 @@ impl TidalClient {
     pub async fn get_album_credits(
         &self,
         album_id: impl Into<AlbumId>,
-    ) -> Result<AlbumCreditsResponse, TidalError> {
+    ) -> Result<GeneralCreditsResponse, TidalError> {
         let album_id = album_id.into();
         self.request(
             reqwest::Method::GET,

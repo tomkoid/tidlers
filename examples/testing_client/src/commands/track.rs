@@ -42,6 +42,16 @@ pub async fn execute(
 
             println!("Lyrics:\n{:#?}", lyrics?);
         }
+
+        TrackCommands::Credits => {
+            let credits = tidal.get_track_credits(track_id).await;
+
+            if let Err(e) = &credits {
+                eprintln!("Failed to fetch credits: {e}");
+            }
+
+            println!("Credits:\n{:#?}", credits?);
+        }
     };
 
     Ok(())
