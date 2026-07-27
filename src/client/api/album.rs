@@ -2,8 +2,8 @@ use crate::{
     client::{
         TidalClient,
         models::album::{
-            AlbumCreditsResponse, AlbumItemsResponse, AlbumItemsWithCreditsResponse, AlbumResponse,
-            AlbumReviewResponse, GeneralCreditsResponse,
+            AlbumItemsResponse, AlbumItemsWithCreditsResponse, AlbumResponse, AlbumReviewResponse,
+            GeneralCreditsResponse,
         },
     },
     error::TidalError,

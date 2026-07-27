@@ -7,7 +7,7 @@ use crate::{
     client::{
         TidalClient,
         models::{
-            album::{AlbumCreditsResponse, GeneralCreditsResponse},
+            album::GeneralCreditsResponse,
             mixes::TrackMixResponse,
             playback::AssetPresentation,
             track::{
@@ -299,6 +299,7 @@ impl TidalClient {
     pub async fn get_track_credits(
         &self,
         track_id: impl Into<TrackId>,
+        include_contributors: bool,
     ) -> Result<GeneralCreditsResponse, TidalError> {
         let track_id = track_id.into();
         self.request(
@@ -306,6 +307,7 @@ impl TidalClient {
             format!("/tracks/{}/credits", track_id),
         )
         .with_country_code()
+        .with_param("includeContributors", include_contributors.to_string())
         .send()
         .await
     }

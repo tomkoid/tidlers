@@ -44,7 +44,7 @@ pub async fn execute(
         }
 
         TrackCommands::Credits => {
-            let credits = tidal.get_track_credits(track_id).await;
+            let credits = tidal.get_track_credits(track_id, true).await;
 
             if let Err(e) = &credits {
                 eprintln!("Failed to fetch credits: {e}");
