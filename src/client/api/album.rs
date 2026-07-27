@@ -82,6 +82,7 @@ impl TidalClient {
     pub async fn get_album_credits(
         &self,
         album_id: impl Into<AlbumId>,
+        include_contributors: bool,
     ) -> Result<GeneralCreditsResponse, TidalError> {
         let album_id = album_id.into();
         self.request(
@@ -89,6 +90,7 @@ impl TidalClient {
             format!("/albums/{}/credits", album_id),
         )
         .with_country_code()
+        .with_param("includeContributors", include_contributors.to_string())
         .send()
         .await
     }

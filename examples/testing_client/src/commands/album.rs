@@ -18,7 +18,7 @@ pub async fn execute(
         }
 
         AlbumCommands::Credits => {
-            let credits = tidal.get_album_credits(album_id).await?;
+            let credits = tidal.get_album_credits(album_id, true).await?;
             println!("{:#?}", credits);
         }
 
