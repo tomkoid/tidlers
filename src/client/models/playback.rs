@@ -1,7 +1,7 @@
 use std::fmt;
 
 /// Audio quality levels available for streaming
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 pub enum AudioQuality {
     Low,
     High,
@@ -10,7 +10,7 @@ pub enum AudioQuality {
 }
 
 /// Video quality levels available for streaming
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 pub enum VideoQuality {
     Low,
     Medium,
@@ -18,14 +18,14 @@ pub enum VideoQuality {
 }
 
 /// Playback mode for tracks
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 pub enum PlaybackMode {
     Stream,
     Offline,
 }
 
 /// Asset presentation type for media
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 pub enum AssetPresentation {
     Full,
     Preview,
