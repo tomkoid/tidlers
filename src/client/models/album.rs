@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::client::models::{ArtistNameId, artist::Artist, media::MediaMetadata, track::Track};
 
 /// Used generically to represent an album in various responses
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Album {
     pub id: i64,
@@ -15,7 +15,7 @@ pub struct Album {
 }
 
 /// Response from TIDAL when requesting album info
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbumResponse {
     pub id: i64,
@@ -51,7 +51,7 @@ pub struct AlbumResponse {
     pub artists: Vec<Artist>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtistAlbum {
     pub id: i64,
@@ -88,7 +88,7 @@ pub struct ArtistAlbum {
     pub artists: Vec<Artist>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbumItemsResponse {
     pub limit: i32,
@@ -97,7 +97,7 @@ pub struct AlbumItemsResponse {
     pub items: Vec<AlbumItemsEntry>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbumItemsEntry {
     pub item: Track,

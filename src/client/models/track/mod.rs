@@ -7,7 +7,7 @@ pub mod playback;
 pub mod user_uploads;
 
 /// Represents a track
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Track {
     pub id: u64,
@@ -50,7 +50,7 @@ pub struct Track {
     pub item_uuid: Option<String>,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackRadioResponse {
     pub limit: u32,
@@ -59,7 +59,7 @@ pub struct TrackRadioResponse {
     pub items: Vec<Track>,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LyricsResponse {
     pub track_id: u32,
