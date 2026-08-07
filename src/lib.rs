@@ -1,14 +1,20 @@
-//! # Tidlers - Tidal API Client
+//! # Tidlers - TIDAL API Client
 //!
-//! A Rust library for interacting with the Tidal music streaming API.
+//! An unofficial Rust library for interacting with the TIDAL music streaming API.
+//!
+//! This library has API support for tracks, albums, artists, videos, playlists, collection, mixes, search, user, subscription information and much more...
 //!
 //! ## Features
 //!
-//! - OAuth2 authentication flow
-//! - Track, album, artist, and playlist information retrieval
-//! - Search functionality
-//! - Audio quality configuration
-//! - Session management and serialization
+//! - Audio quality support: Low, High, Lossless, HiRes (only with PKCE auth)
+//! - Multiple auth flows:
+//!   - OAuth2 device-code flow (`TidalAuth::with_oauth()`)
+//!   - OAuth2 PKCE flow for HiRes streaming (`TidalAuth::with_pkce()`)
+//!   - Client-credentials flow (`TidalAuth::with_api_token(...)`)
+//!   - Direct access token (`TidalAuth::with_access_token(...)`)
+//! - DASH manifest parsing for HiRes playback
+//! - Session persistence (`get_json()` / `from_json()`)
+//! - `tracing` for auth/session/request flows
 //!
 //! ## Example
 //!
@@ -32,6 +38,8 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! For more examples, check the [examples directory](https://codeberg.org/tomkoid/tidlers/src/branch/main/examples) in Tidlers
 
 pub mod auth;
 pub mod client;
