@@ -67,6 +67,7 @@ pub struct LyricsResponse {
     pub provider_commontrack_id: String,
     pub provider_lyrics_id: String,
     pub lyrics: String,
+    pub subtitles: Option<String>,
     #[serde(rename = "isRightToLeft")]
     pub right_to_left: bool,
 }
