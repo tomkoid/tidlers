@@ -7,6 +7,9 @@ pub enum AudioQuality {
     High,
     Lossless,
     HiRes,
+
+    /// Highest quality available
+    HiResLossless,
 }
 
 /// Video quality levels available for streaming
@@ -38,6 +41,7 @@ impl fmt::Display for AudioQuality {
             Self::High => write!(f, "HIGH"),
             Self::Lossless => write!(f, "LOSSLESS"),
             Self::HiRes => write!(f, "HI_RES"),
+            Self::HiResLossless => write!(f, "HI_RES_LOSSLESS"),
         }
     }
 }

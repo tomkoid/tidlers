@@ -380,6 +380,8 @@ pub enum ArgAudioQuality {
     Lossless,
     #[clap(name = "hires")]
     HiRes,
+    #[clap(name = "hiresl")]
+    HiResLossless,
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
@@ -409,6 +411,7 @@ impl ArgAudioQuality {
             ArgAudioQuality::High => AudioQuality::High,
             ArgAudioQuality::Lossless => AudioQuality::Lossless,
             ArgAudioQuality::HiRes => AudioQuality::HiRes,
+            ArgAudioQuality::HiResLossless => AudioQuality::HiResLossless,
         }
     }
 }
