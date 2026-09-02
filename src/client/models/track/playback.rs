@@ -12,6 +12,8 @@ pub struct TrackPlaybackInfoResponse {
     pub manifest: Option<JsonTrackManifest>,
     #[serde(skip_deserializing, default)]
     pub manifest_parsed: Option<ParsedTrackManifest>,
+    pub bit_depth: Option<u32>,
+    pub sample_rate: Option<u32>,
     pub album_replay_gain: f64,
     pub album_peak_amplitude: f64,
     pub track_replay_gain: f64,
