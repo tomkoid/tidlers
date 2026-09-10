@@ -2,8 +2,6 @@ use crate::client::models::video::config::VideoPlaybackInfoConfig;
 use crate::client::models::video::playback::EmuVideoManifest;
 use crate::client::models::video::playback::VideoPlaybackInfoResponse;
 
-use base64::{Engine, engine::general_purpose};
-
 use crate::{
     TidalClient, TidalError,
     client::models::{playback::AssetPresentation, video::Video},
@@ -54,9 +52,7 @@ impl TidalClient {
 
         let parsed = serde_json::from_str::<serde_json::Value>(&body)?;
 
-        let manifest_decoded =
-            general_purpose::STANDARD.decode(parsed["manifest"].as_str().unwrap())?;
-        let manifest_decoded_str = String::from_utf8(manifest_decoded)?;
+        let manifest_decoded_str = Self::decode_playback_manifest(&parsed)?;
 
         let mut response: VideoPlaybackInfoResponse = serde_json::from_str(&body)?;
 
