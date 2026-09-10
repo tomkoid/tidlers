@@ -1,12 +1,23 @@
 /// Response containing track playback information including manifest data
+///
+/// Every field but `track_id` defaults when TIDAL omits it: the descriptive
+/// scalars vary by tier, account and track, and the manifest is what the
+/// caller came for — losing the whole response over an absent `audioMode` or
+/// replay gain serves nobody. A missing gain defaults to 0.0, which is the
+/// no-adjustment value a client would apply anyway.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackPlaybackInfoResponse {
     pub track_id: u64,
+    #[serde(default)]
     pub asset_presentation: String,
+    #[serde(default)]
     pub audio_mode: String,
+    #[serde(default)]
     pub audio_quality: String,
+    #[serde(default)]
     pub manifest_mime_type: String,
+    #[serde(default)]
     pub manifest_hash: String,
     #[serde(skip_deserializing, default)]
     pub manifest: Option<JsonTrackManifest>,
@@ -14,9 +25,13 @@ pub struct TrackPlaybackInfoResponse {
     pub manifest_parsed: Option<ParsedTrackManifest>,
     pub bit_depth: Option<u32>,
     pub sample_rate: Option<u32>,
+    #[serde(default)]
     pub album_replay_gain: f64,
+    #[serde(default)]
     pub album_peak_amplitude: f64,
+    #[serde(default)]
     pub track_replay_gain: f64,
+    #[serde(default)]
     pub track_peak_amplitude: f64,
 }
 
@@ -148,5 +163,25 @@ impl DashManifest {
     pub fn get_segment_url(&self, segment_number: u32) -> Option<String> {
         self.get_media_template()
             .map(|template| template.replace("$Number$", &segment_number.to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::TrackPlaybackInfoResponse;
+
+    #[test]
+    fn parses_a_response_that_carries_only_the_essentials() {
+        // Everything TIDAL can leave out, left out.
+        let json = r#"{ "trackId": 123456789, "audioQuality": "HI_RES_LOSSLESS" }"#;
+
+        let response: TrackPlaybackInfoResponse =
+            serde_json::from_str(json).expect("response should parse");
+
+        assert_eq!(response.track_id, 123_456_789);
+        assert_eq!(response.audio_quality, "HI_RES_LOSSLESS");
+        assert_eq!(response.audio_mode, "");
+        assert_eq!(response.album_replay_gain, 0.0);
+        assert_eq!(response.bit_depth, None);
     }
 }
