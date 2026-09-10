@@ -23,6 +23,14 @@ pub struct TrackPlaybackInfoResponse {
     pub manifest: Option<JsonTrackManifest>,
     #[serde(skip_deserializing, default)]
     pub manifest_parsed: Option<ParsedTrackManifest>,
+    /// The manifest as TIDAL sent it, base64-decoded but otherwise untouched.
+    ///
+    /// For the FLAC tiers that manifest is a DASH MPD, and a player that hands
+    /// it to a demuxer (GStreamer's `dashdemux` via a `data:application/dash+xml`
+    /// URI, say) needs the XML verbatim — [`DashManifest`] describes the
+    /// manifest but cannot reproduce it.
+    #[serde(skip_deserializing, default)]
+    pub manifest_raw: Option<String>,
     pub bit_depth: Option<u32>,
     pub sample_rate: Option<u32>,
     #[serde(default)]

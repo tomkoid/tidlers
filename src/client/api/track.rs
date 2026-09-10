@@ -257,6 +257,8 @@ impl TidalClient {
             }
         }
 
+        response.manifest_raw = Some(manifest_decoded_str);
+
         Ok(response)
     }
 

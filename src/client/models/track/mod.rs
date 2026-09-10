@@ -96,6 +96,7 @@ mod tests {
             manifest_hash: "hash".to_string(),
             manifest: Some(manifest.clone()),
             manifest_parsed: Some(ParsedTrackManifest::Json(manifest)),
+            manifest_raw: None,
             bit_depth: Some(16),
             sample_rate: Some(44100),
             album_replay_gain: 0.0,
