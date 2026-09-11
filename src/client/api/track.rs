@@ -51,6 +51,26 @@ impl TidalClient {
             .await
     }
 
+    /// Decodes the base64 `manifest` field of a playbackinfo response.
+    ///
+    /// Shared by the track and video endpoints. `manifest` is absent whenever
+    /// TIDAL answers 200 with something that isn't a playable stream, so a
+    /// missing or non-string field is an error about the response rather than
+    /// a reason to take the caller's process down.
+    pub(crate) fn decode_playback_manifest(body: &serde_json::Value) -> Result<String, TidalError> {
+        let encoded = body
+            .get("manifest")
+            .and_then(serde_json::Value::as_str)
+            .ok_or_else(|| {
+                TidalError::InvalidResponse(
+                    "playback info response carries no manifest".to_string(),
+                )
+            })?;
+
+        let decoded = general_purpose::STANDARD.decode(encoded)?;
+        Ok(String::from_utf8(decoded)?)
+    }
+
     /// Parses a DASH XML manifest into a structured format
     fn parse_dash_manifest(xml: &str) -> Result<DashManifest, TidalError> {
         let mut reader = Reader::from_str(xml);
@@ -212,9 +232,7 @@ impl TidalClient {
 
         let parsed = serde_json::from_str::<serde_json::Value>(&body)?;
 
-        let manifest_decoded =
-            general_purpose::STANDARD.decode(parsed["manifest"].as_str().unwrap())?;
-        let manifest_decoded_str = String::from_utf8(manifest_decoded)?;
+        let manifest_decoded_str = Self::decode_playback_manifest(&parsed)?;
 
         let mut response: TrackPlaybackInfoResponse =
             serde_json::from_str::<TrackPlaybackInfoResponse>(&body)?;
@@ -238,6 +256,8 @@ impl TidalClient {
                 }
             }
         }
+
+        response.manifest_raw = Some(manifest_decoded_str);
 
         Ok(response)
     }
@@ -345,6 +365,20 @@ impl TidalClient {
 #[cfg(test)]
 mod tests {
     use crate::TidalClient;
+
+    #[test]
+    fn decode_playback_manifest_returns_the_decoded_manifest() {
+        // "{}" base64-encoded, the shape a JSON manifest arrives in.
+        let body = serde_json::json!({ "manifest": "e30=" });
+        let decoded = TidalClient::decode_playback_manifest(&body).expect("manifest should decode");
+        assert_eq!(decoded, "{}");
+    }
+
+    #[test]
+    fn decode_playback_manifest_errors_when_the_field_is_missing() {
+        let body = serde_json::json!({ "trackId": 123456789_u64 });
+        assert!(TidalClient::decode_playback_manifest(&body).is_err());
+    }
 
     #[test]
     fn parse_dash_manifest_extracts_expected_fields() {
