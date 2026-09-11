@@ -71,6 +71,75 @@ impl TidalClient {
         Ok(String::from_utf8(decoded)?)
     }
 
+    /// Decodes the standard XML entities (`&amp;`, `&lt;`, `&gt;`, `&quot;`,
+    /// `&apos;`) and numeric character references in a raw attribute/text
+    /// value pulled from quick-xml.
+    fn xml_unescape(input: &str) -> String {
+        let mut result = String::with_capacity(input.len());
+        let mut chars = input.chars().peekable();
+
+        while let Some(c) = chars.next() {
+            if c != '&' {
+                result.push(c);
+                continue;
+            }
+
+            let mut entity = String::new();
+            let mut terminated = false;
+
+            for _ in 0..16 {
+                match chars.peek() {
+                    Some(&nc) if nc == ';' => {
+                        chars.next();
+                        terminated = true;
+                        break;
+                    }
+                    Some(&nc) if nc.is_ascii_alphanumeric() || nc == '#' => {
+                        entity.push(nc);
+                        chars.next();
+                    }
+                    _ => break,
+                }
+            }
+
+            if !terminated {
+                result.push('&');
+                result.push_str(&entity);
+                continue;
+            }
+
+            let decoded = match entity.as_str() {
+                "amp" => Some('&'),
+                "lt" => Some('<'),
+                "gt" => Some('>'),
+                "quot" => Some('"'),
+                "apos" => Some('\''),
+                _ if entity.starts_with('#') => {
+                    let digits = &entity[1..];
+                    let code_point = digits
+                        .strip_prefix('x')
+                        .or_else(|| digits.strip_prefix('X'))
+                        .map(|hex| u32::from_str_radix(hex, 16))
+                        .unwrap_or_else(|| digits.parse::<u32>())
+                        .ok();
+                    code_point.and_then(char::from_u32)
+                }
+                _ => None,
+            };
+
+            match decoded {
+                Some(ch) => result.push(ch),
+                None => {
+                    result.push('&');
+                    result.push_str(&entity);
+                    result.push(';');
+                }
+            }
+        }
+
+        result
+    }
+
     /// Parses a DASH XML manifest into a structured format
     fn parse_dash_manifest(xml: &str) -> Result<DashManifest, TidalError> {
         let mut reader = Reader::from_str(xml);
@@ -93,7 +162,8 @@ impl TidalClient {
                     b"AdaptationSet" => {
                         for attr in e.attributes().flatten() {
                             if attr.key.as_ref() == b"mimeType" {
-                                mime_type = String::from_utf8_lossy(&attr.value).to_string();
+                                mime_type =
+                                    Self::xml_unescape(&String::from_utf8_lossy(&attr.value));
                             }
                         }
                     }
@@ -101,7 +171,8 @@ impl TidalClient {
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"codecs" => {
-                                    codecs = String::from_utf8_lossy(&attr.value).to_string();
+                                    codecs =
+                                        Self::xml_unescape(&String::from_utf8_lossy(&attr.value));
                                 }
                                 b"bandwidth" => {
                                     bitrate =
@@ -115,12 +186,14 @@ impl TidalClient {
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"initialization" => {
-                                    init_url =
-                                        Some(String::from_utf8_lossy(&attr.value).to_string());
+                                    init_url = Some(Self::xml_unescape(&String::from_utf8_lossy(
+                                        &attr.value,
+                                    )));
                                 }
                                 b"media" => {
-                                    media_url =
-                                        Some(String::from_utf8_lossy(&attr.value).to_string());
+                                    media_url = Some(Self::xml_unescape(&String::from_utf8_lossy(
+                                        &attr.value,
+                                    )));
                                 }
                                 b"timescale" => {
                                     timescale =
@@ -140,7 +213,7 @@ impl TidalClient {
                     }
                     b"BaseURL" => {
                         if let Ok(Event::Text(e)) = reader.read_event_into(&mut buf) {
-                            let url = String::from_utf8_lossy(e.as_ref()).to_string();
+                            let url = Self::xml_unescape(&String::from_utf8_lossy(e.as_ref()));
                             if !url.is_empty() {
                                 urls.push(url);
                             }

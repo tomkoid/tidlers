@@ -6,6 +6,8 @@ pub enum AudioQuality {
     Low,
     High,
     Lossless,
+
+    /// Recommended to use HiResLossless instead
     HiRes,
 
     /// Highest quality available
