@@ -46,6 +46,11 @@ pub struct AlbumResponse {
     pub popularity: u32,
     pub audio_quality: String,
     pub audio_modes: Vec<String>,
+    /// The tiers this release is actually available in. `audio_quality` above
+    /// names one tier and is not always the one that streams, so a client that
+    /// wants to describe a release reads this.
+    #[serde(default)]
+    pub media_metadata: MediaMetadata,
     pub upload: bool,
     pub artist: Artist,
     pub artists: Vec<Artist>,
@@ -82,6 +87,7 @@ pub struct ArtistAlbum {
     pub popularity: u32,
     pub audio_quality: String,
     pub audio_modes: Vec<String>,
+    #[serde(default)]
     pub media_metadata: MediaMetadata,
     pub upload: bool,
     pub artist: Artist,
@@ -159,4 +165,45 @@ pub struct AlbumReviewResponse {
     pub source: String,
     pub last_updated: String,
     pub text: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::AlbumResponse;
+
+    /// The fields an album response always carries, as a JSON literal the
+    /// tests below extend.
+    fn album_json(extra: &str) -> String {
+        format!(
+            r#"{{
+                "id": 9621920, "title": "Missa in memoriam", "duration": 1758,
+                "streamReady": true, "payToStream": false, "adSupportedStreamReady": true,
+                "djReady": true, "stemReady": false, "streamStartDate": "2010-01-01T00:00:00.000+0000",
+                "allowStreaming": true, "premiumStreamingOnly": false,
+                "numberOfTracks": 5, "numberOfVideos": 0, "numberOfVolumes": 1,
+                "releaseDate": "2006-01-01", "copyright": "c", "type": "ALBUM",
+                "version": null, "url": "https://tidal.com/album/9621920", "cover": "abc",
+                "vibrantColor": null, "videoCover": null, "explicit": false, "upc": "1",
+                "popularity": 1, "audioQuality": "HIGH", "audioModes": ["STEREO"],
+                "upload": false,
+                "artist": {{ "id": 1, "name": "Arrigo Barnabé", "type": "MAIN" }},
+                "artists": [{{ "id": 1, "name": "Arrigo Barnabé", "type": "MAIN" }}]
+                {extra}
+            }}"#
+        )
+    }
+
+    #[test]
+    fn reads_the_advertised_tiers() {
+        let json = album_json(r#", "mediaMetadata": { "tags": ["LOSSLESS", "HIRES_LOSSLESS"] }"#);
+        let album: AlbumResponse = serde_json::from_str(&json).expect("album should parse");
+        assert_eq!(album.media_metadata.tags, ["LOSSLESS", "HIRES_LOSSLESS"]);
+    }
+
+    #[test]
+    fn an_album_without_media_metadata_advertises_nothing() {
+        let album: AlbumResponse =
+            serde_json::from_str(&album_json("")).expect("album should parse");
+        assert!(album.media_metadata.tags.is_empty());
+    }
 }
