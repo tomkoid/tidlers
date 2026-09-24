@@ -89,7 +89,7 @@ impl TidalClient {
 
             for _ in 0..16 {
                 match chars.peek() {
-                    Some(&nc) if nc == ';' => {
+                    Some(&';') => {
                         chars.next();
                         terminated = true;
                         break;
