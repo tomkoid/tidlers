@@ -73,6 +73,8 @@ pub enum RequestClientError {
     InvalidMethod,
     #[error("invalid credentials")]
     InvalidCredentials,
+    /// Generic authorization error. HTTP responses, including 401, are
+    /// represented by `StatusCode` with their response context.
     #[error("unauthorized - invalid credentials or can not access resource")]
     Unauthorized,
     #[error("timeout")]
@@ -225,11 +227,6 @@ impl RequestClient {
         );
 
         if req_status.is_client_error() || req_status.is_server_error() {
-            if req_status == reqwest::StatusCode::UNAUTHORIZED {
-                warn!(method = %method, url = %req.url(), "received unauthorized HTTP response");
-                return Err(RequestClientError::Unauthorized);
-            }
-
             let req_url = req.url().to_string();
             let body = req
                 .text()
@@ -276,7 +273,8 @@ mod tests {
 
     use super::{RequestClient, RequestClientError, TidalRequest};
 
-    fn spawn_one_shot_http_server(raw_response: &'static str) -> (String, thread::JoinHandle<()>) {
+    fn spawn_one_shot_http_server(raw_response: &str) -> (String, thread::JoinHandle<()>) {
+        let raw_response = raw_response.to_string();
         let listener = TcpListener::bind("127.0.0.1:0").expect("failed to bind test listener");
         let addr = listener.local_addr().expect("failed to get listener addr");
 
@@ -313,18 +311,60 @@ mod tests {
         assert!(snippet.ends_with("...(truncated)"));
     }
 
-    #[tokio::test]
-    async fn request_returns_unauthorized_on_401() {
-        let (base_url, handle) = spawn_one_shot_http_server(
-            "HTTP/1.1 401 Unauthorized\r\nContent-Length: 12\r\nConnection: close\r\n\r\nunauthorized",
+    async fn assert_unauthorized_context(body: &str) {
+        let response = format!(
+            "HTTP/1.1 401 Unauthorized\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+            body.len(),
+            body,
         );
-        let client = RequestClient::new(base_url);
-        let request = TidalRequest::new(Method::GET, "/test".to_string());
-
+        let (base_url, handle) = spawn_one_shot_http_server(&response);
+        let client = RequestClient::new(base_url.clone());
+        let request = TidalRequest::new(Method::GET, "/playbackinfopostpaywall".to_string());
         let result = client.request(request).await;
         handle.join().expect("test server thread failed");
 
-        assert!(matches!(result, Err(RequestClientError::Unauthorized)));
+        match result.expect_err("401 should remain an error") {
+            RequestClientError::StatusCode {
+                status,
+                url,
+                body_snippet,
+            } => {
+                assert_eq!(status, reqwest::StatusCode::UNAUTHORIZED);
+                let url = url::Url::parse(&url).expect("response URL");
+                assert_eq!(url.path(), "/playbackinfopostpaywall");
+                assert_eq!(url.origin().ascii_serialization(), base_url);
+                assert_eq!(body_snippet, RequestClient::error_body_snippet(body));
+            }
+            other => panic!("expected StatusCode, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn request_preserves_asset_unavailable_401() {
+        assert_unauthorized_context(
+            r#"{"status":401,"subStatus":4005,"userMessage":"Asset is not ready for playback"}"#,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn request_preserves_authentication_401() {
+        assert_unauthorized_context(
+            r#"{"status":401,"subStatus":1001,"userMessage":"Invalid token"}"#,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn request_preserves_non_json_and_empty_401() {
+        assert_unauthorized_context("unauthorized").await;
+        assert_unauthorized_context("").await;
+    }
+
+    #[tokio::test]
+    async fn request_bounds_401_body_snippet() {
+        let body = "é".repeat(RequestClient::ERROR_BODY_SNIPPET_MAX_CHARS + 1);
+        assert_unauthorized_context(&body).await;
     }
 
     #[tokio::test]
