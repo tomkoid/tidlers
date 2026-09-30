@@ -17,8 +17,7 @@ impl TidalClient {
             .request(reqwest::Method::GET, url)
             .with_country_code()
             .with_locale()
-            .with_param("limit", limit.unwrap_or(100).to_string())
-            .with_param("ofset", offset.unwrap_or(0).to_string())
+            .with_pagination(limit.unwrap_or(100), offset.unwrap_or(0))
             .with_base_url(API_V1_LOCATION)
             .send()
             .await?;

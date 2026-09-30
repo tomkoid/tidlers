@@ -66,6 +66,12 @@ impl<'a> ApiRequestBuilder<'a> {
         self
     }
 
+    /// Adds limit/offset pagination parameters. Defaults belong to the endpoint.
+    pub(crate) fn with_pagination(self, limit: u32, offset: u32) -> Self {
+        self.with_param("limit", limit.to_string())
+            .with_param("offset", offset.to_string())
+    }
+
     /// Adds `deviceType` and `platform` query parameters and `x-tidal-client-version` header to the request
     pub(crate) fn with_web_stuff(mut self) -> Self {
         self.params
@@ -330,5 +336,35 @@ impl<'a> ApiRequestBuilder<'a> {
 impl TidalClient {
     pub(crate) fn request(&self, method: Method, url: impl Into<String>) -> ApiRequestBuilder<'_> {
         ApiRequestBuilder::new(self, method, url, self.debug_mode)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{TidalClient, auth::TidalAuth};
+    use reqwest::Method;
+
+    #[test]
+    fn pagination_sends_limit_and_correctly_spelled_offset() {
+        let client = TidalClient::new(&TidalAuth::with_oauth());
+        for path in ["/users/1/favorites/tracks", "/users/1/favorites/albums"] {
+            let request = client.request(Method::GET, path).with_pagination(25, 75);
+            assert_eq!(request.params.get("limit").map(String::as_str), Some("25"));
+            assert_eq!(request.params.get("offset").map(String::as_str), Some("75"));
+            assert!(!request.params.contains_key("ofset"));
+            assert_eq!(request.params.len(), 2);
+        }
+    }
+
+    #[test]
+    fn pagination_preserves_first_page_defaults_and_explicit_values() {
+        let client = TidalClient::new(&TidalAuth::with_oauth());
+        for (limit, offset) in [(100, 0), (1, 100), (0, 0), (100, u32::MAX)] {
+            let request = client
+                .request(Method::GET, "/test")
+                .with_pagination(limit, offset);
+            assert_eq!(request.params.get("limit"), Some(&limit.to_string()));
+            assert_eq!(request.params.get("offset"), Some(&offset.to_string()));
+        }
     }
 }
