@@ -59,16 +59,22 @@ pub struct TrackRadioResponse {
     pub items: Vec<Track>,
 }
 
+/// Lyrics text and provider metadata for a track.
+///
+/// Plain lyrics and provider metadata may be absent or null, including in
+/// responses containing timed subtitles. `None` means absent, while an empty
+/// string stays `Some("")`. Text and subtitles are preserved verbatim for the
+/// caller to interpret; an omitted direction flag defaults to left-to-right.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LyricsResponse {
     pub track_id: u32,
-    pub lyrics_provider: String,
-    pub provider_commontrack_id: String,
-    pub provider_lyrics_id: String,
-    pub lyrics: String,
+    pub lyrics_provider: Option<String>,
+    pub provider_commontrack_id: Option<String>,
+    pub provider_lyrics_id: Option<String>,
+    pub lyrics: Option<String>,
     pub subtitles: Option<String>,
-    #[serde(rename = "isRightToLeft")]
+    #[serde(rename = "isRightToLeft", default)]
     pub right_to_left: bool,
 }
 
@@ -173,3 +179,97 @@ mod tests {
 //     pub item_uuid: Option<String>,
 // }
 //
+
+#[cfg(test)]
+mod lyrics_tests {
+    use super::LyricsResponse;
+    use serde_json::json;
+
+    #[test]
+    fn complete_lyrics_payload_round_trips() {
+        let payload = json!({
+            "trackId": 123, "lyricsProvider": "Provider",
+            "providerCommontrackId": "common-1", "providerLyricsId": "lyrics-1",
+            "lyrics": "First line\nSecond line", "subtitles": "[00:01.00]First line",
+            "isRightToLeft": false
+        });
+        let lyrics: LyricsResponse = serde_json::from_value(payload.clone()).unwrap();
+        assert_eq!(lyrics.lyrics_provider.as_deref(), Some("Provider"));
+        assert_eq!(lyrics.provider_commontrack_id.as_deref(), Some("common-1"));
+        assert_eq!(lyrics.provider_lyrics_id.as_deref(), Some("lyrics-1"));
+        assert_eq!(serde_json::to_value(lyrics).unwrap(), payload);
+    }
+
+    #[test]
+    fn subtitles_only_payload_keeps_timing_and_text() {
+        let timed = "[offset:+20]\n[00:01.20]First line\n[00:03.45]Second line";
+        let lyrics: LyricsResponse = serde_json::from_value(json!({
+            "trackId": 123, "subtitles": timed
+        }))
+        .unwrap();
+        assert_eq!(lyrics.track_id, 123);
+        assert_eq!(lyrics.subtitles.as_deref(), Some(timed));
+        assert_eq!(lyrics.subtitles.as_ref().unwrap().lines().count(), 3);
+        assert!(lyrics.lyrics.is_none());
+        assert!(lyrics.lyrics_provider.is_none());
+        assert!(lyrics.provider_commontrack_id.is_none());
+        assert!(lyrics.provider_lyrics_id.is_none());
+        assert!(!lyrics.right_to_left);
+    }
+
+    #[test]
+    fn null_provider_and_lyrics_fields_are_optional() {
+        let lyrics: LyricsResponse = serde_json::from_value(json!({
+            "trackId": 123, "lyricsProvider": null,
+            "providerCommontrackId": null, "providerLyricsId": null,
+            "lyrics": null, "subtitles": null
+        }))
+        .unwrap();
+        assert!(lyrics.lyrics_provider.is_none());
+        assert!(lyrics.provider_commontrack_id.is_none());
+        assert!(lyrics.provider_lyrics_id.is_none());
+        assert!(lyrics.lyrics.is_none());
+        assert!(lyrics.subtitles.is_none());
+        assert!(!lyrics.right_to_left);
+        assert!(serde_json::to_value(lyrics).unwrap()["lyrics"].is_null());
+    }
+
+    #[test]
+    fn empty_strings_remain_distinct_from_absent_metadata() {
+        let lyrics: LyricsResponse = serde_json::from_value(json!({
+            "trackId": 123, "lyricsProvider": "", "providerCommontrackId": "",
+            "providerLyricsId": "", "lyrics": "", "subtitles": ""
+        }))
+        .unwrap();
+        assert_eq!(lyrics.lyrics_provider.as_deref(), Some(""));
+        assert_eq!(lyrics.provider_commontrack_id.as_deref(), Some(""));
+        assert_eq!(lyrics.provider_lyrics_id.as_deref(), Some(""));
+        assert_eq!(lyrics.lyrics.as_deref(), Some(""));
+        assert_eq!(lyrics.subtitles.as_deref(), Some(""));
+        assert_eq!(serde_json::to_value(lyrics).unwrap()["lyrics"], "");
+    }
+
+    #[test]
+    fn plain_lyrics_and_explicit_right_to_left_are_preserved() {
+        let text = "  مرحباً\nبالعالم  ";
+        let lyrics: LyricsResponse = serde_json::from_value(json!({
+            "trackId": 123, "lyrics": text, "isRightToLeft": true
+        }))
+        .unwrap();
+        assert_eq!(lyrics.lyrics.as_deref(), Some(text));
+        assert!(lyrics.subtitles.is_none());
+        assert!(lyrics.right_to_left);
+    }
+
+    #[test]
+    fn missing_identity_and_invalid_known_field_types_still_fail() {
+        for payload in [
+            json!({"status": 404, "userMessage": "Not found"}),
+            json!({"lyrics": "No track id"}),
+            json!({"trackId": 123, "lyrics": ["not", "a", "string"]}),
+            json!({"trackId": 123, "isRightToLeft": "not a boolean"}),
+        ] {
+            assert!(serde_json::from_value::<LyricsResponse>(payload).is_err());
+        }
+    }
+}
