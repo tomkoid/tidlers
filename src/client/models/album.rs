@@ -2,7 +2,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::client::models::{ArtistNameId, artist::Artist, media::MediaMetadata, track::Track};
 
-/// Used generically to represent an album in various responses
+/// An album summary embedded in track, video and collection responses.
+///
+/// Collection entries can supply catalogue metadata alongside the basic
+/// id/title/cover summary. These fields are optional so minimal embedded
+/// albums remain valid without a separate album-detail request.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Album {
@@ -12,6 +16,18 @@ pub struct Album {
     pub vibrant_color: Option<String>,
     pub video_cover: Option<String>,
     pub release_date: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artist: Option<Artist>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub number_of_tracks: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub explicit: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub audio_quality: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media_metadata: Option<MediaMetadata>,
 }
 
 /// Response from TIDAL when requesting album info
