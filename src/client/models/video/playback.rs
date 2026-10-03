@@ -19,6 +19,8 @@ pub struct VideoPlaybackInfoResponse {
     pub manifest_hash: String,
     #[serde(skip_deserializing)]
     pub manifest: Option<EmuVideoManifest>,
+    #[serde(skip_deserializing, default)]
+    pub manifest_raw: Option<String>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]

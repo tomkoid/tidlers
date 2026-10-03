@@ -58,6 +58,7 @@ impl TidalClient {
 
         let manifest: EmuVideoManifest = serde_json::from_str(&manifest_decoded_str)?;
         response.manifest = Some(manifest);
+        response.manifest_raw = Some(manifest_decoded_str);
 
         Ok(response)
     }
