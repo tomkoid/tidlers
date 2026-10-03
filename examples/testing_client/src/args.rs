@@ -402,6 +402,8 @@ pub enum ArgFavoriteResourceType {
     Tracks,
     #[clap(name = "albums")]
     Albums,
+    #[clap(name = "playlists")]
+    Playlists,
 }
 
 impl ArgAudioQuality {
@@ -431,6 +433,7 @@ impl ArgFavoriteResourceType {
         match self {
             ArgFavoriteResourceType::Tracks => FavoriteResourceType::Tracks,
             ArgFavoriteResourceType::Albums => FavoriteResourceType::Albums,
+            ArgFavoriteResourceType::Playlists => FavoriteResourceType::Playlists,
         }
     }
 }

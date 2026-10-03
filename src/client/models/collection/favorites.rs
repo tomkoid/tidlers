@@ -9,6 +9,7 @@ pub enum FavoriteResourceType {
     Tracks,
     Albums,
     Artists,
+    Playlists,
 }
 
 impl Display for FavoriteResourceType {
@@ -17,6 +18,7 @@ impl Display for FavoriteResourceType {
             FavoriteResourceType::Tracks => "tracks",
             FavoriteResourceType::Albums => "albums",
             FavoriteResourceType::Artists => "artists",
+            FavoriteResourceType::Playlists => "playlists",
         };
         write!(f, "{}", s)
     }
