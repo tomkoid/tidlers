@@ -344,8 +344,7 @@ impl TidalClient {
     ) -> Result<TrackMixResponse, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/mix", track_id))
-            .with_param("limit", limit.unwrap_or(100).to_string())
-            .with_param("offset", offset.unwrap_or(0).to_string())
+            .with_pagination(limit.unwrap_or(100), offset.unwrap_or(0))
             .with_country_code()
             .send()
             .await
@@ -360,8 +359,7 @@ impl TidalClient {
     ) -> Result<TrackRadioResponse, TidalError> {
         let track_id = track_id.into();
         self.request(reqwest::Method::GET, format!("/tracks/{}/radio", track_id))
-            .with_param("limit", limit.unwrap_or(100).to_string())
-            .with_param("offset", offset.unwrap_or(0).to_string())
+            .with_pagination(limit.unwrap_or(100), offset.unwrap_or(0))
             .with_country_code()
             .send()
             .await

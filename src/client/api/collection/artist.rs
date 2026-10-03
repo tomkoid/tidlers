@@ -13,7 +13,7 @@ impl TidalClient {
         self.request(reqwest::Method::GET, "/my-collection/artists/folders")
             .with_country_code()
             .with_locale()
-            .with_param("limit", limit.to_string())
+            .with_pagination(limit, 0)
             .with_param("order", "DATE")
             .with_param("folderId", "root")
             .with_base_url(API_V2_LOCATION)

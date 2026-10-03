@@ -71,8 +71,7 @@ impl TidalClient {
             )
             .with_param("supportsUserData", config.supports_user_data.to_string())
             .with_param("types", types_string)
-            .with_param("limit", config.limit.to_string())
-            .with_param("offset", config.offset.to_string())
+            .with_pagination(config.limit, config.offset)
             .with_base_url(WEB_API_V2_LOCATION)
             .send()
             .await

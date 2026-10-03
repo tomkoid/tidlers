@@ -73,10 +73,9 @@ impl TidalClient {
         )
         .with_country_code()
         .with_param("includeOnly", "FOLDER".to_string())
-        .with_param("limit", limit.unwrap_or(50).to_string())
-        .with_param("offset", offset.unwrap_or(0).to_string())
         .with_param("order", order)
         .with_param("orderDirection", order_direction)
+        .with_pagination(limit.unwrap_or(50), offset.unwrap_or(0))
         .with_base_url(API_V2_LOCATION)
         .send()
         .await

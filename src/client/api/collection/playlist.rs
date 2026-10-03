@@ -90,15 +90,14 @@ impl TidalClient {
     /// Lists public playlists for a specific user
     pub async fn list_public_playlists(
         &self,
-        limit: Option<u64>,
-        offset: Option<u64>,
+        limit: Option<u32>,
+        offset: Option<u32>,
     ) -> Result<PublicUserPlaylistsResponse, TidalError> {
         let url = format!("/user-playlists/{}/public", self.user_id()?);
 
         self.request(reqwest::Method::GET, url)
             .with_country_code()
-            .with_param("limit", limit.unwrap_or(50).to_string())
-            .with_param("offset", offset.unwrap_or(0).to_string())
+            .with_pagination(limit.unwrap_or(50), offset.unwrap_or(0))
             .with_base_url(API_V2_LOCATION)
             .send()
             .await
@@ -120,8 +119,8 @@ impl TidalClient {
     pub async fn get_playlist_items(
         &self,
         playlist_id: impl Into<PlaylistId>,
-        limit: Option<u64>,
-        offset: Option<u64>,
+        limit: Option<u32>,
+        offset: Option<u32>,
         order: Option<PlaylistItemsOrder>,
         order_direction: Option<OrderDirection>,
     ) -> Result<PlaylistItemsResponse, TidalError> {
@@ -135,8 +134,8 @@ impl TidalClient {
     pub async fn get_playlist_items_with_etag(
         &self,
         playlist_id: impl Into<PlaylistId>,
-        limit: Option<u64>,
-        offset: Option<u64>,
+        limit: Option<u32>,
+        offset: Option<u32>,
         order: Option<PlaylistItemsOrder>,
         order_direction: Option<OrderDirection>,
     ) -> Result<PlaylistItemsWithEtag, TidalError> {
@@ -156,8 +155,6 @@ impl TidalClient {
                 format!("/playlists/{}/items", playlist_id),
             )
             .with_country_code()
-            .with_param("limit", limit.to_string())
-            .with_param("offset", offset.to_string())
             .with_param(
                 "order",
                 order.unwrap_or(PlaylistItemsOrder::Index).to_string(),
@@ -168,6 +165,7 @@ impl TidalClient {
                     .unwrap_or(OrderDirection::Ascending)
                     .to_string(),
             )
+            .with_pagination(limit, offset)
             .send_with_etag()
             .await?;
 
@@ -305,8 +303,8 @@ impl TidalClient {
     pub async fn get_playlist_recommendations_items(
         &self,
         playlist_id: impl Into<PlaylistId>,
-        limit: Option<u64>,
-        offset: Option<u64>,
+        limit: Option<u32>,
+        offset: Option<u32>,
     ) -> Result<PlaylistItemsResponse, TidalError> {
         let playlist_id = playlist_id.into();
         let limit = limit.unwrap_or(20);
@@ -323,8 +321,7 @@ impl TidalClient {
             format!("/playlists/{}/recommendations/items", playlist_id),
         )
         .with_country_code()
-        .with_param("limit", limit.to_string())
-        .with_param("offset", offset.to_string())
+        .with_pagination(limit, offset)
         .send()
         .await
     }

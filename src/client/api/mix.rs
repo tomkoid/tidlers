@@ -17,8 +17,7 @@ impl TidalClient {
     ) -> Result<MixItemsResponse, TidalError> {
         self.request(reqwest::Method::GET, format!("/mixes/{mix_id}/items"))
             .with_country_code()
-            .with_param("limit", limit.unwrap_or(100).to_string())
-            .with_param("offset", offset.unwrap_or(0).to_string())
+            .with_pagination(limit.unwrap_or(100), offset.unwrap_or(0))
             .send()
             .await
     }

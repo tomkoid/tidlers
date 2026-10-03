@@ -57,8 +57,8 @@ impl TidalClient {
     pub async fn get_artist_tracks(
         &self,
         artist_id: impl Into<ArtistId>,
-        limit: Option<u64>,
-        offset: Option<u64>,
+        limit: Option<u32>,
+        offset: Option<u32>,
     ) -> Result<ArtistTopTracksResponse, TidalError> {
         let artist_id = artist_id.into();
         let limit = limit.unwrap_or(50);
@@ -75,8 +75,7 @@ impl TidalClient {
             format!("/artists/{}/toptracks", artist_id),
         )
         .with_country_code()
-        .with_param("limit", limit.to_string())
-        .with_param("offset", offset.to_string())
+        .with_pagination(limit, offset)
         .send()
         .await
     }
@@ -85,8 +84,8 @@ impl TidalClient {
     pub async fn get_artist_albums(
         &self,
         artist_id: impl Into<ArtistId>,
-        limit: Option<u64>,
-        offset: Option<u64>,
+        limit: Option<u32>,
+        offset: Option<u32>,
     ) -> Result<ArtistAlbumsResponse, TidalError> {
         let artist_id = artist_id.into();
         let limit = limit.unwrap_or(50);
@@ -103,8 +102,7 @@ impl TidalClient {
             format!("/artists/{}/albums", artist_id),
         )
         .with_country_code()
-        .with_param("limit", limit.to_string())
-        .with_param("offset", offset.to_string())
+        .with_pagination(limit, offset)
         .send()
         .await
     }
@@ -113,8 +111,8 @@ impl TidalClient {
     pub async fn get_artist_videos(
         &self,
         artist_id: impl Into<ArtistId>,
-        limit: Option<u64>,
-        offset: Option<u64>,
+        limit: Option<u32>,
+        offset: Option<u32>,
     ) -> Result<ArtistVideosResponse, TidalError> {
         let artist_id = artist_id.into();
         let limit = limit.unwrap_or(50);
@@ -131,8 +129,7 @@ impl TidalClient {
             format!("/artists/{}/videos", artist_id),
         )
         .with_country_code()
-        .with_param("limit", limit.to_string())
-        .with_param("offset", offset.to_string())
+        .with_pagination(limit, offset)
         .send()
         .await
     }
