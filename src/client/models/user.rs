@@ -49,12 +49,17 @@ pub struct UserProfileResource {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserProfileAttributes {
     pub username: String,
+    pub first_name: String,
+    pub last_name: String,
     pub country: String,
     pub email: String,
     #[serde(rename = "emailVerified")]
     pub email_verified: bool,
+
+    pub developer_access_tier: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
