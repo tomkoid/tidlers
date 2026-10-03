@@ -226,28 +226,34 @@ impl RequestClient {
             "received HTTP response"
         );
 
-        if req_status.is_client_error() || req_status.is_server_error() {
-            let req_url = req.url().to_string();
-            let body = req
+        Ok(req)
+    }
+
+    pub(crate) async fn check_status(
+        response: reqwest::Response,
+    ) -> Result<reqwest::Response, RequestClientError> {
+        let status = response.status();
+        if status.is_client_error() || status.is_server_error() {
+            let url = response.url().to_string();
+            let body = response
                 .text()
                 .await
                 .unwrap_or_else(|_| "<failed to read response body>".to_string());
             warn!(
-                method = %method,
-                url = %req_url,
-                status = req_status.as_u16(),
+                url = %url,
+                status = status.as_u16(),
                 body_bytes = body.len(),
                 "received HTTP error response"
             );
 
             return Err(RequestClientError::StatusCode {
-                status: req_status,
-                url: req_url,
+                status,
+                url,
                 body_snippet: Self::error_body_snippet(&body),
             });
         }
 
-        Ok(req)
+        Ok(response)
     }
 
     /// Executes an HTTP request and returns the response
@@ -255,9 +261,15 @@ impl RequestClient {
         &self,
         request: TidalRequest,
     ) -> Result<reqwest::Response, RequestClientError> {
-        let req = self.requests_basic(request).await?;
+        let response = self.requests_basic(request).await?;
+        Self::check_status(response).await
+    }
 
-        Ok(req)
+    pub(crate) async fn request_without_status_check(
+        &self,
+        request: TidalRequest,
+    ) -> Result<reqwest::Response, RequestClientError> {
+        self.requests_basic(request).await
     }
 }
 

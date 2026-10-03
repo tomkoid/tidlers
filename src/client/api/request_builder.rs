@@ -4,7 +4,10 @@ use std::collections::HashMap;
 use tracing::{debug, warn};
 
 use crate::{
-    client::TidalClient, error::TidalError, requests::TidalRequest, utils::debug_json_str,
+    client::TidalClient,
+    error::TidalError,
+    requests::{RequestClient, TidalRequest},
+    utils::debug_json_str,
 };
 
 /// Builder for constructing API requests with fluent interface
@@ -152,12 +155,13 @@ impl<'a> ApiRequestBuilder<'a> {
             has_headers = req.headers.is_some(),
             "sending API request"
         );
-        let resp = self.client.rq.request(req).await?;
+        let resp = self.client.rq.request_without_status_check(req).await?;
 
         if resp.status() == reqwest::StatusCode::NOT_FOUND {
             return Err(TidalError::NotFound);
         }
 
+        let resp = RequestClient::check_status(resp).await?;
         let status = resp.status();
         let response_url = resp.url().to_string();
         let body = resp.text().await?;
@@ -233,12 +237,13 @@ impl<'a> ApiRequestBuilder<'a> {
             has_headers = req.headers.is_some(),
             "sending API request"
         );
-        let resp = self.client.rq.request(req).await?;
+        let resp = self.client.rq.request_without_status_check(req).await?;
 
         if resp.status() == reqwest::StatusCode::NOT_FOUND {
             return Err(TidalError::NotFound);
         }
 
+        let resp = RequestClient::check_status(resp).await?;
         let status = resp.status();
         let response_url = resp.url().to_string();
         let etag = resp
@@ -319,7 +324,8 @@ impl<'a> ApiRequestBuilder<'a> {
             has_headers = req.headers.is_some(),
             "sending raw API request"
         );
-        let resp = self.client.rq.request(req).await?;
+        let resp = self.client.rq.request_without_status_check(req).await?;
+        let resp = RequestClient::check_status(resp).await?;
         let status = resp.status();
         let response_url = resp.url().to_string();
         let body = resp.text().await?;
