@@ -46,6 +46,9 @@ pub struct Track {
     pub artist: Artist,
     pub artists: Vec<Artist>,
     pub album: Option<Album>,
+    /// Artwork carried directly by playlist video items without an album.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image_id: Option<String>,
     pub mixes: Option<HashMap<String, String>>,
     pub item_uuid: Option<String>,
 }
