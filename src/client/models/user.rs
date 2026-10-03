@@ -52,8 +52,8 @@ pub struct UserProfileResource {
 #[serde(rename_all = "camelCase")]
 pub struct UserProfileAttributes {
     pub username: String,
-    pub first_name: String,
-    pub last_name: String,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
     pub country: String,
     pub email: String,
     #[serde(rename = "emailVerified")]

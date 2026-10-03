@@ -46,8 +46,8 @@ impl TidalClient {
         self.user_info = Some(User {
             user_id: ui.id.parse()?,
             username: ui.attributes.username,
-            first_name: Some(ui.attributes.first_name),
-            last_name: Some(ui.attributes.last_name),
+            first_name: ui.attributes.first_name,
+            last_name: ui.attributes.last_name,
             email: ui.attributes.email,
             country_code: ui.attributes.country,
             email_verified: ui.attributes.email_verified,
