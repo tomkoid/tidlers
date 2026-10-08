@@ -32,4 +32,10 @@ pub struct Video {
     pub artist: Artist,
     pub artists: Vec<Artist>,
     pub album: Option<Album>,
+    /// Set when the video is a playlist entry, as on [`Track`](crate::client::models::track::Track).
+    pub date_added: Option<String>,
+    /// Set when the video is a playlist entry, as on [`Track`](crate::client::models::track::Track).
+    pub index: Option<u64>,
+    /// Set when the video is a playlist entry, as on [`Track`](crate::client::models::track::Track).
+    pub item_uuid: Option<String>,
 }

@@ -4,6 +4,7 @@ use serde::{Deserialize, Deserializer, Serialize, de};
 
 use crate::client::models::collection::CollectionCreator;
 use crate::client::models::track::Track;
+use crate::client::models::video::Video;
 
 /// Response containing playlist items with pagination
 #[derive(Debug, Serialize, Deserialize)]
@@ -48,17 +49,29 @@ impl Display for PlaylistItemsOrder {
 
 /// Represents a single item in a playlist.
 ///
-/// Playlist video payloads can have a null singular `artist`. Deserialization
+/// TIDAL tags each entry with a `type` next to its `item`, and the two kinds
+/// have different shapes: video payloads carry none of the audio fields
+/// [`Track`] requires, so [`PlaylistMedia`] decodes each into its own model.
+///
+/// Playlist entries can also have a null singular `artist`. Deserialization
 /// repairs that playlist-only shape from `artists[0]`, or uses an explicit
-/// unknown-artist sentinel when TIDAL supplies neither. The global Track model
-/// remains strict for endpoints that guarantee a primary artist.
+/// unknown-artist sentinel when TIDAL supplies neither. The Track and Video
+/// models remain strict for endpoints that guarantee a primary artist.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaylistItem {
-    pub item: Track,
-    #[serde(rename = "type")]
-    pub item_type: String,
+    #[serde(flatten)]
+    pub item: PlaylistMedia,
     pub cut: Option<serde_json::Value>,
+}
+
+/// The media of a [`PlaylistItem`], selected by the entry's `type`
+/// (`"track"` or `"video"`). Any other type is a deserialization error.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", content = "item", rename_all = "lowercase")]
+pub enum PlaylistMedia {
+    Track(Track),
+    Video(Video),
 }
 
 impl<'de> Deserialize<'de> for PlaylistItem {
@@ -113,12 +126,9 @@ impl<'de> Deserialize<'de> for PlaylistItem {
         object
             .entry("artists")
             .or_insert_with(|| serde_json::Value::Array(Vec::new()));
-        let item = serde_json::from_value(item).map_err(de::Error::custom)?;
-        Ok(Self {
-            item,
-            item_type,
-            cut,
-        })
+        let item = serde_json::from_value(serde_json::json!({ "type": item_type, "item": item }))
+            .map_err(de::Error::custom)?;
+        Ok(Self { item, cut })
     }
 }
 
@@ -236,106 +246,302 @@ pub struct Profile {
 
 #[cfg(test)]
 mod tests {
-    use super::PlaylistItemsResponse;
+    use super::{PlaylistItem, PlaylistItemsResponse, PlaylistMedia};
+    use crate::client::models::{track::Track, video::Video};
     use serde_json::{Value, json};
 
-    fn base(id: u64, title: &str) -> Value {
-        json!({
-            "id": id, "title": title, "duration": 240, "replayGain": -3.0,
-            "peak": 0.9, "allowStreaming": true, "streamReady": true,
-            "payToStream": false, "adSupportedStreamReady": false,
-            "djReady": false, "stemReady": false, "premiumStreamingOnly": false,
-            "trackNumber": 1, "volumeNumber": 1, "version": null,
-            "popularity": 1, "copyright": null, "bpm": null, "key": null,
-            "keyScale": null, "url": "https://example.invalid/media",
-            "isrc": null, "editable": false, "explicit": false,
-            "audioQuality": "HIGH", "audioModes": ["STEREO"],
-            "mediaMetadata": null, "upload": false, "accessType": "PUBLIC",
-            "spotlighted": false, "dateAdded": null, "index": 0,
-            "artists": [], "album": null, "mixes": null, "itemUuid": null
-        })
+    /// Captured from TIDAL: a track entry from the mixed "Videos: Best of 2022" playlist.
+    const TRACK: &str = r##"{
+        "item": {
+            "id": 231039906,
+            "title": "Blacklight Shine",
+            "duration": 176,
+            "replayGain": -9.85,
+            "peak": 1.0,
+            "allowStreaming": true,
+            "streamReady": true,
+            "payToStream": false,
+            "adSupportedStreamReady": true,
+            "djReady": true,
+            "stemReady": false,
+            "streamStartDate": "2022-06-21T00:00:00.000+0000",
+            "premiumStreamingOnly": false,
+            "trackNumber": 1,
+            "volumeNumber": 1,
+            "version": null,
+            "popularity": 53,
+            "copyright": "℗ 2022 Clouds Hill",
+            "bpm": 118,
+            "key": "F",
+            "keyScale": "MINOR",
+            "description": null,
+            "url": "http://www.tidal.com/track/231039906",
+            "isrc": "DELK22100395",
+            "editable": false,
+            "explicit": false,
+            "audioQuality": "LOSSLESS",
+            "audioModes": [
+                "STEREO"
+            ],
+            "mediaMetadata": {
+                "tags": [
+                    "LOSSLESS",
+                    "HIRES_LOSSLESS"
+                ]
+            },
+            "upload": false,
+            "accessType": "PUBLIC",
+            "spotlighted": false,
+            "ai": false,
+            "artist": {
+                "id": 24959,
+                "name": "The Mars Volta",
+                "handle": null,
+                "type": "MAIN",
+                "picture": "bb43a530-957f-48b8-8ab2-710500bff8a7"
+            },
+            "artists": [
+                {
+                    "id": 24959,
+                    "name": "The Mars Volta",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "bb43a530-957f-48b8-8ab2-710500bff8a7"
+                }
+            ],
+            "album": {
+                "id": 231039905,
+                "title": "Blacklight Shine",
+                "cover": "8538e8f2-3e29-4372-95a3-d3e52233a938",
+                "vibrantColor": "#c4a25a",
+                "videoCover": null,
+                "releaseDate": "2022-06-21"
+            },
+            "mixes": {
+                "TRACK_MIX": "001dbef3f7310332d0df126a80864b"
+            },
+            "dateAdded": "2022-11-29T20:58:16.823+0000",
+            "index": 3100000,
+            "itemUuid": "b5141c46-e994-40aa-9af1-f14e694b9063"
+        },
+        "type": "track",
+        "cut": null
+    }"##;
+
+    /// Captured from TIDAL: a video entry from the same playlist.
+    const VIDEO: &str = r##"{
+        "item": {
+            "id": 245978483,
+            "title": "Kill to Be Heard",
+            "volumeNumber": 0,
+            "trackNumber": 0,
+            "releaseDate": "2022-09-01T00:00:00.000+0000",
+            "imagePath": null,
+            "imageId": "06716ff5-d80f-448c-bf37-916e12ca07e5",
+            "vibrantColor": "#30566e",
+            "duration": 119,
+            "quality": "MP4_1080P",
+            "streamReady": true,
+            "adSupportedStreamReady": true,
+            "djReady": true,
+            "stemReady": false,
+            "streamStartDate": "2022-09-01T00:00:00.000+0000",
+            "allowStreaming": true,
+            "explicit": true,
+            "popularity": 1,
+            "type": "Music Video",
+            "adsUrl": null,
+            "adsPrePaywallOnly": true,
+            "artist": {
+                "id": 3970187,
+                "name": "OFF!",
+                "handle": null,
+                "type": "MAIN",
+                "picture": "d257ccb0-bce4-41a3-b02a-2dfe03247d34"
+            },
+            "artists": [
+                {
+                    "id": 3970187,
+                    "name": "OFF!",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "d257ccb0-bce4-41a3-b02a-2dfe03247d34"
+                }
+            ],
+            "album": null,
+            "dateAdded": "2022-11-29T20:58:16.823+0000",
+            "index": 2900000,
+            "itemUuid": "98376c20-44e8-4d4b-ad82-c3a1a18034e6"
+        },
+        "type": "video",
+        "cut": null
+    }"##;
+
+    /// Captured from TIDAL: "In Da Club" from "Classic Hip-Hop Videos": null `artist`, empty `artists`.
+    const ARTISTLESS_VIDEO: &str = r##"{
+        "item": {
+            "id": 37690657,
+            "title": "In Da Club",
+            "volumeNumber": 0,
+            "trackNumber": 0,
+            "releaseDate": "2004-01-01T00:00:00.000+0000",
+            "imagePath": null,
+            "imageId": "410fbd9a-1c6e-448a-9c93-094fd99c295c",
+            "vibrantColor": "#83403d",
+            "duration": 248,
+            "quality": "MP4_1080P",
+            "streamReady": false,
+            "adSupportedStreamReady": false,
+            "djReady": false,
+            "stemReady": false,
+            "streamStartDate": null,
+            "allowStreaming": false,
+            "explicit": false,
+            "popularity": 59,
+            "type": "Music Video",
+            "adsUrl": null,
+            "adsPrePaywallOnly": true,
+            "artist": null,
+            "artists": [],
+            "album": null,
+            "dateAdded": "2024-05-17T19:15:36.849+0000",
+            "index": 2300000,
+            "itemUuid": "80b97b08-79d0-4a13-bbd4-c593044f92d2"
+        },
+        "type": "video",
+        "cut": null
+    }"##;
+
+    fn entry(fixture: &str) -> Value {
+        serde_json::from_str(fixture).expect("fixture is JSON")
     }
 
-    fn response(items: Vec<Value>) -> PlaylistItemsResponse {
+    fn response(items: Vec<Value>) -> Result<PlaylistItemsResponse, serde_json::Error> {
         serde_json::from_value(json!({
             "limit": 100, "offset": 0,
             "totalNumberOfItems": items.len(), "items": items
         }))
-        .expect("playlist items should parse")
+    }
+
+    fn parse(item: Value) -> PlaylistItem {
+        response(vec![item])
+            .expect("playlist items should parse")
+            .items
+            .remove(0)
+    }
+
+    fn track(item: &PlaylistItem) -> &Track {
+        match &item.item {
+            PlaylistMedia::Track(track) => track,
+            other => panic!("expected a track, got {other:?}"),
+        }
+    }
+
+    fn video(item: &PlaylistItem) -> &Video {
+        match &item.item {
+            PlaylistMedia::Video(video) => video,
+            other => panic!("expected a video, got {other:?}"),
+        }
     }
 
     #[test]
-    fn video_with_null_artist_uses_the_artists_list_and_own_artwork() {
-        let mut video = base(456, "A Music Video");
-        video["artist"] = Value::Null;
-        video["artists"] = json!([{"id": 7, "name": "Video Artist"}]);
-        video["imageId"] = json!("7bd9a4c2-424a-49cf-afd9-31f6e526a71e");
-        let page = response(vec![json!({"item": video, "type": "video", "cut": null})]);
-        let item = &page.items[0];
-        assert_eq!(item.item_type, "video");
-        assert_eq!(item.item.artist.name, "Video Artist");
-        assert!(item.item.album.is_none());
+    fn mixed_page_decodes_each_entry_by_its_type() {
+        let page = response(vec![entry(TRACK), entry(VIDEO), entry(ARTISTLESS_VIDEO)])
+            .expect("a real mixed page should parse");
+
+        let track = track(&page.items[0]);
+        assert_eq!(track.title, "Blacklight Shine");
+        assert_eq!(track.artist.name, "The Mars Volta");
+        assert_eq!(track.album.as_ref().unwrap().title, "Blacklight Shine");
+        assert_eq!(track.audio_quality, "LOSSLESS");
+
+        // Video payloads carry no replayGain, url, audioQuality, ... so they
+        // could never decode as Track; they keep their own fields instead.
+        let video = video(&page.items[1]);
+        assert_eq!(video.title, "Kill to Be Heard");
+        assert_eq!(video.artist.name, "OFF!");
+        assert_eq!(video.quality, "MP4_1080P");
+        assert!(video.album.is_none());
         assert_eq!(
-            item.item.image_id.as_deref(),
-            Some("7bd9a4c2-424a-49cf-afd9-31f6e526a71e")
+            video.image_id.as_deref(),
+            Some("06716ff5-d80f-448c-bf37-916e12ca07e5")
         );
-    }
-
-    #[test]
-    fn null_artist_name_falls_back_to_the_artists_list() {
-        let mut video = base(654, "Null-name Video");
-        video["artist"] = json!({"id": 99, "name": null});
-        video["artists"] = json!([{"id": 7, "name": "Video Artist"}]);
-        let page = response(vec![json!({"item": video, "type": "video"})]);
-        assert_eq!(page.items[0].item.artist.id, 7);
-        assert_eq!(page.items[0].item.artist.name, "Video Artist");
-    }
-
-    #[test]
-    fn null_artist_name_without_a_list_preserves_id_and_uses_unknown_name() {
-        let mut video = base(655, "Null-name Video");
-        video["artist"] = json!({"id": 99, "name": null});
-        video.as_object_mut().unwrap().remove("artists");
-        let page = response(vec![json!({"item": video, "type": "video"})]);
-        assert_eq!(page.items[0].item.artist.id, 99);
-        assert_eq!(page.items[0].item.artist.name, "Unknown Artist");
+        assert_eq!(video.index, Some(2900000));
+        assert_eq!(
+            video.item_uuid.as_deref(),
+            Some("98376c20-44e8-4d4b-ad82-c3a1a18034e6")
+        );
+        assert_eq!(
+            video.date_added.as_deref(),
+            Some("2022-11-29T20:58:16.823+0000")
+        );
     }
 
     #[test]
     fn artistless_video_uses_an_explicit_unknown_sentinel() {
-        let mut video = base(789, "Artist-less Video");
-        video["artist"] = Value::Null;
-        video.as_object_mut().unwrap().remove("artists");
-        let page = response(vec![json!({"item": video, "type": "video"})]);
-        assert_eq!(page.items[0].item.artist.id, 0);
-        assert_eq!(page.items[0].item.artist.name, "Unknown Artist");
-        assert!(page.items[0].item.artists.is_empty());
+        let item = parse(entry(ARTISTLESS_VIDEO));
+        let video = video(&item);
+        assert_eq!(video.title, "In Da Club");
+        assert_eq!(video.artist.id, 0);
+        assert_eq!(video.artist.name, "Unknown Artist");
+        assert!(video.artists.is_empty());
     }
 
     #[test]
-    fn regular_track_keeps_its_artist_and_album() {
-        let mut track = base(123, "A Song");
-        track["artist"] = json!({"id": 1, "name": "An Artist"});
-        track["album"] = json!({"id": 9, "title": "An Album", "cover": "ab-cd"});
-        let page = response(vec![json!({"item": track, "type": "track"})]);
-        let track = &page.items[0].item;
-        assert_eq!(track.artist.name, "An Artist");
-        assert_eq!(track.album.as_ref().unwrap().title, "An Album");
-        assert!(track.image_id.is_none());
+    fn null_artist_uses_the_artists_list() {
+        for fixture in [TRACK, VIDEO] {
+            let mut item = entry(fixture);
+            item["item"]["artist"] = Value::Null;
+            item["item"]["artists"] = json!([{"id": 7, "name": "Listed Artist"}]);
+            let item = parse(item);
+            let artist = match &item.item {
+                PlaylistMedia::Track(track) => &track.artist,
+                PlaylistMedia::Video(video) => &video.artist,
+            };
+            assert_eq!((artist.id, artist.name.as_str()), (7, "Listed Artist"));
+        }
+    }
+
+    #[test]
+    fn null_artist_name_falls_back_to_the_artists_list() {
+        let mut item = entry(VIDEO);
+        item["item"]["artist"] = json!({"id": 99, "name": null});
+        item["item"]["artists"] = json!([{"id": 7, "name": "Listed Artist"}]);
+        let item = parse(item);
+        assert_eq!(video(&item).artist.id, 7);
+        assert_eq!(video(&item).artist.name, "Listed Artist");
+    }
+
+    #[test]
+    fn null_artist_name_without_a_list_preserves_id_and_uses_unknown_name() {
+        let mut item = entry(VIDEO);
+        item["item"]["artist"] = json!({"id": 99, "name": null});
+        item["item"].as_object_mut().unwrap().remove("artists");
+        let item = parse(item);
+        assert_eq!(video(&item).artist.id, 99);
+        assert_eq!(video(&item).artist.name, "Unknown Artist");
     }
 
     #[test]
     fn malformed_nonnull_artist_still_fails() {
-        let mut video = base(456, "Malformed Video");
-        video["artist"] = json!("not an artist object");
-        video["artists"] = json!([{"id": 7, "name": "Fallback must not mask a malformed artist"}]);
-        assert!(
-            serde_json::from_value::<PlaylistItemsResponse>(json!({
-                "limit": 100, "offset": 0, "totalNumberOfItems": 1,
-                "items": [{"item": video, "type": "video"}]
-            }))
-            .is_err()
-        );
+        let mut item = entry(VIDEO);
+        item["item"]["artist"] = json!("not an artist object");
+        item["item"]["artists"] =
+            json!([{"id": 7, "name": "Fallback must not mask a malformed artist"}]);
+        assert!(response(vec![item]).is_err());
+    }
+
+    #[test]
+    fn entries_must_match_their_declared_type() {
+        let mut video_as_track = entry(VIDEO);
+        video_as_track["type"] = json!("track");
+        let mut track_as_video = entry(TRACK);
+        track_as_video["type"] = json!("video");
+        let mut unknown = entry(VIDEO);
+        unknown["type"] = json!("upload");
+        for item in [video_as_track, track_as_video, unknown] {
+            assert!(response(vec![item]).is_err());
+        }
     }
 
     #[test]
@@ -345,12 +551,22 @@ mod tests {
             json!({"item": {"id": 1}, "type": "track"}),
             json!({"item": "wrong type", "type": "track"}),
         ] {
-            assert!(
-                serde_json::from_value::<PlaylistItemsResponse>(json!({
-                    "limit": 100, "offset": 0, "totalNumberOfItems": 1,
-                    "items": [item]
-                }))
-                .is_err()
+            assert!(response(vec![item]).is_err());
+        }
+    }
+
+    #[test]
+    fn serialization_keeps_the_wire_shape() {
+        for fixture in [TRACK, VIDEO] {
+            let item = parse(entry(fixture));
+            let wire = serde_json::to_value(&item).expect("serialize");
+            assert_eq!(wire["type"], entry(fixture)["type"]);
+            assert!(wire["item"].is_object());
+            assert!(wire.get("cut").is_some());
+            let again: PlaylistItem = serde_json::from_value(wire).expect("round trip");
+            assert_eq!(
+                std::mem::discriminant(&again.item),
+                std::mem::discriminant(&item.item)
             );
         }
     }
