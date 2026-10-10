@@ -53,7 +53,7 @@ impl TidalClient {
         let resource_id_param = self.get_resource_id_param(&resource);
         let res_id = resource_id.into();
 
-        let url = format!("/users/{user_id}/favorites/{resource}/{}", &res_id);
+        let url = format!("/users/{user_id}/favorites/{resource}/{res_id}");
         self.request(reqwest::Method::DELETE, url)
             .with_country_code()
             .with_param(resource_id_param, res_id)
