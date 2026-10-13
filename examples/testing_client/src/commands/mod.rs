@@ -114,8 +114,15 @@ async fn execute_collection_command(
 
     match command {
         args::CollectionCommands::Artists => {
-            let artists = tidal.get_collection_artists(50).await?;
-            println!("{:#?}", artists);
+            let mut cursor = None;
+            loop {
+                let page = tidal.get_collection_artists(50, cursor).await?;
+                println!("{:#?}", page.items);
+                cursor = page.cursor;
+                if cursor.is_none() {
+                    break;
+                }
+            }
         }
 
         args::CollectionCommands::Tracks { limit, offset } => {
