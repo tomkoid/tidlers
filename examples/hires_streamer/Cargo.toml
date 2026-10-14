@@ -10,6 +10,6 @@ color-eyre = "0.6.5"
 eyre = "0.6.12"
 tokio = { version = "1.46.1", features = ["full", "rt"] }
 rodio = { version = "0.19.0", features = ["symphonia-all"] }
-reqwest = { git = "https://github.com/tomkoid/reqwest.git", rev = "c6157a9cbb01ed60254a63d03781c7ed5afced79", features = ["json", "form"] }
+reqwest = { git = "https://github.com/tomkoid/reqwest.git", rev = "c6157a9cbb01ed60254a63d03781c7ed5afced79", features = ["stream"] }
 futures-util = "0.3"
 bytes = "1.9"

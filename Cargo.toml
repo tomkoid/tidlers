@@ -39,5 +39,8 @@ tokio = "1.53.1"
 tracing = "0.1.44"
 url = "2.5.8"
 
+[target.'cfg(target_os = "android")'.dependencies]
+reqwest = { git = "https://github.com/tomkoid/reqwest.git", rev = "c6157a9cbb01ed60254a63d03781c7ed5afced79", features = ["json", "form", "rustls-no-provider-no-roots"] }
+
 [dev-dependencies]
 tokio = { version = "1.53.1", features = ["rt", "macros"] }
