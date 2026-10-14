@@ -29,7 +29,7 @@ base64 = "0.22.1"
 chrono = "0.4.45"
 quick-xml = "0.41.0"
 rand = "0.10.2"
-reqwest = { version = "0.13.4", features = ["json", "form"] }
+reqwest = { git = "https://github.com/tomkoid/reqwest.git", rev = "c6157a9cbb01ed60254a63d03781c7ed5afced79", features = ["json", "form"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 serde_path_to_error = "0.1.20"
