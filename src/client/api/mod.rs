@@ -4,6 +4,7 @@ pub mod activity;
 pub mod album;
 pub mod artist;
 pub mod collection;
+pub mod events;
 pub mod feed;
 pub mod home;
 pub mod mix;
