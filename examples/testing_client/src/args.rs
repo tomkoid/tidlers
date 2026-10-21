@@ -286,6 +286,11 @@ pub enum PlaylistCommands {
         #[clap(short, long)]
         sharing_level: Option<ArgSharingLevel>,
     },
+    Delete {
+        /// Playlist UUID
+        playlist_uuid: String,
+    },
+
     /// List playlists
     List,
     /// List public playlists

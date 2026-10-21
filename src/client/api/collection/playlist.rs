@@ -62,6 +62,24 @@ impl TidalClient {
         .await
     }
 
+    /// Deletes a playlist from the user's collection
+    pub async fn delete_playlist(
+        &self,
+        playlist_id: impl Into<PlaylistId>,
+    ) -> Result<(), TidalError> {
+        self.request(
+            reqwest::Method::PUT,
+            "/my-collection/playlists/folders/remove",
+        )
+        .with_country_code()
+        .with_param("trns", format!("trn:playlist:{}", playlist_id.into()))
+        .with_base_url(API_V2_LOCATION)
+        .send_raw()
+        .await?;
+
+        Ok(())
+    }
+
     /// Lists all playlists for the authenticated user
     ///
     /// # Example

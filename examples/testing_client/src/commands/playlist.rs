@@ -27,6 +27,11 @@ pub async fn execute(tidal: &mut TidalClient, command: PlaylistCommands) -> eyre
             println!("Created playlist '{}':\n{:#?}", name, playlist);
         }
 
+        PlaylistCommands::Delete { playlist_uuid } => {
+            tidal.delete_playlist(playlist_uuid.clone()).await?;
+            println!("Deleted playlist '{}'", playlist_uuid);
+        }
+
         PlaylistCommands::Info { playlist_id } => {
             let info = tidal.get_playlist(playlist_id).await?;
             println!("{:#?}", info);
