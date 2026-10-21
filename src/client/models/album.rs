@@ -12,6 +12,7 @@ use crate::client::models::{ArtistNameId, artist::Artist, media::MediaMetadata, 
 pub struct Album {
     pub id: i64,
     pub title: String,
+    pub version: Option<String>,
     pub cover: Option<String>,
     pub vibrant_color: Option<String>,
     pub video_cover: Option<String>,

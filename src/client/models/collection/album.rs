@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn retains_catalogue_metadata_from_favorite_album_entries() {
         let album = favorite(json!({
-            "id": 123, "title": "Example album", "cover": "cover-id",
+            "id": 123, "title": "Example album", "version": "Deluxe Edition", "cover": "cover-id",
             "releaseDate": "2026-01-01", "artist": {"id": 7, "name": "Example artist"},
             "numberOfTracks": 12, "duration": 3600, "explicit": true,
             "audioQuality": "LOSSLESS", "mediaMetadata": {"tags": ["LOSSLESS", "HIRES_LOSSLESS"]}
@@ -43,6 +43,7 @@ mod tests {
         let artist = album.artist.as_ref().unwrap();
         assert_eq!(artist.id, 7);
         assert_eq!(artist.name, "Example artist");
+        assert_eq!(album.version.as_deref(), Some("Deluxe Edition"));
         assert_eq!(album.number_of_tracks, Some(12));
         assert_eq!(album.duration, Some(3600));
         assert_eq!(album.explicit, Some(true));
