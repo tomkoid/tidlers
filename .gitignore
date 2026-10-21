@@ -1,6 +1,7 @@
 /target
 
 /.env
+/.direnv
 
 session.json
 debug_output.json
