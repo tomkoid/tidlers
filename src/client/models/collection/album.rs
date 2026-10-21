@@ -37,12 +37,18 @@ mod tests {
         let album = favorite(json!({
             "id": 123, "title": "Example album", "version": "Deluxe Edition", "cover": "cover-id",
             "releaseDate": "2026-01-01", "artist": {"id": 7, "name": "Example artist"},
+            "artists": [
+                {"id": 7, "name": "Example artist"},
+                {"id": 8, "name": "Another artist"}
+            ],
             "numberOfTracks": 12, "duration": 3600, "explicit": true,
             "audioQuality": "LOSSLESS", "mediaMetadata": {"tags": ["LOSSLESS", "HIRES_LOSSLESS"]}
         }));
         let artist = album.artist.as_ref().unwrap();
         assert_eq!(artist.id, 7);
         assert_eq!(artist.name, "Example artist");
+        assert_eq!(album.artists.len(), 2);
+        assert_eq!(album.artists[1].name, "Another artist");
         assert_eq!(album.version.as_deref(), Some("Deluxe Edition"));
         assert_eq!(album.number_of_tracks, Some(12));
         assert_eq!(album.duration, Some(3600));
@@ -65,6 +71,7 @@ mod tests {
         assert_eq!(album.id, 123);
         assert_eq!(album.cover.as_deref(), Some("cover-id"));
         assert!(album.artist.is_none());
+        assert!(album.artists.is_empty());
         assert!(album.number_of_tracks.is_none());
         assert!(album.duration.is_none());
         assert!(album.explicit.is_none());
@@ -96,6 +103,7 @@ mod tests {
             "numberOfTracks": null, "duration": null, "explicit": null,
             "audioQuality": null, "mediaMetadata": null}));
         assert!(album.artist.is_none());
+        assert!(album.artists.is_empty());
         assert!(album.number_of_tracks.is_none());
         assert!(album.duration.is_none());
         assert!(album.explicit.is_none());

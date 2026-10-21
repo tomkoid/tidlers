@@ -19,6 +19,8 @@ pub struct Album {
     pub release_date: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub artist: Option<Artist>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub artists: Vec<Artist>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub number_of_tracks: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
