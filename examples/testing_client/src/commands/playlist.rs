@@ -37,6 +37,11 @@ pub async fn execute(tidal: &mut TidalClient, command: PlaylistCommands) -> eyre
             println!("{:#?}", info);
         }
 
+        PlaylistCommands::Metadata { playlist_id } => {
+            let metadata = tidal.get_playlist_metadata(playlist_id).await?;
+            println!("{:#?}", metadata);
+        }
+
         PlaylistCommands::Items { playlist_id } => {
             let items = tidal
                 .get_playlist_items(playlist_id, Some(10), Some(0), None, None)

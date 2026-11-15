@@ -1,22 +1,19 @@
-use crate::{
-    TidalClient, TidalError, client::models::collection::favorites::FavoriteResourceType,
-    urls::API_V1_LOCATION,
-};
+use crate::{TidalClient, TidalError, client::models::ResourceType, urls::API_V1_LOCATION};
 
 impl TidalClient {
-    fn get_resource_id_param(&self, resource: &FavoriteResourceType) -> &'static str {
+    fn get_resource_id_param(&self, resource: &ResourceType) -> &'static str {
         match resource {
-            FavoriteResourceType::Tracks => "trackIds",
-            FavoriteResourceType::Albums => "albumIds",
-            FavoriteResourceType::Artists => "artistIds",
-            FavoriteResourceType::Playlists => "uuid",
+            ResourceType::Tracks => "trackIds",
+            ResourceType::Albums => "albumIds",
+            ResourceType::Artists => "artistIds",
+            ResourceType::Playlists => "uuid",
         }
     }
 
     /// Adds a resource into user's favorite items
     pub async fn add_to_favorites(
         &self,
-        resource: FavoriteResourceType,
+        resource: ResourceType,
         resource_id: impl Into<String>,
     ) -> Result<(), TidalError> {
         let user_id = self
@@ -41,7 +38,7 @@ impl TidalClient {
     /// Removes a resource from user's favorite items
     pub async fn remove_from_favorites(
         &self,
-        resource: FavoriteResourceType,
+        resource: ResourceType,
         resource_id: impl Into<String>,
     ) -> Result<(), TidalError> {
         let user_id = self

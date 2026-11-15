@@ -170,6 +170,24 @@ pub struct PlaylistResponse {
     #[serde(rename = "lastItemAddedAt")]
     pub last_item_added_at: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaylistMetadataResponse {
+    pub items: Vec<PlaylistMetadataItem>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaylistMetadataItem {
+    pub added_at: String,
+    pub last_modified_at: Option<String>,
+    pub item_type: String,
+    pub name: Option<String>,
+    pub parent: Option<String>,
+    pub trn: Option<String>,
+}
+
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct PlaylistCreator {
     pub id: u64,

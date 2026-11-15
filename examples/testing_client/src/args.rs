@@ -1,6 +1,6 @@
 use clap::Parser;
 use tidlers::client::models::{
-    collection::favorites::FavoriteResourceType,
+    ResourceType,
     playback::{AudioQuality, VideoQuality},
 };
 
@@ -200,6 +200,11 @@ pub enum CollectionCommands {
         command: FolderCommands,
     },
 
+    SaveForLater {
+        #[clap(subcommand)]
+        command: SaveForLaterCommands,
+    },
+
     /// Show collection artists
     Artists,
 
@@ -207,7 +212,7 @@ pub enum CollectionCommands {
     Favorite {
         /// Type to add to favorites (tracks or albums)
         #[clap(short = 't', long, value_enum)]
-        resource_type: ArgFavoriteResourceType,
+        resource_type: ArgResourceType,
 
         /// ID of the resource to add to favorites
         id: String,
@@ -258,6 +263,23 @@ pub enum FolderCommands {
 }
 
 #[derive(Parser, Debug, Clone)]
+pub enum SaveForLaterCommands {
+    Add {
+        /// ID
+        id: String,
+
+        resource_type: ArgResourceType,
+    },
+    Remove {
+        /// ID
+        id: String,
+
+        resource_type: ArgResourceType,
+    },
+    List,
+}
+
+#[derive(Parser, Debug, Clone)]
 pub enum PlaylistCommands {
     /// Show details of a specific playlist
     Info {
@@ -295,6 +317,12 @@ pub enum PlaylistCommands {
     List,
     /// List public playlists
     ListPublic,
+
+    /// Playlist metadata
+    Metadata {
+        /// Playlist UUID
+        playlist_id: String,
+    },
 
     /// Add items to a playlist
     AddItems {
@@ -401,7 +429,7 @@ pub enum ArgVideoQuality {
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
-pub enum ArgFavoriteResourceType {
+pub enum ArgResourceType {
     #[clap(name = "tracks")]
     #[default]
     Tracks,
@@ -433,12 +461,12 @@ impl ArgVideoQuality {
     }
 }
 
-impl ArgFavoriteResourceType {
-    pub fn to_favorite_resource_type(&self) -> FavoriteResourceType {
+impl ArgResourceType {
+    pub fn to_resource_type(&self) -> ResourceType {
         match self {
-            ArgFavoriteResourceType::Tracks => FavoriteResourceType::Tracks,
-            ArgFavoriteResourceType::Albums => FavoriteResourceType::Albums,
-            ArgFavoriteResourceType::Playlists => FavoriteResourceType::Playlists,
+            ArgResourceType::Tracks => ResourceType::Tracks,
+            ArgResourceType::Albums => ResourceType::Albums,
+            ArgResourceType::Playlists => ResourceType::Playlists,
         }
     }
 }

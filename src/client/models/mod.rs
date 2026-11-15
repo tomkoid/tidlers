@@ -21,6 +21,32 @@ pub mod track;
 pub mod user;
 pub mod video;
 
+/// Collection models
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ResourceType {
+    Tracks,
+    Albums,
+    Artists,
+    Playlists,
+}
+
+impl Display for ResourceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            ResourceType::Tracks => "tracks",
+            ResourceType::Albums => "albums",
+            ResourceType::Artists => "artists",
+            ResourceType::Playlists => "playlists",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+// trait for converting a struct into a HashMap of parameters for API requests
+pub trait IntoParamMap {
+    fn into_param_map(self) -> std::collections::HashMap<String, String>;
+}
+
 // backwards compat
 pub mod mixes {
     pub use super::mix::*;
