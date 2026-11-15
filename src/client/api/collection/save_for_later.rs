@@ -27,24 +27,28 @@ impl TidalClient {
 
     /// Adds an item to the user's "Save for Later" collection.
     ///
-    /// id: The ID of the item to add (track, album, playlist, etc.)
-    /// resource_type: The type of the resource (track, album, playlist, etc.)
+    /// `items` is a vector of tuples where each tuple contains the ID of the item and its
+    /// corresponding `ResourceType`.
     ///
     /// Returns a `GetSaveForLaterResponse` containing the added item in the "Save for
     /// Later" collection.
     pub async fn add_save_for_later_items(
         &self,
-        id: impl Into<String>,
-        resource_type: ResourceType,
+        items: Vec<(String, ResourceType)>,
     ) -> Result<GetSaveForLaterResponse, TidalError> {
-        let body = serde_json::json!({
-            "data": [
-                {
-                    "id": id.into(),
-                    "type": resource_type.to_string()
-                }
-            ]
+        let mut body = serde_json::json!({
+            "data": []
         });
+
+        for (id, resource_type) in items {
+            body["data"]
+                .as_array_mut()
+                .unwrap()
+                .push(serde_json::json!({
+                    "id": id,
+                    "type": resource_type.to_string()
+                }));
+        }
 
         self.request(
             reqwest::Method::POST,

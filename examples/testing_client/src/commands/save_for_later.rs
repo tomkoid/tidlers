@@ -8,7 +8,7 @@ pub async fn execute(tidal: &mut TidalClient, command: SaveForLaterCommands) -> 
     match command {
         SaveForLaterCommands::Add { id, resource_type } => {
             let response = tidal
-                .add_save_for_later_items(id, resource_type.to_resource_type())
+                .add_save_for_later_items(vec![(id, resource_type.to_resource_type())])
                 .await?;
             println!("{:#?}", response);
         }
