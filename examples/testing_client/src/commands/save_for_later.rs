@@ -12,6 +12,12 @@ pub async fn execute(tidal: &mut TidalClient, command: SaveForLaterCommands) -> 
                 .await?;
             println!("{:#?}", response);
         }
+        SaveForLaterCommands::Remove { id, resource_type } => {
+            let response = tidal
+                .remove_save_for_later_items(vec![(id, resource_type.to_resource_type())])
+                .await?;
+            println!("{:#?}", response);
+        }
         SaveForLaterCommands::List => {
             let items = tidal
                 .get_save_for_later_items(GetSaveForLaterItemsConfig::default())

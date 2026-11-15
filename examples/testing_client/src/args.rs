@@ -270,6 +270,12 @@ pub enum SaveForLaterCommands {
 
         resource_type: ArgResourceType,
     },
+    Remove {
+        /// ID
+        id: String,
+
+        resource_type: ArgResourceType,
+    },
     List,
 }
 

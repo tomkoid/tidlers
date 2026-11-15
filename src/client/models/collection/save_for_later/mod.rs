@@ -1,2 +1,3 @@
 pub mod config;
-pub mod list_items;
+pub mod list;
+pub mod remove;
