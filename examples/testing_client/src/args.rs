@@ -1,6 +1,6 @@
 use clap::Parser;
 use tidlers::client::models::{
-    collection::favorites::FavoriteResourceType,
+    ResourceType,
     playback::{AudioQuality, VideoQuality},
 };
 
@@ -212,7 +212,7 @@ pub enum CollectionCommands {
     Favorite {
         /// Type to add to favorites (tracks or albums)
         #[clap(short = 't', long, value_enum)]
-        resource_type: ArgFavoriteResourceType,
+        resource_type: ArgResourceType,
 
         /// ID of the resource to add to favorites
         id: String,
@@ -423,7 +423,7 @@ pub enum ArgVideoQuality {
 }
 
 #[derive(clap::ValueEnum, Clone, Default, Debug)]
-pub enum ArgFavoriteResourceType {
+pub enum ArgResourceType {
     #[clap(name = "tracks")]
     #[default]
     Tracks,
@@ -458,9 +458,9 @@ impl ArgVideoQuality {
 impl ArgResourceType {
     pub fn to_resource_type(&self) -> ResourceType {
         match self {
-            ArgFavoriteResourceType::Tracks => FavoriteResourceType::Tracks,
-            ArgFavoriteResourceType::Albums => FavoriteResourceType::Albums,
-            ArgFavoriteResourceType::Playlists => FavoriteResourceType::Playlists,
+            ArgResourceType::Tracks => ResourceType::Tracks,
+            ArgResourceType::Albums => ResourceType::Albums,
+            ArgResourceType::Playlists => ResourceType::Playlists,
         }
     }
 }

@@ -17,6 +17,7 @@ pub struct ApiRequestBuilder<'a> {
     url: String,
     params: HashMap<String, String>,
     form_params: HashMap<String, String>,
+    body: Option<String>,
     base_url: Option<String>,
     headers: reqwest::header::HeaderMap,
     add_country_code: bool,
@@ -37,6 +38,7 @@ impl<'a> ApiRequestBuilder<'a> {
             url: url.into(),
             params: HashMap::new(),
             form_params: HashMap::new(),
+            body: None,
             base_url: None,
             headers: reqwest::header::HeaderMap::new(),
             add_country_code: false,
@@ -100,6 +102,16 @@ impl<'a> ApiRequestBuilder<'a> {
         self
     }
 
+    /// Sets a JSON request body.
+    pub(crate) fn with_body(mut self, body: serde_json::Value) -> Self {
+        self.body = Some(body.to_string());
+        self.headers.insert(
+            reqwest::header::CONTENT_TYPE,
+            reqwest::header::HeaderValue::from_static("application/json"),
+        );
+        self
+    }
+
     /// Adds multiple query parameters from a HashMap
     pub(crate) fn _with_params(mut self, params: HashMap<String, String>) -> Self {
         self.params.extend(params);
@@ -143,6 +155,7 @@ impl<'a> ApiRequestBuilder<'a> {
         let mut req = TidalRequest::new(self.method, self.url.clone());
         req.params = Some(self.params);
         req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
+        req.data = self.body;
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = Some(self.headers);
@@ -225,6 +238,7 @@ impl<'a> ApiRequestBuilder<'a> {
         let mut req = TidalRequest::new(self.method, self.url.clone());
         req.params = Some(self.params);
         req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
+        req.data = self.body;
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = Some(self.headers);
@@ -312,6 +326,7 @@ impl<'a> ApiRequestBuilder<'a> {
         let mut req = TidalRequest::new(self.method, self.url);
         req.params = Some(self.params);
         req.form = (!self.form_params.is_empty()).then_some(vec![self.form_params]);
+        req.data = self.body;
         req.access_token = self.client.session.auth.access_token.clone();
         req.base_url = self.base_url;
         req.headers = Some(self.headers);
@@ -372,5 +387,21 @@ mod tests {
             assert_eq!(request.params.get("limit"), Some(&limit.to_string()));
             assert_eq!(request.params.get("offset"), Some(&offset.to_string()));
         }
+    }
+
+    #[test]
+    fn body_serializes_json_and_sets_content_type() {
+        let client = TidalClient::new(&TidalAuth::with_oauth());
+        let request = client
+            .request(Method::POST, "/test")
+            .with_body(serde_json::json!({"name": "example"}));
+
+        assert_eq!(request.body.as_deref(), Some(r#"{"name":"example"}"#));
+        assert_eq!(
+            request.headers.get(reqwest::header::CONTENT_TYPE),
+            Some(&reqwest::header::HeaderValue::from_static(
+                "application/json"
+            ))
+        );
     }
 }
