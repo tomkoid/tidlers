@@ -306,6 +306,12 @@ pub enum PlaylistCommands {
     /// List public playlists
     ListPublic,
 
+    /// Playlist metadata
+    Metadata {
+        /// Playlist UUID
+        playlist_id: String,
+    },
+
     /// Add items to a playlist
     AddItems {
         /// Playlist UUID

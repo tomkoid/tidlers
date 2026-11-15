@@ -5,8 +5,9 @@ use crate::{
             OrderDirection,
             collection::{SharingLevel, playlist::CollectionPlaylistEntry},
             playlist::{
-                PlaylistItemsOrder, PlaylistItemsResponse, PlaylistItemsWithEtag, PlaylistResponse,
-                PublicUserPlaylistsResponse, UserPlaylistsResponse,
+                PlaylistItemsOrder, PlaylistItemsResponse, PlaylistItemsWithEtag,
+                PlaylistMetadataResponse, PlaylistResponse, PublicUserPlaylistsResponse,
+                UserPlaylistsResponse,
             },
         },
     },
@@ -141,6 +142,22 @@ impl TidalClient {
             .with_country_code()
             .send()
             .await
+    }
+
+    /// Retrieves playlist metadata
+    pub async fn get_playlist_metadata(
+        &self,
+        playlist_id: impl Into<PlaylistId>,
+    ) -> Result<PlaylistMetadataResponse, TidalError> {
+        self.request(
+            reqwest::Method::GET,
+            "/my-collection/playlists/folders/metadata",
+        )
+        .with_country_code()
+        .with_param("trns", format!("trn:playlist:{}", playlist_id.into()))
+        .with_base_url(API_V2_LOCATION)
+        .send()
+        .await
     }
 
     /// Retrieves the items in a playlist.
