@@ -11,6 +11,10 @@ use crate::{
 };
 
 impl TidalClient {
+    /// Gets the user's "Save for Later" items.
+    ///
+    /// `config` is a `GetSaveForLaterItemsConfig` struct that allows you to specify what resource
+    /// to include.
     pub async fn get_save_for_later_items(
         &self,
         config: GetSaveForLaterItemsConfig,

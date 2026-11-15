@@ -4,11 +4,60 @@ use serde::{Deserialize, Deserializer, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetSaveForLaterResponse {
-    pub data: Vec<serde_json::Value>,
+    pub data: Vec<SaveForLaterItemsData>,
     #[serde(default)]
     pub included: Vec<SaveForLaterItemsIncludedResource>,
     #[serde(default)]
     pub links: Option<serde_json::Value>,
+}
+
+/// A resource entry in the save-for-later relationship data
+#[derive(Debug, Serialize)]
+#[serde(untagged)]
+pub enum SaveForLaterItemsData {
+    Track(SaveForLaterItemsDataResource),
+    Album(SaveForLaterItemsDataResource),
+    Playlist(SaveForLaterItemsDataResource),
+    Unknown(SaveForLaterItemsDataResource),
+}
+
+impl<'de> Deserialize<'de> for SaveForLaterItemsData {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        let resource_type = value
+            .get("type")
+            .and_then(serde_json::Value::as_str)
+            .ok_or_else(|| serde::de::Error::missing_field("type"))?
+            .to_owned();
+        let resource = serde_json::from_value(value).map_err(serde::de::Error::custom)?;
+
+        Ok(match resource_type.as_str() {
+            "tracks" => Self::Track(resource),
+            "albums" => Self::Album(resource),
+            "playlists" => Self::Playlist(resource),
+            _ => Self::Unknown(resource),
+        })
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveForLaterItemsDataResource {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub resource_type: String,
+    #[serde(default)]
+    pub meta: Option<SaveForLaterItemsDataMeta>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveForLaterItemsDataMeta {
+    #[serde(default)]
+    pub added_at: Option<String>,
 }
 
 /// An included resource returned by the save-for-later relationship.
@@ -279,6 +328,44 @@ pub struct SaveForLaterItemsVisualMetadata {
 #[cfg(test)]
 mod tests {
     use super::{GetSaveForLaterResponse, SaveForLaterItemsIncludedResource};
+
+    #[test]
+    fn deserializes_typed_data_entries() {
+        let response: GetSaveForLaterResponse = serde_json::from_value(serde_json::json!({
+            "data": [
+                {
+                    "id": "1",
+                    "type": "tracks",
+                    "meta": {"addedAt": "2026-11-15T14:08:20.153758Z"}
+                },
+                {"id": "2", "type": "albums", "meta": {}},
+                {"id": "3", "type": "playlists"}
+            ],
+            "included": []
+        }))
+        .expect("save-for-later response should deserialize");
+
+        assert!(matches!(
+            response.data[0],
+            super::SaveForLaterItemsData::Track(_)
+        ));
+        assert!(matches!(
+            response.data[1],
+            super::SaveForLaterItemsData::Album(_)
+        ));
+        assert!(matches!(
+            response.data[2],
+            super::SaveForLaterItemsData::Playlist(_)
+        ));
+
+        let super::SaveForLaterItemsData::Track(track) = &response.data[0] else {
+            panic!("expected track data");
+        };
+        assert_eq!(
+            track.meta.as_ref().unwrap().added_at.as_deref(),
+            Some("2026-11-15T14:08:20.153758Z")
+        );
+    }
 
     #[test]
     fn deserializes_resource_specific_included_attributes() {
