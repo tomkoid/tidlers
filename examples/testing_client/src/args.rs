@@ -200,6 +200,11 @@ pub enum CollectionCommands {
         command: FolderCommands,
     },
 
+    SaveForLater {
+        #[clap(subcommand)]
+        command: SaveForLaterCommands,
+    },
+
     /// Show collection artists
     Artists,
 
@@ -255,6 +260,11 @@ pub enum FolderCommands {
         id: String,
     },
     Flattened,
+}
+
+#[derive(Parser, Debug, Clone)]
+pub enum SaveForLaterCommands {
+    List,
 }
 
 #[derive(Parser, Debug, Clone)]

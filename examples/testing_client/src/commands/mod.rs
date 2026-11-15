@@ -5,6 +5,7 @@ mod folder;
 mod mix;
 mod page;
 mod playlist;
+mod save_for_later;
 mod search;
 mod track;
 mod video;
@@ -169,6 +170,10 @@ async fn execute_collection_command(
 
         args::CollectionCommands::Folder { command } => {
             folder::execute(tidal, command).await?;
+        }
+
+        args::CollectionCommands::SaveForLater { command } => {
+            save_for_later::execute(tidal, command).await?;
         }
     }
 

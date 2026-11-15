@@ -21,6 +21,11 @@ pub mod track;
 pub mod user;
 pub mod video;
 
+// trait for converting a struct into a HashMap of parameters for API requests
+pub trait IntoParamMap {
+    fn into_param_map(self) -> std::collections::HashMap<String, String>;
+}
+
 // backwards compat
 pub mod mixes {
     pub use super::mix::*;
