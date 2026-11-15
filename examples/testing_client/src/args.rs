@@ -264,6 +264,12 @@ pub enum FolderCommands {
 
 #[derive(Parser, Debug, Clone)]
 pub enum SaveForLaterCommands {
+    Add {
+        /// ID
+        id: String,
+
+        resource_type: ArgResourceType,
+    },
     List,
 }
 
@@ -449,8 +455,8 @@ impl ArgVideoQuality {
     }
 }
 
-impl ArgFavoriteResourceType {
-    pub fn to_favorite_resource_type(&self) -> FavoriteResourceType {
+impl ArgResourceType {
+    pub fn to_resource_type(&self) -> ResourceType {
         match self {
             ArgFavoriteResourceType::Tracks => FavoriteResourceType::Tracks,
             ArgFavoriteResourceType::Albums => FavoriteResourceType::Albums,

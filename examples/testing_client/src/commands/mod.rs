@@ -152,14 +152,14 @@ async fn execute_collection_command(
             match remove {
                 true => {
                     tidal
-                        .remove_from_favorites(resource_type.to_favorite_resource_type(), id)
+                        .remove_from_favorites(resource_type.to_resource_type(), id)
                         .await?;
                     println!("Removed from favorites");
                 }
                 false => {
                     // continue to add to favorites
                     tidal
-                        .add_to_favorites(resource_type.to_favorite_resource_type(), id)
+                        .add_to_favorites(resource_type.to_resource_type(), id)
                         .await?;
                     println!("Added to favorites");
                 }
