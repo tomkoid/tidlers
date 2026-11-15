@@ -97,10 +97,20 @@ impl TidalClient {
     /// # }
     /// ```
     pub async fn list_playlists(&self) -> Result<UserPlaylistsResponse, TidalError> {
+        self.list_playlists_page(50, 0).await
+    }
+
+    /// Lists a page of playlists for the authenticated user.
+    pub async fn list_playlists_page(
+        &self,
+        limit: u32,
+        offset: u32,
+    ) -> Result<UserPlaylistsResponse, TidalError> {
         let url = format!("/users/{}/playlists", self.user_id()?);
 
         self.request(reqwest::Method::GET, url)
             .with_country_code()
+            .with_pagination(limit, offset)
             .send()
             .await
     }
