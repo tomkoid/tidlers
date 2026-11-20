@@ -92,7 +92,8 @@ pub struct SearchAlbumSummary {
     pub id: u64,
     pub title: String,
     pub version: Option<String>,
-    pub cover: String,
+    /// `None` for an album without artwork, which TIDAL sends as `null`.
+    pub cover: Option<String>,
     pub vibrant_color: Option<String>,
     pub video_cover: Option<String>,
     pub release_date: Option<String>,
@@ -330,5 +331,78 @@ impl Display for SearchType {
             SearchType::Videos => "videos",
         };
         write!(f, "{}", s)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{SearchTrackHit, SearchVideoHit};
+    use serde_json::{Value, json};
+
+    /// A video hit as TIDAL's search returns it, from an album without
+    /// artwork: TIDAL sends that album's `cover` as `null`.
+    fn video_hit(cover: Value) -> Value {
+        json!({
+            "artifactType": "CatalogueSuggestionsVideoDto",
+            "id": 123456789,
+            "audioOnlyTrackId": null,
+            "duration": 245,
+            "title": "Cello Suite No. 1",
+            "artists": [{"id": 1, "name": "A Cellist", "handle": null, "picture": null, "userId": null, "type": "MAIN"}],
+            "album": {
+                "id": 987654321,
+                "title": "Suites",
+                "version": null,
+                "cover": cover,
+                "vibrantColor": null,
+                "videoCover": null,
+                "releaseDate": "2020-01-01",
+                "upload": false
+            },
+            "version": null,
+            "type": "Music Video",
+            "explicit": false,
+            "releaseDate": "2020-01-01T00:00:00.000+0000",
+            "image": "aa-bb-cc"
+        })
+    }
+
+    #[test]
+    fn a_video_on_an_album_without_artwork_parses() {
+        let hit: SearchVideoHit = serde_json::from_value(video_hit(Value::Null)).unwrap();
+        assert_eq!(hit.album.unwrap().cover, None);
+
+        let hit: SearchVideoHit =
+            serde_json::from_value(video_hit(json!("9a83b806-f311-4bbf-8763-d8f68c0277f5")))
+                .unwrap();
+        assert_eq!(
+            hit.album.unwrap().cover.as_deref(),
+            Some("9a83b806-f311-4bbf-8763-d8f68c0277f5")
+        );
+    }
+
+    #[test]
+    fn a_track_on_an_album_without_artwork_parses() {
+        // Tracks share the album summary with videos.
+        let track = json!({
+            "artifactType": "CatalogueSuggestionsTrackDto",
+            "id": 95459236,
+            "editable": false,
+            "title": "Beving: Hanging D",
+            "album": video_hit(Value::Null)["album"],
+            "artists": [{"id": 8550992, "name": "Cello Octet Amsterdam", "handle": null, "picture": null, "userId": null, "type": "MAIN"}],
+            "version": "Cello Octet Amsterdam Version",
+            "duration": 321,
+            "popularity": 52,
+            "doublePopularity": 0.5226697038987509,
+            "trackNumber": 7,
+            "volumeNumber": 1,
+            "explicit": false,
+            "replayGain": -9.1,
+            "allowStreaming": true,
+            "streamStartDate": "2018-09-28T00:00:00.000+0000"
+        });
+        let hit: SearchTrackHit = serde_json::from_value(track).unwrap();
+        assert_eq!(hit.album.unwrap().cover, None);
     }
 }
